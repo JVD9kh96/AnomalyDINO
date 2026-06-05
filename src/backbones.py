@@ -68,8 +68,8 @@ class ViTWrapper(VisionTransformerWrapper):
             patch_features = self.model.encoder(patches)
             return patch_features[:, 1:, :].squeeze().cpu().numpy()  # Exclude the class token
 
-    def get_embedding_visualization(self, tokens, grid_size = (14,14), resized_mask=None, normalize=True):
-        pca = PCA(n_components=3, svd_solver='randomized')
+    def get_embedding_visualization(self, tokens, grid_size = (14,14), resized_mask=None, normalize=True, random_state=42):
+        pca = PCA(n_components=3, svd_solver='randomized', random_state=random_state)
         if resized_mask is not None:
             tokens = tokens[resized_mask]
         reduced_tokens = pca.fit_transform(tokens.astype(np.float32))
@@ -84,7 +84,7 @@ class ViTWrapper(VisionTransformerWrapper):
         else:
             return reduced_tokens
 
-    def compute_background_mask(self, img_features, grid_size, threshold = 10, masking_type = False):
+    def compute_background_mask(self, img_features, grid_size, threshold = 10, masking_type = False, random_state=42):
         # No masking for ViT supported at the moment... (Only DINOv2)
         return np.ones(img_features.shape[0], dtype=bool)
     
@@ -133,8 +133,8 @@ class DINOv2Wrapper(VisionTransformerWrapper):
         return tokens.cpu().numpy()
 
 
-    def get_embedding_visualization(self, tokens, grid_size, resized_mask=None, normalize=True):
-        pca = PCA(n_components=3, svd_solver='randomized')
+    def get_embedding_visualization(self, tokens, grid_size, resized_mask=None, normalize=True, random_state=42):
+        pca = PCA(n_components=3, svd_solver='randomized', random_state=random_state)
         if resized_mask is not None:
             tokens = tokens[resized_mask]
         reduced_tokens = pca.fit_transform(tokens.astype(np.float32))
@@ -150,15 +150,15 @@ class DINOv2Wrapper(VisionTransformerWrapper):
             return reduced_tokens
 
 
-    def compute_background_mask_from_image(self, image, threshold = 10, masking_type = None):
+    def compute_background_mask_from_image(self, image, threshold = 10, masking_type = None, random_state=42):
         image_tensor, grid_size = self.prepare_image(image)
         tokens = self.extract_features(image_tensor)
-        return self.compute_background_mask(tokens, grid_size, threshold, masking_type)
+        return self.compute_background_mask(tokens, grid_size, threshold, masking_type, random_state=random_state)
 
 
-    def compute_background_mask(self, img_features, grid_size, threshold = 10, masking_type = False, kernel_size = 3, border = 0.2):
+    def compute_background_mask(self, img_features, grid_size, threshold = 10, masking_type = False, kernel_size = 3, border = 0.2, random_state=42):
         # Kernel size for morphological operations should be odd
-        pca = PCA(n_components=1, svd_solver='randomized')
+        pca = PCA(n_components=1, svd_solver='randomized', random_state=random_state)
         first_pc = pca.fit_transform(img_features.astype(np.float32))
         if masking_type == True:
             mask = first_pc > threshold

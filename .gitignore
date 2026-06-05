@@ -1,6 +1,7 @@
 *venv/
 dev/
 
+**/__pycache__/**
 data/*
 data_utils/*
 paper_plots*/

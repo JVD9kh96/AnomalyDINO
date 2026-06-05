@@ -75,6 +75,228 @@ python run_anomalydino_batched.py --dataset VisA --data_root data/VisA_pytorch/1
 
 ---
 
+## Tutorial: Severstal Steel Defect Detection Evaluation
+
+This repository extends AnomalyDINO with a modular evaluation protocol for the [Severstal Steel Defect Detection](https://www.kaggle.com/competitions/severstal-steel-defect-detection) dataset. The pipeline runs K-fold cross-validation, reports patch-level detection metrics (precision / recall / F1) and SAM2 mask-level metrics (IoU / Dice), and saves results as JSON plus visualization PDFs.
+
+### Environment setup
+
+1. **Create and activate a virtual environment** (recommended):
+
+    ```shell
+    python -m venv .venv
+    # Linux / macOS
+    source .venv/bin/activate
+    # Windows (PowerShell)
+    .venv\Scripts\Activate.ps1
+    ```
+
+2. **Install PyTorch** for your CUDA version from [pytorch.org](https://pytorch.org/) if not already installed.
+
+3. **Install dependencies**:
+
+    ```shell
+    pip install -r requirements.txt
+    ```
+
+    Notes:
+    - **FAISS**: `faiss-gpu` is listed in `requirements.txt`. If GPU FAISS is unavailable, install `faiss-cpu` instead and set `detector.faiss_on_cpu: true` in the config.
+    - **SAM2**: Ultralytics downloads the SAM2 weights (e.g. `sam2.1_b.pt`) automatically on first use.
+    - **DINOv2**: Backbone weights are fetched via `torch.hub` on first run.
+
+4. **Verify the install** (no dataset or GPU required):
+
+    ```shell
+    python tests/test_severstal_unit.py
+    ```
+
+### Dataset preparation
+
+Download the Severstal competition data and place it under `data/severstal/`:
+
+```
+data/severstal/
+├── train_images/          # all training images (.jpg)
+└── train.csv              # annotations: ImageId, ClassId, EncodedPixels
+```
+
+- Images are **256 × 1600** pixels.
+- `train.csv` lists defect segments per class (`ClassId` 1–4) in run-length-encoded (RLE) format.
+- Images with no rows in `train.csv` are treated as defect-free (normal).
+
+### Configuration
+
+All experiment settings live in [`configs/severstal.yaml`](configs/severstal.yaml). Key options:
+
+| Section | Parameter | Description |
+|---------|-----------|-------------|
+| `cv` | `n_folds` | Number of cross-validation folds (default: 5) |
+| `patch_eval` | `gt_overlap_threshold` | Fraction of patch pixels that must be defective for a GT patch to be positive |
+| `patch_eval` | `pred_score_threshold` | Fixed absolute threshold on patch anomaly scores |
+| `detector` | `shots` | Number of defect-free reference images per fold (`-1` = use all) |
+| `detector` | `model_name` | DINOv2 backbone (e.g. `dinov2_vits14`) |
+| `segmenter` | `model` | SAM2 checkpoint for Ultralytics (e.g. `sam2.1_b.pt`) |
+| `output` | `dir` | Root directory for results |
+
+### Running an experiment
+
+**Full 5-fold cross-validation:**
+
+```shell
+python run_severstal_cv.py --config configs/severstal.yaml
+```
+
+**Single fold (useful for debugging):**
+
+```shell
+python run_severstal_cv.py --config configs/severstal.yaml --fold 0
+```
+
+**Override paths or detector from the command line:**
+
+```shell
+python run_severstal_cv.py --config configs/severstal.yaml --data_root data/severstal --detector anomaly_dino
+```
+
+#### What happens during a run
+
+For each fold:
+
+1. Training images are split into train / validation (stratified by defect presence).
+2. A **memory bank** is built from defect-free images in the train split (`detector.shots` controls how many).
+3. Each validation image is scored at **patch level** by the anomaly detector.
+4. Predicted anomalous patches are passed as **bounding-box prompts** to SAM2 for mask refinement.
+5. Metrics and visualizations are saved.
+
+#### Output structure
+
+Results are written to `results_severstal/<timestamp>/`:
+
+```
+results_severstal/<timestamp>/
+├── config.yaml              # resolved config for reproducibility
+├── folds.json               # image → validation fold assignment
+├── summary.json             # mean ± std across folds
+├── fold_0/
+│   ├── metrics.json         # patch + mask metrics for this fold
+│   └── visualizations.pdf   # GT/pred overlays (patch + mask level)
+├── fold_1/
+│   └── ...
+└── ...
+```
+
+**Metrics reported:**
+
+- **Patch level** — TP / FP / FN at patch granularity; precision, recall, F1 aggregated globally (sum over all patches) and as image-level means. Class-agnostic metrics are always computed; class-wise metrics require a class-aware detector.
+- **Mask level** — IoU and Dice between SAM2-predicted masks and GT, aggregated globally and per-image.
+
+### Adding a new anomaly detector
+
+The evaluation framework is built around a pluggable detector interface. To add your own method:
+
+#### 1. Subclass `BaseAnomalyDetector`
+
+Create a new file, e.g. `src/detectors/my_detector.py`:
+
+```python
+from __future__ import annotations
+
+import numpy as np
+
+from src.detectors.base import BaseAnomalyDetector, DetectorOutput
+from src.severstal.dataset import SeverstalSample
+from src.severstal.transforms import compute_processed_shape
+
+
+class MyDetector(BaseAnomalyDetector):
+    def __init__(self, device: str = "cuda:0", **kwargs):
+        self.device = device
+        # your init here
+
+    @property
+    def supports_class_prediction(self) -> bool:
+        # Return True if you produce per-class patch scores
+        return False
+
+    def fit(self, reference_samples: list[SeverstalSample]) -> None:
+        # Build state from defect-free reference images
+        # reference_samples[i].image is an RGB numpy array (H, W, 3)
+        pass
+
+    def predict(self, sample: SeverstalSample) -> DetectorOutput:
+        native_shape = sample.image.shape[:2]
+        patch_size = 14  # must match your backbone's patch size
+        processed_shape, grid_size = compute_processed_shape(
+            native_shape, smaller_edge_size=448, patch_size=patch_size
+        )
+
+        # patch_scores: (grid_h, grid_w), higher = more anomalous
+        patch_scores = np.zeros(grid_size, dtype=np.float32)
+
+        return DetectorOutput(
+            image_id=sample.image_id,
+            patch_scores=patch_scores,
+            grid_size=grid_size,
+            processed_shape=processed_shape,
+            patch_size=patch_size,
+            patch_valid_mask=None,          # optional (H_grid, W_grid) bool mask
+            patch_class_scores=None,        # optional (H, W, C) if class-aware
+        )
+```
+
+**Contract for `DetectorOutput`:**
+
+| Field | Shape | Description |
+|-------|-------|-------------|
+| `patch_scores` | `(grid_h, grid_w)` | Continuous anomaly score per patch |
+| `grid_size` | `(grid_h, grid_w)` | Patch grid dimensions after model resize/crop |
+| `processed_shape` | `(H, W)` | Image size after preprocessing (before patchification) |
+| `patch_size` | int | Patch edge length in pixels (14 for DINOv2) |
+| `patch_valid_mask` | `(grid_h, grid_w)` or `None` | Patches to include in metrics (exclude background) |
+| `patch_class_scores` | `(grid_h, grid_w, C)` or `None` | Per-class scores; set only if `supports_class_prediction` is `True` |
+
+Use [`src/detectors/anomaly_dino.py`](src/detectors/anomaly_dino.py) as a reference implementation.
+
+#### 2. Register the detector in the factory
+
+Add your detector to [`src/detectors/__init__.py`](src/detectors/__init__.py):
+
+```python
+def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
+    name = config.get("name", "anomaly_dino")
+    if name == "anomaly_dino":
+        ...
+    elif name == "my_detector":
+        from src.detectors.my_detector import MyDetector
+        return MyDetector(device=config.get("device", "cuda:0"))
+    raise ValueError(f"Unknown detector: {name}")
+```
+
+#### 3. Add config entries
+
+In `configs/severstal.yaml` (or your own config file):
+
+```yaml
+detector:
+  name: my_detector
+  device: cuda:0
+  # any custom hyperparameters for your detector
+```
+
+Then run:
+
+```shell
+python run_severstal_cv.py --config configs/severstal.yaml --detector my_detector
+```
+
+#### Tips
+
+- **Preprocessing alignment**: GT masks are aligned to your patch grid in [`src/severstal/transforms.py`](src/severstal/transforms.py). If your detector uses different resize/crop logic, update `compute_processed_shape` / `resize_mask_like_model` accordingly, or ensure your `processed_shape` and `patch_size` match the actual preprocessing.
+- **Class-aware detectors**: Set `supports_class_prediction = True` and populate `patch_class_scores` to enable class-wise patch and mask metrics.
+- **Reproducibility**: The orchestrator calls `seed_all(seed + fold_idx)` at the start of each fold. Use the passed `seed` in `build_detector` for any randomized components.
+
+---
+
 This work uses the following ressources and datasets:
 - [DINOv2](https://github.com/facebookresearch/dinov2), code and model available under Apache 2.0 license.
 - The [MVTec-AD dataset](https://www.mvtec.com/company/research/datasets/mvtec-ad), available under the CC BY-NC-SA 4.0 license.
