@@ -18,7 +18,8 @@ detector:
   name: anomaly_dino
   model_name: dinov2_vits14
   resolution: 448
-  shots: 8
+  shots: 8                        # must be divisible by num_classes (4) for class_balanced
+  reference_sampling: class_balanced  # class_balanced | defect_free
   knn_metric: L2_normalized
   k_neighbors: 1
   faiss_on_cpu: false

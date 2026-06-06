@@ -15,6 +15,7 @@ from src.evaluation.patch_metrics import (
     aggregate_image_mean_metrics,
 )
 from src.evaluation.reproducibility import create_fold_splits, seed_all
+from src.severstal.dataset import SeverstalDataset
 from src.severstal.rle import mask2rle, rle2mask, union_masks
 from src.severstal.transforms import (
     build_gt_patch_labels,
@@ -65,6 +66,47 @@ def test_patches_to_bboxes():
     assert x1 < x2 and y1 < y2
 
 
+def test_class_balanced_pool_selection():
+    pool = ["img_a.jpg", "img_b.jpg", "img_c.jpg", "img_d.jpg"]
+    selected = SeverstalDataset._select_from_class_pool(
+        pool, count=2, seed=0, already_selected=set()
+    )
+    assert len(selected) == 2
+    assert len(set(selected)) == 2
+
+    # Images already picked for another class are skipped
+    selected2 = SeverstalDataset._select_from_class_pool(
+        pool, count=2, seed=0, already_selected=set(selected)
+    )
+    assert len(selected2) == 2
+    assert not set(selected2) & set(selected)
+
+
+def test_class_balanced_shots_must_be_divisible():
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "train_images").mkdir()
+        (root / "train.csv").write_text("ImageId,ClassId,EncodedPixels\n")
+        for i in range(4):
+            (root / "train_images" / f"{i}.jpg").write_bytes(b"")
+
+        dataset = SeverstalDataset(
+            data_root=root,
+            n_folds=2,
+            seed=0,
+            stratify=False,
+        )
+        try:
+            dataset._select_class_balanced_reference_ids(
+                fold_idx=0, shots=7, seed=0
+            )
+            raise AssertionError("Expected ValueError for shots=7")
+        except ValueError as e:
+            assert "divisible" in str(e)
+
+
 def test_gt_patch_labels():
     masks = {c: np.zeros((256, 1600), dtype=bool) for c in range(1, 5)}
     masks[1][0:50, 0:100] = True
@@ -80,6 +122,8 @@ if __name__ == "__main__":
     test_patch_confusion_metrics()
     test_fold_splits_reproducible()
     test_patches_to_bboxes()
+    test_class_balanced_pool_selection()
+    test_class_balanced_shots_must_be_divisible()
     test_gt_patch_labels()
     seed_all(0)
     print("All unit tests passed.")
