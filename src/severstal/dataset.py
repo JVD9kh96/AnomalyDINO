@@ -134,6 +134,48 @@ class SeverstalDataset:
         train_ids, _ = self.get_fold_split(fold_idx)
         return [i for i in train_ids if not self._has_defect[i]]
 
+    def _image_has_class(self, image_id: str, class_id: int) -> bool:
+        rows = self._annotations[
+            (self._annotations["ImageId"] == image_id)
+            & (self._annotations["ClassId"] == class_id)
+        ]
+        for _, row in rows.iterrows():
+            rle = row["EncodedPixels"]
+            if isinstance(rle, str) and rle.strip():
+                return True
+            if pd.notna(rle) and str(rle).strip() and str(rle).lower() != "nan":
+                return True
+        return False
+
+    def get_train_ids_with_class(self, fold_idx: int, class_id: int) -> list[str]:
+        """Train-fold image IDs that contain a non-empty mask for the given class."""
+        train_ids, _ = self.get_fold_split(fold_idx)
+        return sorted(
+            i for i in train_ids if self._image_has_class(i, class_id)
+        )
+
+    @staticmethod
+    def _select_from_class_pool(
+        pool: list[str],
+        count: int,
+        seed: int,
+        already_selected: set[str],
+    ) -> list[str]:
+        """Deterministically pick `count` images from `pool`, skipping duplicates."""
+        if count <= 0 or not pool:
+            return []
+
+        start = (seed * count) % len(pool)
+        selected: list[str] = []
+        for offset in range(len(pool)):
+            candidate = pool[(start + offset) % len(pool)]
+            if candidate in already_selected or candidate in selected:
+                continue
+            selected.append(candidate)
+            if len(selected) >= count:
+                break
+        return selected
+
     def get_masks_for_image(self, image_id: str) -> dict[int, np.ndarray]:
         masks = {
             c: np.zeros(self.image_shape, dtype=bool)
@@ -174,18 +216,82 @@ class SeverstalDataset:
         fold_idx: int,
         shots: int,
         seed: int,
+        reference_sampling: str = "class_balanced",
     ) -> list[str]:
-        """Deterministic k-shot selection from defect-free train-fold images."""
-        defect_free = self.get_defect_free_train_ids(fold_idx)
-        defect_free = sorted(defect_free)
+        """
+        Deterministic k-shot reference image selection from the train fold.
+
+        reference_sampling:
+          - ``class_balanced``: ``shots // num_classes`` images per defect class
+            (e.g. 8 shots → 2 images with class 1, 2 with class 2, …).
+            ``shots`` must be divisible by ``num_classes``.
+          - ``defect_free``: legacy mode — defect-free images only.
+        """
+        if reference_sampling == "defect_free":
+            return self._select_defect_free_reference_ids(fold_idx, shots, seed)
+        if reference_sampling == "class_balanced":
+            return self._select_class_balanced_reference_ids(fold_idx, shots, seed)
+        raise ValueError(
+            f"Unknown reference_sampling: {reference_sampling!r}. "
+            "Choose 'class_balanced' or 'defect_free'."
+        )
+
+    def _select_defect_free_reference_ids(
+        self,
+        fold_idx: int,
+        shots: int,
+        seed: int,
+    ) -> list[str]:
+        defect_free = sorted(self.get_defect_free_train_ids(fold_idx))
         if shots == -1:
             return defect_free
         start = seed * shots
-        end = start + shots
-        selected = defect_free[start:end]
-        if len(selected) < shots and shots > 0:
+        selected = defect_free[start : start + shots]
+        if len(selected) < shots:
             print(
-                f"Warning: requested {shots} reference images but only "
+                f"Warning: requested {shots} defect-free reference images but only "
                 f"{len(selected)} available in fold {fold_idx}."
             )
+        return selected
+
+    def _select_class_balanced_reference_ids(
+        self,
+        fold_idx: int,
+        shots: int,
+        seed: int,
+    ) -> list[str]:
+        if shots == -1:
+            selected_set: set[str] = set()
+            for class_id in range(1, self.num_classes + 1):
+                selected_set.update(self.get_train_ids_with_class(fold_idx, class_id))
+            return sorted(selected_set)
+
+        if shots <= 0:
+            raise ValueError(f"shots must be positive or -1, got {shots}")
+        if shots % self.num_classes != 0:
+            raise ValueError(
+                f"For class_balanced sampling, shots ({shots}) must be divisible "
+                f"by num_classes ({self.num_classes}). "
+                f"E.g. 4 shots → 1 per class, 8 shots → 2 per class."
+            )
+
+        per_class = shots // self.num_classes
+        selected: list[str] = []
+        already_selected: set[str] = set()
+
+        for class_id in range(1, self.num_classes + 1):
+            pool = self.get_train_ids_with_class(fold_idx, class_id)
+            class_selected = self._select_from_class_pool(
+                pool, per_class, seed + class_id, already_selected
+            )
+            if len(class_selected) < per_class:
+                print(
+                    f"Warning: fold {fold_idx}, class {class_id}: requested "
+                    f"{per_class} reference images but only {len(class_selected)} "
+                    f"available (pool size {len(pool)})."
+                )
+            for img_id in class_selected:
+                already_selected.add(img_id)
+            selected.extend(class_selected)
+
         return selected

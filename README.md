@@ -133,7 +133,8 @@ All experiment settings live in [`configs/severstal.yaml`](configs/severstal.yam
 | `cv` | `n_folds` | Number of cross-validation folds (default: 5) |
 | `patch_eval` | `gt_overlap_threshold` | Fraction of patch pixels that must be defective for a GT patch to be positive |
 | `patch_eval` | `pred_score_threshold` | Fixed absolute threshold on patch anomaly scores |
-| `detector` | `shots` | Number of defect-free reference images per fold (`-1` = use all) |
+| `detector` | `shots` | Number of reference images per fold; with `class_balanced`, must be divisible by 4 (e.g. 8 → 2 per class) |
+| `detector` | `reference_sampling` | `class_balanced` (default): equal shots per defect class; `defect_free`: legacy normal-only images |
 | `detector` | `model_name` | DINOv2 backbone (e.g. `dinov2_vits14`) |
 | `segmenter` | `model` | SAM2 checkpoint for Ultralytics (e.g. `sam2.1_b.pt`) |
 | `output` | `dir` | Root directory for results |
@@ -163,7 +164,7 @@ python run_severstal_cv.py --config configs/severstal.yaml --data_root data/seve
 For each fold:
 
 1. Training images are split into train / validation (stratified by defect presence).
-2. A **memory bank** is built from defect-free images in the train split (`detector.shots` controls how many).
+2. A **memory bank** is built from reference images in the train split. By default (`reference_sampling: class_balanced`), `detector.shots` images are chosen evenly across the 4 defect classes (e.g. 8 shots → 2 train images containing class 1, 2 with class 2, etc.). Set `reference_sampling: defect_free` to use only normal (defect-free) images instead.
 3. Each validation image is scored at **patch level** by the anomaly detector.
 4. Predicted anomalous patches are passed as **bounding-box prompts** to SAM2 for mask refinement.
 5. Metrics and visualizations are saved.
