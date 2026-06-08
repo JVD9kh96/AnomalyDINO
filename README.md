@@ -191,6 +191,78 @@ results_severstal/<timestamp>/
 - **Patch level** — TP / FP / FN at patch granularity; precision, recall, F1 aggregated globally (sum over all patches) and as image-level means. Class-agnostic metrics are always computed; class-wise metrics require a class-aware detector.
 - **Mask level** — IoU and Dice between SAM2-predicted masks and GT, aggregated globally and per-image.
 
+### DINOv2 Sobel detector (`dino_sobel`)
+
+A built-in, self-supervised detector that applies Sobel edge detection in DINOv2 patch embedding space. High gradient norms in feature space are treated as anomaly cues.
+
+**Run with the dedicated config:**
+
+```shell
+python run_severstal_cv.py --config configs/severstal_dino_sobel.yaml
+```
+
+Or switch detector in any config:
+
+```yaml
+detector:
+  name: dino_sobel
+```
+
+#### Zero-shot vs few-shot calibration
+
+| `shots` | Behavior |
+|---------|----------|
+| `0` | **Zero-shot** — no reference images; `fit()` is a no-op. Scoring uses only the test image (and per-image `score_mode` stats). |
+| `> 0` | **Few-shot calibration** — reference images from the train fold (via `reference_sampling`) are used to compute global Sobel-norm statistics (`ref_mean`, `ref_std`, …). Test norms are adjusted as `(norm - ref_mean) / ref_std` before `score_mode` is applied. With `class_balanced`, `shots` must be divisible by 4. |
+
+#### Detector config options
+
+| Parameter | Values | Description |
+|-----------|--------|-------------|
+| `model_name` | `dinov2_vits14`, `dinov2_vitb14`, `dinov2_vitl14`, … | DINOv2 backbone |
+| `sobel.norm_reduction` | `l2`, `mean`, `max` | How to aggregate Sobel magnitude across embedding dimensions |
+| `score_mode` | see table below | How Sobel norms become `patch_scores` |
+| `zscore_k` | float (default `2.0`) | Reference for thresholding z-scores (pairs with `pred_score_threshold`) |
+| `iqr_k` | float (default `1.5`) | Divisor for `per_image_iqr` scores |
+| `percentile` | float (default `95`) | Percentile cutoff for `per_image_percentile` |
+| `masking` | `true` / `false` | Optional DINOv2 PCA background mask (excluded patches scored as 0) |
+
+#### `score_mode` options
+
+All modes output continuous `patch_scores`; the evaluation pipeline still binarizes them with `patch_eval.pred_score_threshold` unless scores are already on a known scale.
+
+| `score_mode` | What it does | Suggested `pred_score_threshold` |
+|--------------|--------------|----------------------------------|
+| `raw` | Sobel norm (calibrated if `shots > 0`) | Tune empirically (e.g. `0.35`) |
+| `per_image_zscore` | Per-image z-score: `(norm - mean) / std`. With calibration, reference z-scoring replaces per-image mean/std | `2.0` (aligns with `zscore_k`) |
+| `per_image_iqr` | Distance above Q3 relative to IQR: `(norm - Q3) / IQR`, scaled by `iqr_k` | `0.5`–`1.0` |
+| `per_image_percentile` | Positive part above the per-image `percentile` threshold, max-normalized to [0, 1] | `0.1`–`0.5` |
+
+**Example — zero-shot with z-score scoring:**
+
+```yaml
+detector:
+  name: dino_sobel
+  shots: 0
+  score_mode: per_image_zscore
+
+patch_eval:
+  pred_score_threshold: 2.0
+```
+
+**Example — few-shot calibrated raw scores:**
+
+```yaml
+detector:
+  name: dino_sobel
+  shots: 8
+  reference_sampling: class_balanced
+  score_mode: raw
+
+patch_eval:
+  pred_score_threshold: 0.35
+```
+
 ### Adding a new anomaly detector
 
 The evaluation framework is built around a pluggable detector interface. To add your own method:

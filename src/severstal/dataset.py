@@ -243,6 +243,8 @@ class SeverstalDataset:
         seed: int,
     ) -> list[str]:
         defect_free = sorted(self.get_defect_free_train_ids(fold_idx))
+        if shots == 0:
+            return []
         if shots == -1:
             return defect_free
         start = seed * shots
@@ -260,14 +262,17 @@ class SeverstalDataset:
         shots: int,
         seed: int,
     ) -> list[str]:
+        if shots == 0:
+            return []
+
         if shots == -1:
             selected_set: set[str] = set()
             for class_id in range(1, self.num_classes + 1):
                 selected_set.update(self.get_train_ids_with_class(fold_idx, class_id))
             return sorted(selected_set)
 
-        if shots <= 0:
-            raise ValueError(f"shots must be positive or -1, got {shots}")
+        if shots < 0:
+            raise ValueError(f"shots must be non-negative or -1, got {shots}")
         if shots % self.num_classes != 0:
             raise ValueError(
                 f"For class_balanced sampling, shots ({shots}) must be divisible "
