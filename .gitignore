@@ -10,3 +10,6 @@ results*/
 *personal.ipynb
 feature_extraction.ipynb
 src/__pycache__/
+.cursorindexingignore
+.vscode
+.specstory

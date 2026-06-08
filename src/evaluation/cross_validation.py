@@ -82,14 +82,19 @@ def run_cross_validation(
         fold_dir.mkdir(parents=True, exist_ok=True)
 
         train_ids, val_ids = dataset.get_fold_split(fold_idx)
+        shots = detector_cfg.get("shots", 8)
         ref_ids = dataset.select_reference_ids(
             fold_idx,
-            detector_cfg.get("shots", 8),
+            shots,
             fold_seed,
             reference_sampling=detector_cfg.get(
                 "reference_sampling", "class_balanced"
             ),
         )
+        if shots == 0:
+            print("  Mode: zero-shot (shots=0, no reference calibration)")
+        else:
+            print(f"  Mode: few-shot calibration (shots={shots})")
         print(f"  Train: {len(train_ids)}, Val: {len(val_ids)}, Ref: {len(ref_ids)}")
 
         detector = build_detector(detector_cfg, seed=fold_seed)

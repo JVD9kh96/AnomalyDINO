@@ -17,12 +17,25 @@ from src.evaluation.patch_metrics import (
 from src.evaluation.reproducibility import create_fold_splits, seed_all
 from src.severstal.dataset import SeverstalDataset
 from src.severstal.rle import mask2rle, rle2mask, union_masks
+from src.detectors.sobel_features import (
+    CalibrationStats,
+    ScoreModeParams,
+    apply_score_mode,
+    compute_calibration_stats,
+    feature_sobel_norm,
+    tokens_to_feature_map,
+)
 from src.severstal.transforms import (
     build_gt_patch_labels,
     compute_processed_shape,
     patches_to_bboxes,
     scores_to_patch_predictions,
 )
+
+try:
+    import torch
+except ImportError:
+    torch = None
 
 
 def test_rle_roundtrip():
@@ -107,6 +120,74 @@ def test_class_balanced_shots_must_be_divisible():
             assert "divisible" in str(e)
 
 
+def test_tokens_to_feature_map_shape():
+    tokens = np.arange(2 * 2 * 3, dtype=np.float32).reshape(4, 3)
+    feat = tokens_to_feature_map(tokens, grid_size=(2, 2))
+    assert feat.shape == (1, 3, 2, 2)
+
+
+def test_feature_sobel_norm_shape():
+    if torch is None:
+        return
+    feat = torch.randn(1, 4, 5, 5)
+    norms = feature_sobel_norm(feat, norm_reduction="l2")
+    assert norms.shape == (1, 5, 5)
+    norms_mean = feature_sobel_norm(feat, norm_reduction="mean")
+    assert norms_mean.shape == (1, 5, 5)
+
+
+def test_score_modes():
+    norms = np.array([[1.0, 2.0], [3.0, 100.0]], dtype=np.float32)
+    calib = compute_calibration_stats(np.array([1.0, 2.0, 3.0, 4.0]))
+
+    raw = apply_score_mode(norms, ScoreModeParams(score_mode="raw"), calib=None)
+    assert raw.shape == norms.shape
+
+    zscore = apply_score_mode(
+        norms, ScoreModeParams(score_mode="per_image_zscore"), calib=None
+    )
+    assert np.abs(np.mean(zscore)) < 0.5
+
+    zscore_cal = apply_score_mode(
+        norms, ScoreModeParams(score_mode="per_image_zscore"), calib=calib
+    )
+    assert zscore_cal.shape == norms.shape
+
+    iqr = apply_score_mode(
+        norms, ScoreModeParams(score_mode="per_image_iqr", iqr_k=1.5), calib=None
+    )
+    assert iqr[1, 1] > iqr[0, 0]
+
+    pct = apply_score_mode(
+        norms, ScoreModeParams(score_mode="per_image_percentile", percentile=75),
+        calib=None,
+    )
+    assert pct.min() >= 0.0
+
+
+def test_calibration_stats_from_norms():
+    stats = compute_calibration_stats(np.array([0.0, 1.0, 2.0, 3.0, 4.0]))
+    assert isinstance(stats, CalibrationStats)
+    assert stats.ref_mean == 2.0
+
+
+def test_shots_zero_returns_empty_refs():
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        (root / "train_images").mkdir()
+        (root / "train.csv").write_text("ImageId,ClassId,EncodedPixels\n")
+        for i in range(8):
+            (root / "train_images" / f"{i}.jpg").write_bytes(b"")
+
+        dataset = SeverstalDataset(data_root=root, n_folds=2, seed=0, stratify=False)
+        refs = dataset.select_reference_ids(
+            fold_idx=0, shots=0, seed=0, reference_sampling="class_balanced"
+        )
+        assert refs == []
+
+
 def test_gt_patch_labels():
     masks = {c: np.zeros((256, 1600), dtype=bool) for c in range(1, 5)}
     masks[1][0:50, 0:100] = True
@@ -124,6 +205,11 @@ if __name__ == "__main__":
     test_patches_to_bboxes()
     test_class_balanced_pool_selection()
     test_class_balanced_shots_must_be_divisible()
+    test_tokens_to_feature_map_shape()
+    test_feature_sobel_norm_shape()
+    test_score_modes()
+    test_calibration_stats_from_norms()
+    test_shots_zero_returns_empty_refs()
     test_gt_patch_labels()
     seed_all(0)
     print("All unit tests passed.")

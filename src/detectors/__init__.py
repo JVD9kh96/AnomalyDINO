@@ -18,4 +18,20 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             rotation=config.get("rotation", False),
             pca_random_state=seed,
         )
+    if name == "dino_sobel":
+        from src.detectors.dino_sobel import DINOv2SobelDetector
+
+        sobel_cfg = config.get("sobel", {})
+        return DINOv2SobelDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            norm_reduction=sobel_cfg.get("norm_reduction", "l2"),
+            score_mode=config.get("score_mode", "raw"),
+            zscore_k=config.get("zscore_k", 2.0),
+            iqr_k=config.get("iqr_k", 1.5),
+            percentile=config.get("percentile", 95.0),
+            masking=config.get("masking", False),
+            pca_random_state=seed,
+        )
     raise ValueError(f"Unknown detector: {name}")
