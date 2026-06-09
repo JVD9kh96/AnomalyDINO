@@ -1,0 +1,40 @@
+seed: 42
+device: cuda:0
+output_dir: results_analysis
+
+model:
+  name: dinov2_vits14
+  resolution: 448
+
+dataset:
+  name: severstal
+  root: data/severstal
+  image_shape: [256, 1600]
+  max_images: null
+
+layers: last
+
+patch_label:
+  rule: overlap_ratio_threshold
+  threshold: 0.5
+
+scorers:
+  - cls_patch_cosine
+  - patch_l2
+  - sobel_feature
+  - attention_rollout
+
+sobel:
+  mode: feature
+  norm_reduction: l2
+  image_reduction: mean
+
+attention_rollout:
+  average_heads: true
+  include_residual: true
+  discard_ratio: 0.0
+
+export:
+  save_per_image: true
+  save_heatmaps: true
+  incremental_flush: false

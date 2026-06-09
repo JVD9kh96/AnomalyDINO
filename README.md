@@ -263,6 +263,52 @@ patch_eval:
   pred_score_threshold: 0.35
 ```
 
+### Patch signal distribution analysis
+
+The `src/analysis/` package compares patch-level DINO signals between healthy and anomalous regions using ground-truth masks. It is separate from the CV evaluation pipeline and useful for understanding which features separate defects.
+
+**Run on Severstal:**
+
+```shell
+python run_analysis.py --config configs/analysis_severstal.yaml
+python run_analysis.py --config configs/analysis_severstal.yaml --all-scorers
+python run_analysis.py --config configs/analysis_severstal.yaml --scorer cls_patch_cosine --max_images 50
+```
+
+**Built-in scorers:**
+
+| Scorer | Description |
+|--------|-------------|
+| `cls_patch_cosine` | Cosine similarity between CLS token and each patch token |
+| `patch_l2` | L2 norm of each patch token |
+| `sobel_feature` | Feature-space Sobel norm (default; reuses `sobel_features.py`) |
+| `sobel_image` | Image-space Sobel magnitude pooled per patch |
+| `attention_rollout` | CLS-to-patch attention rollout score |
+
+**Key config options** ([`configs/analysis_severstal.yaml`](configs/analysis_severstal.yaml)):
+
+| Parameter | Description |
+|-----------|-------------|
+| `layers` | `last`, `all`, or list of layer indices |
+| `patch_label.rule` | `center_point`, `any_overlap`, `overlap_ratio_threshold` (default), `majority_vote` |
+| `patch_label.threshold` | Overlap fraction for `overlap_ratio_threshold` (default 0.5) |
+| `sobel.norm_reduction` | `l2`, `mean`, or `max` for feature-space Sobel |
+
+**Output** (`results_analysis/<timestamp>/`):
+
+```
+{scorer}/layer_{k}/
+  healthy_scores.npy
+  anomaly_scores.npy
+  patch_labels.npy
+  summary.json          # means, KS, Wasserstein, Cohen's d, AUROC, AUPRC
+  distribution.png      # 3-panel raw-count histogram
+  per_image_scores/
+  heatmaps/
+```
+
+**Adding a new scorer:** subclass `BaseScorer` in [`src/analysis/scorers.py`](src/analysis/scorers.py) and register in `SCORER_REGISTRY`.
+
 ### Adding a new anomaly detector
 
 The evaluation framework is built around a pluggable detector interface. To add your own method:
