@@ -110,6 +110,28 @@ def test_attention_rollout():
     assert scores.shape == (2, 2)
 
 
+def test_compute_attention_weights():
+    if torch is None:
+        return
+    import torch.nn as nn
+
+    from src.analysis.feature_extractors import DinoFeatureExtractor
+
+    class FakeAttn(nn.Module):
+        num_heads = 2
+
+        def __init__(self):
+            super().__init__()
+            self.qkv = nn.Linear(4, 12, bias=False)
+            self.scale = 2**-0.5
+
+    module = FakeAttn()
+    x = torch.randn(1, 3, 4)
+    weights = DinoFeatureExtractor._compute_attention_weights(module, x)
+    assert weights.shape == (1, 2, 3, 3)
+    assert np.allclose(weights.sum(axis=-1), 1.0, atol=1e-5)
+
+
 def test_aggregation_split():
     agg = ScoreAggregator("patch_l2", 0, save_per_image=False)
     scores = np.array([[1.0, 2.0], [3.0, 4.0]], dtype=np.float32)
@@ -175,6 +197,7 @@ if __name__ == "__main__":
     test_patch_l2_scorer()
     test_sobel_feature_scorer()
     test_attention_rollout()
+    test_compute_attention_weights()
     test_aggregation_split()
     test_metrics_cohens_d()
     test_plotting_creates_file()

@@ -53,20 +53,38 @@ class DinoFeatureExtractor:
         img = np.clip(img * std + mean, 0, 1)
         return (img * 255).astype(np.uint8)
 
+    @staticmethod
+    def _compute_attention_weights(
+        attn_module: torch.nn.Module, x: torch.Tensor
+    ) -> np.ndarray:
+        """Compute softmax(QK^T/sqrt(d)) from a DINOv2 Attention module input."""
+        batch, num_tokens, channels = x.shape
+        num_heads = attn_module.num_heads
+        head_dim = channels // num_heads
+        qkv = attn_module.qkv(x).reshape(
+            batch, num_tokens, 3, num_heads, head_dim
+        )
+        q, k, _v = qkv.unbind(2)
+        q = q.permute(0, 2, 1, 3)
+        k = k.permute(0, 2, 1, 3)
+        scale = getattr(attn_module, "scale", head_dim**-0.5)
+        weights = (q @ k.transpose(-2, -1)) * scale
+        weights = torch.softmax(weights, dim=-1)
+        return weights.detach().cpu().numpy()
+
     def _capture_attentions(self, image_tensor: torch.Tensor) -> list[np.ndarray]:
         assert self._wrapper is not None
         model = self._wrapper.model
         storage: list[np.ndarray] = []
 
         def make_hook():
-            def hook_fn(_module, _inp, out):
-                attn = None
-                if isinstance(out, tuple) and len(out) >= 2:
-                    attn = out[1]
-                elif hasattr(out, "attn"):
-                    attn = out.attn
-                if attn is not None:
-                    storage.append(attn.detach().cpu().numpy())
+            def hook_fn(module, inp, _out):
+                if not inp:
+                    return
+                x = inp[0]
+                if not isinstance(x, torch.Tensor):
+                    return
+                storage.append(self._compute_attention_weights(module, x))
 
             return hook_fn
 
