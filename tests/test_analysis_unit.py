@@ -21,9 +21,10 @@ from src.analysis.scorers import (
     ClsPatchCosineScorer,
     PatchL2Scorer,
     SobelFeatureScorer,
-    compute_attention_rollout,
 )
 from src.analysis.types import FeatureBundle
+from src.detectors.attention_features import compute_attention_rollout
+from src.detectors.cls_patch_features import compute_cls_patch_cosine
 
 try:
     import torch
@@ -72,6 +73,11 @@ def test_cls_patch_cosine_scorer():
     scores = ClsPatchCosineScorer().score(bundle, config)
     assert scores.shape == bundle.grid_size
     assert np.all(np.isfinite(scores))
+
+    direct = compute_cls_patch_cosine(
+        bundle.cls_token, bundle.patch_tokens, bundle.grid_size
+    )
+    assert np.allclose(scores, direct)
 
 
 def test_patch_l2_scorer():

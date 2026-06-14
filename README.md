@@ -263,6 +263,71 @@ patch_eval:
   pred_score_threshold: 0.35
 ```
 
+### DINOv2 CLS cosine detector (`dino_cls_cosine`)
+
+Patch anomaly scores from cosine similarity between the CLS token and each patch token at a chosen transformer layer. Matches the `cls_patch_cosine` analysis scorer at `layer: last`.
+
+**Run with the dedicated config:**
+
+```shell
+python run_severstal_cv.py --config configs/severstal_dino_cls_cosine.yaml
+```
+
+#### Zero-shot vs few-shot calibration
+
+| `shots` | Behavior |
+|---------|----------|
+| `0` | **Zero-shot** — raw cosine similarities (matches analysis). Tune `pred_score_threshold` from analysis distributions. |
+| `> 0` | **Few-shot calibration** — reference patch scores pooled from train-fold images; test scores adjusted as `(score - ref_mean) / ref_std`. With `class_balanced`, `shots` must be divisible by 4. |
+
+#### Detector config options
+
+| Parameter | Values | Description |
+|-----------|--------|-------------|
+| `model_name` | `dinov2_vits14`, … | DINOv2 backbone |
+| `layer` | `last` or int | Transformer layer for CLS/patch tokens (default `last`) |
+| `shots` | int (default `0`) | Reference images for calibration; `0` = off |
+| `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
+
+**Example — few-shot calibrated:**
+
+```yaml
+detector:
+  name: dino_cls_cosine
+  shots: 8
+  reference_sampling: class_balanced
+
+patch_eval:
+  pred_score_threshold: 2.0
+```
+
+### DINOv2 attention rollout detector (`dino_attention_rollout`)
+
+Patch anomaly scores from CLS-to-patch attention rollout across all transformer layers. Matches the `attention_rollout` analysis scorer.
+
+**Run with the dedicated config:**
+
+```shell
+python run_severstal_cv.py --config configs/severstal_dino_attention_rollout.yaml
+```
+
+#### Zero-shot vs few-shot calibration
+
+Same `shots` / `reference_sampling` behavior as `dino_cls_cosine` and `dino_sobel`. When `shots > 0`, scores are reference-normalized z-scores and require separate threshold tuning.
+
+#### Detector config options
+
+| Parameter | Values | Description |
+|-----------|--------|-------------|
+| `model_name` | `dinov2_vits14`, … | DINOv2 backbone |
+| `attention_rollout.average_heads` | bool (default `true`) | Average attention heads before rollout |
+| `attention_rollout.include_residual` | bool (default `true`) | Add identity to each layer attention |
+| `attention_rollout.discard_ratio` | float (default `0.0`) | Sparsify low-attention weights |
+| `shots` | int (default `0`) | Reference images for calibration; `0` = off |
+| `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
+
+Use [`run_analysis.py`](run_analysis.py) with `configs/analysis_severstal.yaml` to tune zero-shot `pred_score_threshold` from `cls_patch_cosine/layer_*` or `attention_rollout/layer_*` score distributions.
+
 ### Patch signal distribution analysis
 
 The `src/analysis/` package compares patch-level DINO signals between healthy and anomalous regions using ground-truth masks. It is separate from the CV evaluation pipeline and useful for understanding which features separate defects.

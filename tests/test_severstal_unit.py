@@ -20,11 +20,15 @@ from src.severstal.rle import mask2rle, rle2mask, union_masks
 from src.detectors.sobel_features import (
     CalibrationStats,
     ScoreModeParams,
+    apply_calibration,
     apply_score_mode,
     compute_calibration_stats,
     feature_sobel_norm,
     tokens_to_feature_map,
 )
+from src.detectors import build_detector
+from src.detectors.dino_attention_rollout import DINOv2AttentionRolloutDetector
+from src.detectors.dino_cls_cosine import DINOv2ClsPatchCosineDetector
 from src.severstal.transforms import (
     build_gt_patch_labels,
     compute_processed_shape,
@@ -171,6 +175,52 @@ def test_calibration_stats_from_norms():
     assert stats.ref_mean == 2.0
 
 
+def test_apply_calibration_zero_shot():
+    raw = np.array([[0.5, 0.6], [0.7, 0.8]], dtype=np.float32)
+    calibrated = apply_calibration(raw, None)
+    assert np.allclose(calibrated, raw)
+
+
+def test_apply_calibration_few_shot():
+    ref = np.array([0.0, 1.0, 2.0, 3.0, 4.0], dtype=np.float32)
+    stats = compute_calibration_stats(ref)
+    calibrated = apply_calibration(ref, stats)
+    assert np.isclose(np.mean(calibrated), 0.0, atol=1e-5)
+    assert np.isclose(np.std(calibrated), 1.0, atol=1e-5)
+
+
+def test_build_detector_cls_cosine():
+    det = build_detector({"name": "dino_cls_cosine", "layer": "last"})
+    assert isinstance(det, DINOv2ClsPatchCosineDetector)
+    assert det.layer == "last"
+
+
+def test_build_detector_attention_rollout():
+    det = build_detector(
+        {
+            "name": "dino_attention_rollout",
+            "attention_rollout": {
+                "average_heads": True,
+                "include_residual": False,
+                "discard_ratio": 0.1,
+            },
+        }
+    )
+    assert isinstance(det, DINOv2AttentionRolloutDetector)
+    assert det.include_residual is False
+    assert det.discard_ratio == 0.1
+
+
+def test_detector_fit_empty_refs():
+    det = DINOv2ClsPatchCosineDetector()
+    det.fit([])
+    assert det._calib_stats is None
+
+    det2 = DINOv2AttentionRolloutDetector()
+    det2.fit([])
+    assert det2._calib_stats is None
+
+
 def test_shots_zero_returns_empty_refs():
     import tempfile
 
@@ -209,6 +259,11 @@ if __name__ == "__main__":
     test_feature_sobel_norm_shape()
     test_score_modes()
     test_calibration_stats_from_norms()
+    test_apply_calibration_zero_shot()
+    test_apply_calibration_few_shot()
+    test_build_detector_cls_cosine()
+    test_build_detector_attention_rollout()
+    test_detector_fit_empty_refs()
     test_shots_zero_returns_empty_refs()
     test_gt_patch_labels()
     seed_all(0)

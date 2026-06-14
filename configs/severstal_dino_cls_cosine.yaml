@@ -1,0 +1,37 @@
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  # Tune from analysis cls_patch_cosine/layer_11 distributions (zero-shot raw scale)
+  pred_score_threshold: 0.75
+
+detector:
+  name: dino_cls_cosine
+  model_name: dinov2_vits14
+  resolution: 448
+  device: cuda:0
+  layer: last
+  shots: 0                        # 0 = zero-shot (matches analysis); >0 enables calibration
+  reference_sampling: class_balanced
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  min_prompt_area: 1
+  device: cuda:0
+
+output:
+  dir: results_severstal
+  save_visualizations: true
+  max_viz_images_per_fold: 20

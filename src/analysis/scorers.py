@@ -8,6 +8,8 @@ import torch
 
 from src.analysis.config import AnalysisConfig
 from src.analysis.types import FeatureBundle
+from src.detectors.attention_features import compute_attention_rollout, rollout_to_patch_scores
+from src.detectors.cls_patch_features import compute_cls_patch_cosine
 from src.detectors.sobel_features import feature_sobel_norm, tokens_to_feature_map
 
 
@@ -23,13 +25,11 @@ class ClsPatchCosineScorer(BaseScorer):
     name = "cls_patch_cosine"
 
     def score(self, bundle: FeatureBundle, config: AnalysisConfig) -> np.ndarray:
-        cls = bundle.cls_token.astype(np.float32)
-        patches = bundle.patch_tokens.astype(np.float32)
-        cls_norm = cls / (np.linalg.norm(cls) + 1e-8)
-        patch_norms = np.linalg.norm(patches, axis=1, keepdims=True) + 1e-8
-        patches_normed = patches / patch_norms
-        sims = patches_normed @ cls_norm
-        return sims.reshape(bundle.grid_size).astype(np.float32)
+        return compute_cls_patch_cosine(
+            bundle.cls_token,
+            bundle.patch_tokens,
+            bundle.grid_size,
+        )
 
 
 class PatchL2Scorer(BaseScorer):
@@ -99,51 +99,7 @@ class AttentionRolloutScorer(BaseScorer):
             include_residual=config.attention_rollout.include_residual,
             discard_ratio=config.attention_rollout.discard_ratio,
         )
-        cls_to_patches = rollout[0, 1:]
-        expected = bundle.grid_size[0] * bundle.grid_size[1]
-        if cls_to_patches.shape[0] != expected:
-            cls_to_patches = cls_to_patches[:expected]
-        return cls_to_patches.reshape(bundle.grid_size).astype(np.float32)
-
-
-def compute_attention_rollout(
-    attentions: list[np.ndarray],
-    average_heads: bool = True,
-    include_residual: bool = True,
-    discard_ratio: float = 0.0,
-) -> np.ndarray:
-    """
-    Compute attention rollout from per-layer (tokens, tokens) attention matrices.
-    """
-    result = None
-    num_tokens = attentions[0].shape[-1]
-
-    for attn in attentions:
-        a = attn.astype(np.float64)
-        if a.ndim == 3:
-            a = a.mean(axis=0) if average_heads else a[0]
-        if include_residual:
-            a = a + np.eye(a.shape[0], dtype=np.float64)
-        a = a / (a.sum(axis=-1, keepdims=True) + 1e-8)
-
-        if discard_ratio > 0:
-            flat = a.reshape(-1)
-            threshold = np.percentile(flat, 100 * (1 - discard_ratio))
-            a = np.where(a < threshold, 0, a)
-            a = a / (a.sum(axis=-1, keepdims=True) + 1e-8)
-
-        if result is None:
-            result = a
-        else:
-            if result.shape[0] != a.shape[0]:
-                min_t = min(result.shape[0], a.shape[0])
-                result = result[:min_t, :min_t]
-                a = a[:min_t, :min_t]
-            result = result @ a
-
-    if result is None:
-        result = np.eye(num_tokens, dtype=np.float64)
-    return result.astype(np.float32)
+        return rollout_to_patch_scores(rollout, bundle.grid_size)
 
 
 SCORER_REGISTRY: dict[str, BaseScorer] = {

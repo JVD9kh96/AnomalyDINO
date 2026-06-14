@@ -34,4 +34,25 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             masking=config.get("masking", False),
             pca_random_state=seed,
         )
+    if name == "dino_cls_cosine":
+        from src.detectors.dino_cls_cosine import DINOv2ClsPatchCosineDetector
+
+        return DINOv2ClsPatchCosineDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            layer=config.get("layer", "last"),
+        )
+    if name == "dino_attention_rollout":
+        from src.detectors.dino_attention_rollout import DINOv2AttentionRolloutDetector
+
+        rollout_cfg = config.get("attention_rollout", {})
+        return DINOv2AttentionRolloutDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            average_heads=rollout_cfg.get("average_heads", True),
+            include_residual=rollout_cfg.get("include_residual", True),
+            discard_ratio=rollout_cfg.get("discard_ratio", 0.0),
+        )
     raise ValueError(f"Unknown detector: {name}")
