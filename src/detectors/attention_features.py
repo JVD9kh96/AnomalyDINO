@@ -19,6 +19,18 @@ def compute_attention_weights(attn_module: torch.nn.Module, x: torch.Tensor) -> 
     return weights.detach().cpu().numpy()
 
 
+def normalize_attention(attn: np.ndarray, average_heads: bool = True) -> np.ndarray:
+    """Reduce attention to (tokens, tokens), averaging batch and heads."""
+    arr = attn
+    if arr.ndim == 4:
+        arr = arr.mean(axis=(0, 1)) if average_heads else arr[0, 0]
+    elif arr.ndim == 3:
+        arr = arr.mean(axis=0) if average_heads else arr[0]
+    elif arr.ndim != 2:
+        raise ValueError(f"Expected 2D–4D attention array, got shape {arr.shape}")
+    return arr.astype(np.float32)
+
+
 def capture_dino_attentions(model_wrapper, image_tensor: torch.Tensor) -> list[np.ndarray]:
     """Run forward pass with hooks to capture per-layer attention weight matrices."""
     model = model_wrapper.model
@@ -61,9 +73,7 @@ def compute_attention_rollout(
     num_tokens = attentions[0].shape[-1]
 
     for attn in attentions:
-        a = attn.astype(np.float64)
-        if a.ndim == 3:
-            a = a.mean(axis=0) if average_heads else a[0]
+        a = normalize_attention(attn, average_heads=average_heads).astype(np.float64)
         if include_residual:
             a = a + np.eye(a.shape[0], dtype=np.float64)
         a = a / (a.sum(axis=-1, keepdims=True) + 1e-8)
@@ -96,5 +106,8 @@ def rollout_to_patch_scores(
     cls_to_patches = rollout[0, 1:]
     expected = grid_size[0] * grid_size[1]
     if cls_to_patches.shape[0] != expected:
-        cls_to_patches = cls_to_patches[:expected]
+        raise ValueError(
+            f"Rollout patch count {cls_to_patches.shape[0]} does not match "
+            f"grid {grid_size} ({expected}). Check attention capture/normalization."
+        )
     return cls_to_patches.reshape(grid_size).astype(np.float32)

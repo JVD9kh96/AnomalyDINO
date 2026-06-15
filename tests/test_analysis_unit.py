@@ -23,7 +23,11 @@ from src.analysis.scorers import (
     SobelFeatureScorer,
 )
 from src.analysis.types import FeatureBundle
-from src.detectors.attention_features import compute_attention_rollout
+from src.detectors.attention_features import (
+    compute_attention_rollout,
+    normalize_attention,
+    rollout_to_patch_scores,
+)
 from src.detectors.cls_patch_features import compute_cls_patch_cosine
 
 try:
@@ -116,6 +120,16 @@ def test_attention_rollout():
     assert scores.shape == (2, 2)
 
 
+def test_attention_rollout_4d_input():
+    """Detector hooks return (batch, heads, tokens, tokens); rollout must handle this."""
+    num_tokens = 5
+    attn_4d = np.ones((1, 3, num_tokens, num_tokens), dtype=np.float32) / num_tokens
+    rollout = compute_attention_rollout([attn_4d, attn_4d], include_residual=True)
+    assert rollout.shape == (num_tokens, num_tokens)
+    scores = rollout_to_patch_scores(rollout, grid_size=(2, 2))
+    assert scores.shape == (2, 2)
+
+
 def test_compute_attention_weights():
     if torch is None:
         return
@@ -203,6 +217,7 @@ if __name__ == "__main__":
     test_patch_l2_scorer()
     test_sobel_feature_scorer()
     test_attention_rollout()
+    test_attention_rollout_4d_input()
     test_compute_attention_weights()
     test_aggregation_split()
     test_metrics_cohens_d()
