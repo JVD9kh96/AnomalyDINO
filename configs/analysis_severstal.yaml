@@ -33,6 +33,8 @@ attention_rollout:
   average_heads: true
   include_residual: true
   discard_ratio: 0.0
+  last_n_layers: null
+  head_reduction: null
 
 export:
   save_per_image: true

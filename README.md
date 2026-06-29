@@ -191,6 +191,40 @@ results_severstal/<timestamp>/
 - **Patch level** — TP / FP / FN at patch granularity; precision, recall, F1 aggregated globally (sum over all patches) and as image-level means. Class-agnostic metrics are always computed; class-wise metrics require a class-aware detector.
 - **Mask level** — IoU and Dice between SAM2-predicted masks and GT, aggregated globally and per-image.
 
+Report **both** patch F1 and mask IoU/Dice when comparing detectors — patch F1 alone does not always predict SAM2 quality.
+
+### Threshold tuning
+
+Do **not** reuse analysis score distributions to set `pred_score_threshold` for kNN or Mahalanobis detectors (different score scales). Use the tuning scripts on a validation fold:
+
+```shell
+# Patch threshold sweep with PR curve + F1-optimal and recall@0.7 operating points
+python scripts/tune_patch_threshold.py --config configs/severstal.yaml --fold 0
+
+# Optional SAM2 preview on a val subset
+python scripts/tune_patch_threshold.py --config configs/severstal.yaml --fold 0 --with-sam2
+
+# Ensemble weights: tune on fold 0, benchmark on folds 1-4
+python scripts/tune_ensemble_weights.py --config configs/severstal_dino_ensemble.yaml --tune-fold 0
+```
+
+Outputs land in `results_threshold_tuning/<timestamp>/` (`pr_curve.png`, `operating_points.png`, `threshold_tuning.json`) or `results_ensemble_tuning/<timestamp>/`.
+
+Under patch imbalance (~30:1 healthy:anomaly), prefer the **recall@0.7** threshold for SAM2 downstream when recall matters more than precision.
+
+### Detector ↔ analysis mapping
+
+| CV detector | Config | Analysis scorer | Notes |
+|-------------|--------|-----------------|-------|
+| `anomaly_dino` | [`severstal.yaml`](configs/severstal.yaml) | — | kNN distance; tune threshold via script |
+| `dino_cls_cosine` | [`severstal_dino_cls_cosine.yaml`](configs/severstal_dino_cls_cosine.yaml) | `cls_patch_cosine` | `scoring_mode: per_image` (zero-shot) |
+| `dino_cls_cosine` (prototype) | [`severstal_dino_cls_cosine_prototype.yaml`](configs/severstal_dino_cls_cosine_prototype.yaml) | — | `scoring_mode: prototype`, `defect_free` refs |
+| `dino_attention_rollout` | [`severstal_dino_attention_rollout.yaml`](configs/severstal_dino_attention_rollout.yaml) | `attention_rollout` | Try `last_n_layers: 4`, `discard_ratio: 0.7` |
+| `dino_mahalanobis` | [`severstal_dino_mahalanobis.yaml`](configs/severstal_dino_mahalanobis.yaml) | — | PaDiM-style diagonal Mahalanobis + PCA |
+| `dino_mahalanobis` (multi-layer) | [`severstal_dino_mahalanobis_multilayer.yaml`](configs/severstal_dino_mahalanobis_multilayer.yaml) | — | `layers: [4, 8, 11]` |
+| `ensemble` | [`severstal_dino_ensemble.yaml`](configs/severstal_dino_ensemble.yaml) | — | Weighted z-score fusion; tune on fold 0 only |
+| `dino_sobel` | [`severstal_dino_sobel.yaml`](configs/severstal_dino_sobel.yaml) | `sobel_feature` | `sobel_feature` AUROC ~0.44 — analysis only, not primary CV |
+
 ### DINOv2 Sobel detector (`dino_sobel`)
 
 A built-in, self-supervised detector that applies Sobel edge detection in DINOv2 patch embedding space. High gradient norms in feature space are treated as anomaly cues.
@@ -265,40 +299,47 @@ patch_eval:
 
 ### DINOv2 CLS cosine detector (`dino_cls_cosine`)
 
-Patch anomaly scores from cosine similarity between the CLS token and each patch token at a chosen transformer layer. Matches the `cls_patch_cosine` analysis scorer at `layer: last`.
+Patch anomaly scores from CLS-to-patch cosine similarity at a chosen transformer layer.
 
-**Run with the dedicated config:**
+| `scoring_mode` | Behavior |
+|----------------|----------|
+| `per_image` (default) | `cos(cls_test, patch_test)` — matches `cls_patch_cosine` analysis scorer |
+| `prototype` | `1 - cos(mean_cls_defect_free, patch_test)` — higher = more anomalous; uses `prototype_reference_sampling: defect_free` |
+
+**Run:**
 
 ```shell
 python run_severstal_cv.py --config configs/severstal_dino_cls_cosine.yaml
+python run_severstal_cv.py --config configs/severstal_dino_cls_cosine_prototype.yaml
 ```
 
 #### Zero-shot vs few-shot calibration
 
-| `shots` | Behavior |
-|---------|----------|
-| `0` | **Zero-shot** — raw cosine similarities (matches analysis). Tune `pred_score_threshold` from analysis distributions. |
-| `> 0` | **Few-shot calibration** — reference patch scores pooled from train-fold images; test scores adjusted as `(score - ref_mean) / ref_std`. With `class_balanced`, `shots` must be divisible by 4. |
+| `shots` | `per_image` | `prototype` |
+|---------|-------------|-------------|
+| `0` | Zero-shot raw cosine (tune from analysis) | Not supported |
+| `> 0` | Score z-score calibration | CLS prototype from defect-free refs + score calibration |
 
 #### Detector config options
 
 | Parameter | Values | Description |
 |-----------|--------|-------------|
-| `model_name` | `dinov2_vits14`, … | DINOv2 backbone |
-| `layer` | `last` or int | Transformer layer for CLS/patch tokens (default `last`) |
-| `shots` | int (default `0`) | Reference images for calibration; `0` = off |
-| `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
+| `scoring_mode` | `per_image`, `prototype` | How CLS reference is chosen |
+| `prototype_reference_sampling` | `defect_free` (default) | Reference images for prototype CLS |
+| `layer` | `last` or int | Transformer layer |
+| `shots` | int | Reference images; `0` = zero-shot (`per_image` only) |
 
-**Example — few-shot calibrated:**
+**Example — prototype few-shot:**
 
 ```yaml
 detector:
   name: dino_cls_cosine
+  scoring_mode: prototype
+  prototype_reference_sampling: defect_free
   shots: 8
-  reference_sampling: class_balanced
 
 patch_eval:
-  pred_score_threshold: 2.0
+  pred_score_threshold: 0.15  # tune via scripts/tune_patch_threshold.py
 ```
 
 ### DINOv2 attention rollout detector (`dino_attention_rollout`)
@@ -322,11 +363,49 @@ Same `shots` / `reference_sampling` behavior as `dino_cls_cosine` and `dino_sobe
 | `model_name` | `dinov2_vits14`, … | DINOv2 backbone |
 | `attention_rollout.average_heads` | bool (default `true`) | Average attention heads before rollout |
 | `attention_rollout.include_residual` | bool (default `true`) | Add identity to each layer attention |
-| `attention_rollout.discard_ratio` | float (default `0.0`) | Sparsify low-attention weights |
+| `attention_rollout.discard_ratio` | float (default `0.0`) | Sparsify low-attention weights (try `0.7`) |
+| `attention_rollout.last_n_layers` | int or null | Rollout over last N layers only (try `4`) |
+| `attention_rollout.head_reduction` | `mean`, `max` | Aggregate heads before rollout |
 | `shots` | int (default `0`) | Reference images for calibration; `0` = off |
 | `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
 
-Use [`run_analysis.py`](run_analysis.py) with `configs/analysis_severstal.yaml` to tune zero-shot `pred_score_threshold` from `cls_patch_cosine/layer_*` or `attention_rollout/layer_*` score distributions.
+Tune zero-shot thresholds from analysis distributions or `scripts/tune_patch_threshold.py`.
+
+### DINOv2 Mahalanobis detector (`dino_mahalanobis`)
+
+PaDiM-style per-position diagonal Mahalanobis distance on DINOv2 patch features with optional PCA (`pca_components: 50`). Uses `prototype_reference_sampling: defect_free` by default.
+
+```shell
+python run_severstal_cv.py --config configs/severstal_dino_mahalanobis.yaml
+python run_severstal_cv.py --config configs/severstal_dino_mahalanobis_multilayer.yaml
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `layers` | `last`, int, or list e.g. `[4, 8, 11]` |
+| `pca_components` | PCA dim before fitting (default `50`) |
+| `neighbor_aggregate` | 3×3 spatial mean pooling on features before fit/predict |
+| `shots` | Must be `> 0` |
+
+### Ensemble detector (`ensemble`)
+
+Weighted sum of sub-detectors after per-image z-score normalization. Tune weights on **fold 0 val only**; report metrics on **folds 1–4** to avoid circular evaluation.
+
+```shell
+python scripts/tune_ensemble_weights.py --config configs/severstal_dino_ensemble.yaml
+python run_severstal_cv.py --config configs/severstal_dino_ensemble.yaml
+```
+
+### AnomalyDINO (`anomaly_dino`) options
+
+| Parameter | Description |
+|-----------|-------------|
+| `coreset_ratio` | Greedy coreset subsampling of memory bank (e.g. `0.1`); `null` = keep all |
+| `neighbor_aggregate` | 3×3 neighbor mean on patch features before indexing |
+
+Tune `pred_score_threshold` with `scripts/tune_patch_threshold.py` — do not copy thresholds from cosine/Sobel configs.
+
+Use [`run_analysis.py`](run_analysis.py) with `configs/analysis_severstal.yaml` to compare analysis scorers (AUROC). Analysis validates signal existence; CV detectors need per-detector threshold tuning.
 
 ### Patch signal distribution analysis
 

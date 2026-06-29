@@ -83,13 +83,22 @@ def run_cross_validation(
 
         train_ids, val_ids = dataset.get_fold_split(fold_idx)
         shots = detector_cfg.get("shots", 8)
+        ref_sampling = detector_cfg.get("reference_sampling", "class_balanced")
+        if detector_cfg.get("scoring_mode") == "prototype":
+            ref_sampling = detector_cfg.get(
+                "prototype_reference_sampling", "defect_free"
+            )
+        elif detector_cfg.get("name") == "dino_mahalanobis":
+            ref_sampling = detector_cfg.get(
+                "prototype_reference_sampling", "defect_free"
+            )
+        elif detector_cfg.get("name") == "ensemble":
+            ref_sampling = detector_cfg.get("reference_sampling", "defect_free")
         ref_ids = dataset.select_reference_ids(
             fold_idx,
             shots,
             fold_seed,
-            reference_sampling=detector_cfg.get(
-                "reference_sampling", "class_balanced"
-            ),
+            reference_sampling=ref_sampling,
         )
         if shots == 0:
             print("  Mode: zero-shot (shots=0, no reference calibration)")

@@ -40,6 +40,8 @@ class AttentionRolloutConfig:
     average_heads: bool = True
     include_residual: bool = True
     discard_ratio: float = 0.0
+    last_n_layers: int | None = None
+    head_reduction: str | None = None
 
 
 @dataclass

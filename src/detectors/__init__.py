@@ -17,6 +17,8 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             mask_ref_images=config.get("mask_ref_images", False),
             rotation=config.get("rotation", False),
             pca_random_state=seed,
+            coreset_ratio=config.get("coreset_ratio"),
+            neighbor_aggregate=config.get("neighbor_aggregate", False),
         )
     if name == "dino_sobel":
         from src.detectors.dino_sobel import DINOv2SobelDetector
@@ -42,6 +44,10 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             resolution=config.get("resolution", 448),
             device=config.get("device", "cuda:0"),
             layer=config.get("layer", "last"),
+            scoring_mode=config.get("scoring_mode", "per_image"),
+            prototype_reference_sampling=config.get(
+                "prototype_reference_sampling", "defect_free"
+            ),
         )
     if name == "dino_attention_rollout":
         from src.detectors.dino_attention_rollout import DINOv2AttentionRolloutDetector
@@ -54,5 +60,26 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             average_heads=rollout_cfg.get("average_heads", True),
             include_residual=rollout_cfg.get("include_residual", True),
             discard_ratio=rollout_cfg.get("discard_ratio", 0.0),
+            last_n_layers=rollout_cfg.get("last_n_layers"),
+            head_reduction=rollout_cfg.get("head_reduction"),
         )
+    if name == "dino_mahalanobis":
+        from src.detectors.dino_mahalanobis import DINOv2MahalanobisDetector
+
+        return DINOv2MahalanobisDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            layers=config.get("layers", "last"),
+            pca_components=config.get("pca_components", 50),
+            prototype_reference_sampling=config.get(
+                "prototype_reference_sampling", "defect_free"
+            ),
+            neighbor_aggregate=config.get("neighbor_aggregate", False),
+            pca_random_state=seed,
+        )
+    if name == "ensemble":
+        from src.detectors.ensemble import build_ensemble_detector
+
+        return build_ensemble_detector(config, seed=seed)
     raise ValueError(f"Unknown detector: {name}")

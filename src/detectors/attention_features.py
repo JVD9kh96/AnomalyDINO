@@ -19,13 +19,28 @@ def compute_attention_weights(attn_module: torch.nn.Module, x: torch.Tensor) -> 
     return weights.detach().cpu().numpy()
 
 
-def normalize_attention(attn: np.ndarray, average_heads: bool = True) -> np.ndarray:
-    """Reduce attention to (tokens, tokens), averaging batch and heads."""
+def normalize_attention(
+    attn: np.ndarray,
+    head_reduction: str = "mean",
+) -> np.ndarray:
+    """
+    Reduce attention to (tokens, tokens).
+
+    head_reduction:
+      - mean: average batch and heads
+      - max: max over heads (batch dim averaged if present)
+    """
     arr = attn
     if arr.ndim == 4:
-        arr = arr.mean(axis=(0, 1)) if average_heads else arr[0, 0]
+        if head_reduction == "max":
+            arr = arr.mean(axis=0).max(axis=0)
+        else:
+            arr = arr.mean(axis=(0, 1))
     elif arr.ndim == 3:
-        arr = arr.mean(axis=0) if average_heads else arr[0]
+        if head_reduction == "max":
+            arr = arr.max(axis=0)
+        else:
+            arr = arr.mean(axis=0)
     elif arr.ndim != 2:
         raise ValueError(f"Expected 2D–4D attention array, got shape {arr.shape}")
     return arr.astype(np.float32)
@@ -67,13 +82,29 @@ def compute_attention_rollout(
     average_heads: bool = True,
     include_residual: bool = True,
     discard_ratio: float = 0.0,
+    last_n_layers: int | None = None,
+    head_reduction: str | None = None,
 ) -> np.ndarray:
-    """Compute attention rollout from per-layer (tokens, tokens) attention matrices."""
+    """
+    Compute attention rollout from per-layer attention matrices.
+
+    last_n_layers: if set, only use the last N attention maps.
+    head_reduction: 'mean' or 'max' over heads; defaults to 'mean' if average_heads
+        else 'max' when average_heads is False.
+    """
+    if head_reduction is None:
+        head_reduction = "mean" if average_heads else "max"
+    elif average_heads is False and head_reduction == "mean":
+        head_reduction = "max"
+
+    if last_n_layers is not None and last_n_layers > 0:
+        attentions = attentions[-last_n_layers:]
+
     result = None
     num_tokens = attentions[0].shape[-1]
 
     for attn in attentions:
-        a = normalize_attention(attn, average_heads=average_heads).astype(np.float64)
+        a = normalize_attention(attn, head_reduction=head_reduction).astype(np.float64)
         if include_residual:
             a = a + np.eye(a.shape[0], dtype=np.float64)
         a = a / (a.sum(axis=-1, keepdims=True) + 1e-8)

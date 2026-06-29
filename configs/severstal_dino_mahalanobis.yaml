@@ -12,21 +12,19 @@ cv:
 
 patch_eval:
   gt_overlap_threshold: 0.5
-  pred_score_threshold: 0.01
+  pred_score_threshold: 2.0
 
 detector:
-  name: dino_attention_rollout
+  name: dino_mahalanobis
   model_name: dinov2_vits14
   resolution: 448
   device: cuda:0
-  shots: 0
-  reference_sampling: class_balanced
-  attention_rollout:
-    average_heads: true
-    include_residual: true
-    discard_ratio: 0.7
-    last_n_layers: 4
-    head_reduction: max
+  layers: last
+  pca_components: 50
+  prototype_reference_sampling: defect_free
+  neighbor_aggregate: false
+  shots: 8
+  reference_sampling: defect_free
 
 segmenter:
   name: sam2

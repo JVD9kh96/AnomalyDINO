@@ -8,6 +8,8 @@ from tqdm import tqdm
 
 from src.backbones import get_model
 from src.detectors.base import BaseAnomalyDetector, DetectorOutput
+from src.detectors.coreset import greedy_coreset
+from src.detectors.dino_features import patch_tokens_to_grid, spatial_neighbor_aggregate
 from src.severstal.dataset import SeverstalSample
 from src.severstal.transforms import compute_processed_shape
 from src.utils import augment_image
@@ -28,6 +30,8 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         mask_ref_images: bool = False,
         rotation: bool = False,
         pca_random_state: int = 42,
+        coreset_ratio: float | None = None,
+        neighbor_aggregate: bool = False,
     ):
         assert knn_metric in ("L2", "L2_normalized")
         self.model_name = model_name
@@ -40,6 +44,8 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         self.mask_ref_images = mask_ref_images
         self.rotation = rotation
         self.pca_random_state = pca_random_state
+        self.coreset_ratio = coreset_ratio
+        self.neighbor_aggregate = neighbor_aggregate
 
         self._model = None
         self._knn_index = None
@@ -57,6 +63,15 @@ class AnomalyDINODetector(BaseAnomalyDetector):
     def supports_class_prediction(self) -> bool:
         return False
 
+    def _prepare_features(
+        self, features: np.ndarray, grid_size: tuple[int, int]
+    ) -> np.ndarray:
+        if not self.neighbor_aggregate:
+            return features
+        grid = patch_tokens_to_grid(features, grid_size)
+        aggregated = spatial_neighbor_aggregate(grid)
+        return aggregated.reshape(-1, aggregated.shape[-1])
+
     def fit(self, reference_samples: list[SeverstalSample]) -> None:
         import faiss
 
@@ -69,6 +84,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                 for image in images:
                     tensor, grid_size = self._model.prepare_image(image)
                     features = self._model.extract_features(tensor)
+                    features = self._prepare_features(features, grid_size)
                     mask_ref = self._model.compute_background_mask(
                         features,
                         grid_size,
@@ -82,6 +98,11 @@ class AnomalyDINODetector(BaseAnomalyDetector):
             raise ValueError("No reference patch features extracted. Check reference images.")
 
         features_ref = np.concatenate(features_ref, axis=0).astype("float32")
+
+        if self.coreset_ratio is not None and 0 < self.coreset_ratio < 1.0:
+            features_ref = greedy_coreset(
+                features_ref, ratio=self.coreset_ratio, seed=self.pca_random_state
+            )
 
         if self.faiss_on_cpu:
             self._knn_index = faiss.IndexFlatL2(features_ref.shape[1])
@@ -104,6 +125,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         with torch.inference_mode():
             tensor, grid_size = self._model.prepare_image(sample.image)
             features = self._model.extract_features(tensor)
+            features = self._prepare_features(features, grid_size)
 
             if self.masking:
                 patch_valid = self._model.compute_background_mask(

@@ -98,6 +98,8 @@ class AttentionRolloutScorer(BaseScorer):
             average_heads=config.attention_rollout.average_heads,
             include_residual=config.attention_rollout.include_residual,
             discard_ratio=config.attention_rollout.discard_ratio,
+            last_n_layers=config.attention_rollout.last_n_layers,
+            head_reduction=config.attention_rollout.head_reduction,
         )
         return rollout_to_patch_scores(rollout, bundle.grid_size)
 

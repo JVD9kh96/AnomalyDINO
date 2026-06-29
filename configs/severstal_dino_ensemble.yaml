@@ -1,0 +1,58 @@
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  # Tune weights on fold 0; benchmark on folds 1-4
+  pred_score_threshold: 1.5
+
+detector:
+  name: ensemble
+  device: cuda:0
+  # Weights tuned on fold 0 val — update after tune_ensemble_weights.py
+  weights: [0.6, 0.4]
+  sub_detectors:
+    - name: dino_mahalanobis
+      model_name: dinov2_vits14
+      resolution: 448
+      device: cuda:0
+      layers: [4, 8, 11]
+      pca_components: 100
+      prototype_reference_sampling: defect_free
+      neighbor_aggregate: true
+      shots: 8
+      reference_sampling: defect_free
+    - name: dino_attention_rollout
+      model_name: dinov2_vits14
+      resolution: 448
+      device: cuda:0
+      shots: 0
+      attention_rollout:
+        average_heads: true
+        include_residual: true
+        discard_ratio: 0.7
+        last_n_layers: 4
+        head_reduction: max
+  shots: 8
+  reference_sampling: defect_free
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  min_prompt_area: 1
+  device: cuda:0
+
+output:
+  dir: results_severstal
+  save_visualizations: true
+  max_viz_images_per_fold: 20

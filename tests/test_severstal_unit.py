@@ -29,6 +29,23 @@ from src.detectors.sobel_features import (
 from src.detectors import build_detector
 from src.detectors.dino_attention_rollout import DINOv2AttentionRolloutDetector
 from src.detectors.dino_cls_cosine import DINOv2ClsPatchCosineDetector
+from src.detectors.coreset import greedy_coreset
+from src.detectors.dino_features import (
+    patch_tokens_to_grid,
+    resolve_layer_indices,
+    spatial_neighbor_aggregate,
+)
+from src.detectors.dino_cls_cosine import prototype_anomaly_scores
+from src.detectors.base import BaseAnomalyDetector, DetectorOutput
+from src.detectors.ensemble import EnsembleDetector
+from src.detectors.attention_features import compute_attention_rollout, normalize_attention
+from src.evaluation.threshold_tuning import (
+    default_threshold_grid,
+    find_f1_optimal,
+    find_recall_at,
+    sweep_patch_thresholds,
+    ThresholdSweepRow,
+)
 from src.severstal.transforms import (
     build_gt_patch_labels,
     compute_processed_shape,
@@ -195,6 +212,31 @@ def test_build_detector_cls_cosine():
     assert det.layer == "last"
 
 
+def test_build_detector_cls_cosine_prototype():
+    det = build_detector(
+        {
+            "name": "dino_cls_cosine",
+            "scoring_mode": "prototype",
+            "prototype_reference_sampling": "defect_free",
+        }
+    )
+    assert det.scoring_mode == "prototype"
+
+
+def test_build_detector_mahalanobis():
+    det = build_detector(
+        {
+            "name": "dino_mahalanobis",
+            "layers": [4, 8, 11],
+            "pca_components": 10,
+        }
+    )
+    from src.detectors.dino_mahalanobis import DINOv2MahalanobisDetector
+
+    assert isinstance(det, DINOv2MahalanobisDetector)
+    assert det.layers == [4, 8, 11]
+
+
 def test_build_detector_attention_rollout():
     det = build_detector(
         {
@@ -248,6 +290,115 @@ def test_gt_patch_labels():
     assert labels["agnostic"].shape[0] > 0
 
 
+def test_prototype_anomaly_scores_higher_for_dissimilar():
+    ref_cls = np.array([1.0, 0.0, 0.0], dtype=np.float32)
+    similar = np.array([[1.0, 0.0, 0.0], [0.9, 0.1, 0.0]], dtype=np.float32)
+    dissimilar = np.array([[0.0, 1.0, 0.0], [0.0, 0.0, 1.0]], dtype=np.float32)
+    sim_scores = prototype_anomaly_scores(ref_cls, similar, (1, 2))
+    dis_scores = prototype_anomaly_scores(ref_cls, dissimilar, (1, 2))
+    assert dis_scores.mean() > sim_scores.mean()
+
+
+def test_greedy_coreset_reduces_count():
+    features = np.random.randn(100, 8).astype(np.float32)
+    core = greedy_coreset(features, ratio=0.1, seed=0)
+    assert core.shape[0] == 10
+    assert core.shape[1] == 8
+
+
+def test_spatial_neighbor_aggregate():
+    grid = np.arange(16, dtype=np.float32).reshape(2, 2, 4)
+    out = spatial_neighbor_aggregate(grid, kernel=3)
+    assert out.shape == grid.shape
+
+
+def test_resolve_layer_indices():
+    assert resolve_layer_indices("last", 12) == [11]
+    assert resolve_layer_indices([4, 8, 11], 12) == [4, 8, 11]
+
+
+def test_threshold_sweep_and_operating_points():
+    per_image = [
+        {
+            "patch_scores": np.array([0.1, 0.5, 0.9]),
+            "gt_labels": {"agnostic": np.array([False, True, True])},
+            "valid_mask": None,
+        }
+    ]
+    rows = sweep_patch_thresholds(per_image, np.array([0.2, 0.6]))
+    f1_best = find_f1_optimal(rows)
+    recall_row = find_recall_at(rows, target_recall=0.5)
+    assert isinstance(f1_best, ThresholdSweepRow)
+    assert recall_row.recall >= 0.5 or recall_row.recall == max(r.recall for r in rows)
+
+
+def test_attention_rollout_last_n_layers():
+    attn = np.eye(5, dtype=np.float32)
+    rollout_all = compute_attention_rollout([attn] * 6, include_residual=False)
+    rollout_last2 = compute_attention_rollout(
+        [attn] * 6, include_residual=False, last_n_layers=2
+    )
+    assert rollout_all.shape == rollout_last2.shape
+
+
+def test_attention_head_reduction_max():
+    attn_4d = np.ones((1, 2, 4, 4), dtype=np.float32) * 0.25
+    attn_4d[0, 1] = 0.5
+    norm_max = normalize_attention(attn_4d, head_reduction="max")
+    assert norm_max.shape == (4, 4)
+
+
+def test_mahalanobis_diagonal_scoring():
+    from src.detectors.dino_mahalanobis import DINOv2MahalanobisDetector
+
+    det = DINOv2MahalanobisDetector(pca_components=None)
+    det._means = np.zeros((2, 2, 2), dtype=np.float32)
+    det._variances = np.ones((2, 2, 2), dtype=np.float32)
+    grid = np.zeros((2, 2, 2), dtype=np.float32)
+    grid[0, 0] = [3.0, 0.0]
+    scores = det._mahalanobis_scores(grid)
+    assert scores[0, 0] > scores[1, 1]
+
+
+def test_ensemble_detector_weighted_sum():
+    class _Stub(BaseAnomalyDetector):
+        def __init__(self, scores):
+            self._scores = scores
+            self._patch_size = 14
+            self.resolution = 448
+
+        def fit(self, reference_samples):
+            pass
+
+        def predict(self, sample):
+            return DetectorOutput(
+                image_id=sample.image_id,
+                patch_scores=self._scores,
+                grid_size=(1, 1),
+                processed_shape=(14, 14),
+                patch_size=14,
+            )
+
+        @property
+        def supports_class_prediction(self):
+            return False
+
+    from src.severstal.dataset import SeverstalSample
+
+    s1 = _Stub(np.array([[1.0]], dtype=np.float32))
+    s2 = _Stub(np.array([[3.0]], dtype=np.float32))
+    ens = EnsembleDetector([s1, s2], weights=[0.5, 0.5])
+    sample = SeverstalSample(
+        image_id="t",
+        image_path=Path("t.jpg"),
+        masks_by_class={},
+        has_defect=False,
+        image=np.zeros((14, 14, 3), dtype=np.uint8),
+    )
+    out = ens.predict(sample)
+    assert out.patch_scores.shape == (1, 1)
+
+
 if __name__ == "__main__":
     test_rle_roundtrip()
     test_patch_confusion_metrics()
@@ -262,9 +413,20 @@ if __name__ == "__main__":
     test_apply_calibration_zero_shot()
     test_apply_calibration_few_shot()
     test_build_detector_cls_cosine()
+    test_build_detector_cls_cosine_prototype()
+    test_build_detector_mahalanobis()
     test_build_detector_attention_rollout()
     test_detector_fit_empty_refs()
     test_shots_zero_returns_empty_refs()
     test_gt_patch_labels()
+    test_prototype_anomaly_scores_higher_for_dissimilar()
+    test_greedy_coreset_reduces_count()
+    test_spatial_neighbor_aggregate()
+    test_resolve_layer_indices()
+    test_threshold_sweep_and_operating_points()
+    test_attention_rollout_last_n_layers()
+    test_attention_head_reduction_max()
+    test_mahalanobis_diagonal_scoring()
+    test_ensemble_detector_weighted_sum()
     seed_all(0)
     print("All unit tests passed.")

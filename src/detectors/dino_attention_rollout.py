@@ -37,6 +37,8 @@ class DINOv2AttentionRolloutDetector(BaseAnomalyDetector):
         average_heads: bool = True,
         include_residual: bool = True,
         discard_ratio: float = 0.0,
+        last_n_layers: int | None = None,
+        head_reduction: str | None = None,
     ):
         if not model_name.startswith("dinov2"):
             raise ValueError(
@@ -49,6 +51,8 @@ class DINOv2AttentionRolloutDetector(BaseAnomalyDetector):
         self.average_heads = average_heads
         self.include_residual = include_residual
         self.discard_ratio = discard_ratio
+        self.last_n_layers = last_n_layers
+        self.head_reduction = head_reduction
 
         self._model = None
         self._patch_size = 14
@@ -79,6 +83,8 @@ class DINOv2AttentionRolloutDetector(BaseAnomalyDetector):
             average_heads=self.average_heads,
             include_residual=self.include_residual,
             discard_ratio=self.discard_ratio,
+            last_n_layers=self.last_n_layers,
+            head_reduction=self.head_reduction,
         )
         scores = rollout_to_patch_scores(rollout, grid_size)
         return scores, grid_size
