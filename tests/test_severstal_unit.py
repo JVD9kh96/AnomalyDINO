@@ -31,10 +31,14 @@ from src.detectors.dino_attention_rollout import DINOv2AttentionRolloutDetector
 from src.detectors.dino_cls_cosine import DINOv2ClsPatchCosineDetector
 from src.detectors.coreset import greedy_coreset
 from src.detectors.dino_features import (
+    compute_rollout_deviation,
+    fit_rollout_stats,
+    fuse_branch_scores,
     patch_tokens_to_grid,
     resolve_layer_indices,
     spatial_neighbor_aggregate,
 )
+from src.detectors.dino_knn_rollout import DINOv2KnnRolloutDetector
 from src.detectors.dino_cls_cosine import prototype_anomaly_scores
 from src.detectors.base import BaseAnomalyDetector, DetectorOutput
 from src.detectors.ensemble import EnsembleDetector
@@ -360,6 +364,56 @@ def test_mahalanobis_diagonal_scoring():
     assert scores[0, 0] > scores[1, 1]
 
 
+def test_build_detector_knn_rollout():
+    det = build_detector(
+        {
+            "name": "dino_knn_rollout",
+            "attention_rollout": {"last_n_layers": 4, "discard_ratio": 0.7},
+            "fusion": {"mode": "weighted_sum", "knn_weight": 0.6, "rollout_weight": 0.4},
+        }
+    )
+    assert isinstance(det, DINOv2KnnRolloutDetector)
+    assert det.fusion_mode == "weighted_sum"
+    assert det.rollout_cfg.last_n_layers == 4
+
+
+def test_rollout_deviation_increases_with_drift():
+    mean = np.full((2, 2), 0.5, dtype=np.float32)
+    std = np.full((2, 2), 0.1, dtype=np.float32)
+    close = np.full((2, 2), 0.52, dtype=np.float32)
+    far = np.full((2, 2), 0.9, dtype=np.float32)
+    close_dev = compute_rollout_deviation(close, mean, std)
+    far_dev = compute_rollout_deviation(far, mean, std)
+    assert far_dev.mean() > close_dev.mean()
+
+
+def test_fit_rollout_stats_from_refs():
+    maps = [
+        np.zeros((2, 2), dtype=np.float32),
+        np.ones((2, 2), dtype=np.float32),
+    ]
+    mean, std = fit_rollout_stats(maps)
+    assert np.allclose(mean, 0.5)
+    assert std.min() > 0
+
+
+def test_fusion_weights_change_ranking():
+    knn = np.array([[0.1, 0.9], [0.2, 0.8]], dtype=np.float32)
+    roll = np.array([[0.9, 0.1], [0.8, 0.2]], dtype=np.float32)
+    knn_heavy = fuse_branch_scores(knn, roll, knn_weight=0.9, rollout_weight=0.1)
+    roll_heavy = fuse_branch_scores(knn, roll, knn_weight=0.1, rollout_weight=0.9)
+    assert not np.allclose(knn_heavy, roll_heavy)
+
+
+def test_knn_rollout_fit_requires_references():
+    det = DINOv2KnnRolloutDetector()
+    try:
+        det.fit([])
+        raise AssertionError("Expected ValueError for empty reference samples")
+    except ValueError as e:
+        assert "requires reference samples" in str(e)
+
+
 def test_ensemble_detector_weighted_sum():
     class _Stub(BaseAnomalyDetector):
         def __init__(self, scores):
@@ -415,6 +469,7 @@ if __name__ == "__main__":
     test_build_detector_cls_cosine()
     test_build_detector_cls_cosine_prototype()
     test_build_detector_mahalanobis()
+    test_build_detector_knn_rollout()
     test_build_detector_attention_rollout()
     test_detector_fit_empty_refs()
     test_shots_zero_returns_empty_refs()
@@ -427,6 +482,10 @@ if __name__ == "__main__":
     test_attention_rollout_last_n_layers()
     test_attention_head_reduction_max()
     test_mahalanobis_diagonal_scoring()
+    test_rollout_deviation_increases_with_drift()
+    test_fit_rollout_stats_from_refs()
+    test_fusion_weights_change_ranking()
+    test_knn_rollout_fit_requires_references()
     test_ensemble_detector_weighted_sum()
     seed_all(0)
     print("All unit tests passed.")

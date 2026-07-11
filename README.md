@@ -219,7 +219,8 @@ Under patch imbalance (~30:1 healthy:anomaly), prefer the **recall@0.7** thresho
 | `anomaly_dino` | [`severstal.yaml`](configs/severstal.yaml) | — | kNN distance; tune threshold via script |
 | `dino_cls_cosine` | [`severstal_dino_cls_cosine.yaml`](configs/severstal_dino_cls_cosine.yaml) | `cls_patch_cosine` | `scoring_mode: per_image` (zero-shot) |
 | `dino_cls_cosine` (prototype) | [`severstal_dino_cls_cosine_prototype.yaml`](configs/severstal_dino_cls_cosine_prototype.yaml) | — | `scoring_mode: prototype`, `defect_free` refs |
-| `dino_attention_rollout` | [`severstal_dino_attention_rollout.yaml`](configs/severstal_dino_attention_rollout.yaml) | `attention_rollout` | Try `last_n_layers: 4`, `discard_ratio: 0.7` |
+| `dino_attention_rollout` | [`severstal_dino_attention_rollout.yaml`](configs/severstal_dino_attention_rollout.yaml) | `attention_rollout` | Zero-shot; `shots>0` only global z-score (rankings unchanged) |
+| `dino_knn_rollout` | [`severstal_dino_knn_rollout.yaml`](configs/severstal_dino_knn_rollout.yaml) | — | kNN + reference rollout deviation; **shots changes rankings** |
 | `dino_mahalanobis` | [`severstal_dino_mahalanobis.yaml`](configs/severstal_dino_mahalanobis.yaml) | — | PaDiM-style diagonal Mahalanobis + PCA |
 | `dino_mahalanobis` (multi-layer) | [`severstal_dino_mahalanobis_multilayer.yaml`](configs/severstal_dino_mahalanobis_multilayer.yaml) | — | `layers: [4, 8, 11]` |
 | `ensemble` | [`severstal_dino_ensemble.yaml`](configs/severstal_dino_ensemble.yaml) | — | Weighted z-score fusion; tune on fold 0 only |
@@ -370,6 +371,32 @@ Same `shots` / `reference_sampling` behavior as `dino_cls_cosine` and `dino_sobe
 | `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
 
 Tune zero-shot thresholds from analysis distributions or `scripts/tune_patch_threshold.py`.
+
+For few-shot attention signal that **actually changes** with `shots`, use [`dino_knn_rollout`](#dino_knn_rollout-detector-dino_knn_rollout) instead.
+
+### DINO kNN + rollout detector (`dino_knn_rollout`)
+
+Combines AnomalyDINO kNN patch distances with **reference-anchored rollout deviation** (`|rollout - ref_mean| / ref_std` per grid cell). Unlike standalone `dino_attention_rollout`, changing `shots` changes both the memory bank and the normal rollout baseline, so threshold tuning metrics should differ across `shots: 8` vs `16`.
+
+**Requires `shots > 0`** and uses `reference_sampling: class_balanced` by default (same as [`severstal.yaml`](configs/severstal.yaml)).
+
+```shell
+# Tune threshold on fold 0 (verify metrics change when you edit shots)
+python scripts/tune_patch_threshold.py --config configs/severstal_dino_knn_rollout.yaml --fold 0
+
+# CV after setting pred_score_threshold from tuning output
+python run_severstal_cv.py --config configs/severstal_dino_knn_rollout.yaml --fold 0
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `knn_metric` | `L2_normalized` (default) or `L2` |
+| `k_neighbors` | kNN neighbors (default `1`) |
+| `attention_rollout.*` | Same as `dino_attention_rollout` (`last_n_layers`, `discard_ratio`, `head_reduction`, …) |
+| `fusion.mode` | `weighted_sum` (default), `product`, or `max` |
+| `fusion.knn_weight` / `fusion.rollout_weight` | Branch weights for `weighted_sum` |
+| `coreset_ratio` | Optional memory-bank subsampling |
+| `neighbor_aggregate` | 3×3 neighbor mean on patch features before kNN |
 
 ### DINOv2 Mahalanobis detector (`dino_mahalanobis`)
 

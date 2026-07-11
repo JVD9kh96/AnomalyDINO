@@ -82,4 +82,28 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
         from src.detectors.ensemble import build_ensemble_detector
 
         return build_ensemble_detector(config, seed=seed)
+    if name == "dino_knn_rollout":
+        from src.detectors.dino_knn_rollout import DINOv2KnnRolloutDetector
+        from src.detectors.dino_features import RolloutConfig
+
+        rollout_cfg = RolloutConfig.from_dict(config.get("attention_rollout"))
+        fusion_cfg = config.get("fusion", {})
+        return DINOv2KnnRolloutDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            knn_metric=config.get("knn_metric", "L2_normalized"),
+            k_neighbors=config.get("k_neighbors", 1),
+            faiss_on_cpu=config.get("faiss_on_cpu", False),
+            masking=config.get("masking", False),
+            mask_ref_images=config.get("mask_ref_images", False),
+            rotation=config.get("rotation", False),
+            pca_random_state=seed,
+            coreset_ratio=config.get("coreset_ratio"),
+            neighbor_aggregate=config.get("neighbor_aggregate", False),
+            rollout_cfg=rollout_cfg,
+            fusion_mode=fusion_cfg.get("mode", "weighted_sum"),
+            knn_weight=fusion_cfg.get("knn_weight", 0.5),
+            rollout_weight=fusion_cfg.get("rollout_weight", 0.5),
+        )
     raise ValueError(f"Unknown detector: {name}")

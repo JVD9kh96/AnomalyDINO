@@ -1,9 +1,141 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
 import torch
 
+from src.detectors.attention_features import (
+    capture_dino_attentions,
+    compute_attention_rollout,
+    rollout_to_patch_scores,
+)
 from src.detectors.cls_patch_features import resolve_layer_index
+
+RIDGE = 1e-5
+EPS = 1e-8
+
+
+@dataclass
+class RolloutConfig:
+    average_heads: bool = True
+    include_residual: bool = True
+    discard_ratio: float = 0.0
+    last_n_layers: int | None = None
+    head_reduction: str | None = None
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> RolloutConfig:
+        if not data:
+            return cls()
+        return cls(
+            average_heads=data.get("average_heads", True),
+            include_residual=data.get("include_residual", True),
+            discard_ratio=data.get("discard_ratio", 0.0),
+            last_n_layers=data.get("last_n_layers"),
+            head_reduction=data.get("head_reduction"),
+        )
+
+
+def rollout_map_from_tensor(
+    model_wrapper,
+    image_tensor: torch.Tensor,
+    grid_size: tuple[int, int],
+    rollout_cfg: RolloutConfig,
+) -> np.ndarray:
+    """Compute CLS-to-patch attention rollout scores on a preprocessed tensor."""
+    attentions = capture_dino_attentions(model_wrapper, image_tensor)
+    rollout = compute_attention_rollout(
+        attentions,
+        average_heads=rollout_cfg.average_heads,
+        include_residual=rollout_cfg.include_residual,
+        discard_ratio=rollout_cfg.discard_ratio,
+        last_n_layers=rollout_cfg.last_n_layers,
+        head_reduction=rollout_cfg.head_reduction,
+    )
+    return rollout_to_patch_scores(rollout, grid_size)
+
+
+def extract_knn_features_and_rollout(
+    model_wrapper,
+    image: np.ndarray,
+    rollout_cfg: RolloutConfig | dict[str, Any] | None = None,
+) -> tuple[np.ndarray, np.ndarray, tuple[int, int]]:
+    """
+    Extract last-layer patch features (kNN) and attention rollout map from one image.
+
+    Returns:
+        features: (N_patches, D) flat patch tokens for kNN
+        rollout_map: (H, W) CLS-to-patch rollout scores
+        grid_size: (grid_h, grid_w)
+    """
+    if isinstance(rollout_cfg, dict):
+        rollout_cfg = RolloutConfig.from_dict(rollout_cfg)
+    elif rollout_cfg is None:
+        rollout_cfg = RolloutConfig()
+
+    tensor, grid_size = model_wrapper.prepare_image(image)
+    with torch.inference_mode():
+        features = model_wrapper.extract_features(tensor)
+    rollout_map = rollout_map_from_tensor(model_wrapper, tensor, grid_size, rollout_cfg)
+    return features.astype(np.float32), rollout_map.astype(np.float32), grid_size
+
+
+def fit_rollout_stats(rollout_maps: list[np.ndarray]) -> tuple[np.ndarray, np.ndarray]:
+    """Per-cell mean and std of rollout maps from reference images."""
+    if not rollout_maps:
+        raise ValueError("Cannot fit rollout stats from empty rollout_maps.")
+    stack = np.stack(rollout_maps, axis=0).astype(np.float64)
+    mean = stack.mean(axis=0).astype(np.float32)
+    if stack.shape[0] > 1:
+        std = stack.std(axis=0, ddof=1).astype(np.float32) + RIDGE
+    else:
+        std = np.full_like(mean, RIDGE, dtype=np.float32)
+    return mean, std
+
+
+def compute_rollout_deviation(
+    rollout_map: np.ndarray,
+    rollout_mean: np.ndarray,
+    rollout_std: np.ndarray,
+) -> np.ndarray:
+    """Per-patch deviation from reference rollout: |x - mean| / std."""
+    diff = np.abs(rollout_map.astype(np.float64) - rollout_mean.astype(np.float64))
+    return (diff / rollout_std.astype(np.float64)).astype(np.float32)
+
+
+def per_image_zscore(scores: np.ndarray) -> np.ndarray:
+    mean = float(np.mean(scores))
+    std = float(np.std(scores))
+    return ((scores - mean) / (std + EPS)).astype(np.float32)
+
+
+def fuse_branch_scores(
+    knn_map: np.ndarray,
+    rollout_dev_map: np.ndarray,
+    mode: str = "weighted_sum",
+    knn_weight: float = 0.5,
+    rollout_weight: float = 0.5,
+) -> np.ndarray:
+    """Fuse kNN and rollout-deviation maps after per-image z-scoring."""
+    knn_z = per_image_zscore(knn_map)
+    roll_z = per_image_zscore(rollout_dev_map)
+
+    if mode == "weighted_sum":
+        total = knn_weight + rollout_weight
+        if total <= 0:
+            raise ValueError("Fusion weights must sum to a positive value.")
+        w_knn = knn_weight / total
+        w_roll = rollout_weight / total
+        return (w_knn * knn_z + w_roll * roll_z).astype(np.float32)
+    if mode == "product":
+        return (knn_z * roll_z).astype(np.float32)
+    if mode == "max":
+        return np.maximum(knn_z, roll_z).astype(np.float32)
+    raise ValueError(
+        f"Unknown fusion mode: {mode!r}. Choose weighted_sum, product, or max."
+    )
 
 
 def resolve_layer_indices(
