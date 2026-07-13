@@ -39,6 +39,7 @@ from src.detectors.dino_features import (
     spatial_neighbor_aggregate,
 )
 from src.detectors.dino_knn_rollout import DINOv2KnnRolloutDetector
+from src.detectors.dino_iforest_rollout import DINOv2IForestRolloutDetector
 from src.detectors.dino_cls_cosine import prototype_anomaly_scores
 from src.detectors.base import BaseAnomalyDetector, DetectorOutput
 from src.detectors.ensemble import EnsembleDetector
@@ -377,6 +378,24 @@ def test_build_detector_knn_rollout():
     assert det.rollout_cfg.last_n_layers == 4
 
 
+def test_build_detector_iforest_rollout():
+    det = build_detector(
+        {
+            "name": "dino_iforest_rollout",
+            "attention_rollout": {"last_n_layers": 4, "discard_ratio": 0.7},
+            "fusion": {
+                "mode": "weighted_sum",
+                "iforest_weight": 0.6,
+                "rollout_weight": 0.4,
+            },
+            "iforest": {"n_estimators": 50},
+        }
+    )
+    assert isinstance(det, DINOv2IForestRolloutDetector)
+    assert det.fusion_mode == "weighted_sum"
+    assert det.rollout_cfg.last_n_layers == 4
+
+
 def test_rollout_deviation_increases_with_drift():
     mean = np.full((2, 2), 0.5, dtype=np.float32)
     std = np.full((2, 2), 0.1, dtype=np.float32)
@@ -412,6 +431,33 @@ def test_knn_rollout_fit_requires_references():
         raise AssertionError("Expected ValueError for empty reference samples")
     except ValueError as e:
         assert "requires reference samples" in str(e)
+
+
+def test_iforest_rollout_fit_requires_references():
+    det = DINOv2IForestRolloutDetector()
+    try:
+        det.fit([])
+        raise AssertionError("Expected ValueError for empty reference samples")
+    except ValueError as e:
+        assert "requires reference samples" in str(e)
+
+
+def test_isolation_forest_score_polarity():
+    try:
+        from sklearn.ensemble import IsolationForest
+    except ImportError:
+        return
+
+    rng = np.random.default_rng(0)
+    normal = rng.normal(0, 0.5, size=(200, 2))
+    outlier = np.array([[8.0, 8.0]], dtype=np.float64)
+    X_test = np.vstack([normal[:5], outlier])
+
+    iso = IsolationForest(n_estimators=50, random_state=0)
+    iso.fit(normal)
+
+    anomaly = -iso.score_samples(X_test)
+    assert anomaly[-1] > float(np.max(anomaly[:-1]))
 
 
 def test_ensemble_detector_weighted_sum():
@@ -486,6 +532,9 @@ if __name__ == "__main__":
     test_fit_rollout_stats_from_refs()
     test_fusion_weights_change_ranking()
     test_knn_rollout_fit_requires_references()
+    test_build_detector_iforest_rollout()
+    test_iforest_rollout_fit_requires_references()
+    test_isolation_forest_score_polarity()
     test_ensemble_detector_weighted_sum()
     seed_all(0)
     print("All unit tests passed.")

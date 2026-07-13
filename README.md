@@ -221,6 +221,7 @@ Under patch imbalance (~30:1 healthy:anomaly), prefer the **recall@0.7** thresho
 | `dino_cls_cosine` (prototype) | [`severstal_dino_cls_cosine_prototype.yaml`](configs/severstal_dino_cls_cosine_prototype.yaml) | — | `scoring_mode: prototype`, `defect_free` refs |
 | `dino_attention_rollout` | [`severstal_dino_attention_rollout.yaml`](configs/severstal_dino_attention_rollout.yaml) | `attention_rollout` | Zero-shot; `shots>0` only global z-score (rankings unchanged) |
 | `dino_knn_rollout` | [`severstal_dino_knn_rollout.yaml`](configs/severstal_dino_knn_rollout.yaml) | — | kNN + reference rollout deviation; **shots changes rankings** |
+| `dino_iforest_rollout` | [`severstal_dino_iforest_rollout.yaml`](configs/severstal_dino_iforest_rollout.yaml) | — | IsolationForest + reference rollout deviation; **shots changes rankings** |
 | `dino_mahalanobis` | [`severstal_dino_mahalanobis.yaml`](configs/severstal_dino_mahalanobis.yaml) | — | PaDiM-style diagonal Mahalanobis + PCA |
 | `dino_mahalanobis` (multi-layer) | [`severstal_dino_mahalanobis_multilayer.yaml`](configs/severstal_dino_mahalanobis_multilayer.yaml) | — | `layers: [4, 8, 11]` |
 | `ensemble` | [`severstal_dino_ensemble.yaml`](configs/severstal_dino_ensemble.yaml) | — | Weighted z-score fusion; tune on fold 0 only |
@@ -397,6 +398,26 @@ python run_severstal_cv.py --config configs/severstal_dino_knn_rollout.yaml --fo
 | `fusion.knn_weight` / `fusion.rollout_weight` | Branch weights for `weighted_sum` |
 | `coreset_ratio` | Optional memory-bank subsampling |
 | `neighbor_aggregate` | 3×3 neighbor mean on patch features before kNN |
+
+### DINO IsolationForest + rollout detector (`dino_iforest_rollout`)
+
+Same idea as `dino_knn_rollout`, but replaces the kNN branch with an **IsolationForest** fitted on reference patch features. The IsolationForest per-patch anomaly score is `-score_samples(X)` (higher = more anomalous). Changing `shots` changes the fitted forest and rollout baseline, so tuning metrics should differ for `shots: 8` vs `16`.
+
+```shell
+# Tune threshold on fold 0
+python scripts/tune_patch_threshold.py --config configs/severstal_dino_iforest_rollout.yaml --fold 0
+
+# CV after setting pred_score_threshold from tuning output
+python run_severstal_cv.py --config configs/severstal_dino_iforest_rollout.yaml --fold 0
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `iforest.n_estimators` | Number of trees (default `200`) |
+| `iforest.max_samples` | Subsample size per tree (`auto` by default) |
+| `iforest.contamination` | Used internally by sklearn (we still tune `pred_score_threshold`) |
+| `iforest.max_features` | Feature subsampling fraction (default `1.0`) |
+| `fusion.iforest_weight` / `fusion.rollout_weight` | Branch weights for `weighted_sum` |
 
 ### DINOv2 Mahalanobis detector (`dino_mahalanobis`)
 
