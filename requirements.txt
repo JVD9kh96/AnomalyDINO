@@ -2,6 +2,7 @@ torch
 torchvision
 opencv-python
 matplotlib
+seaborn
 Pillow
 numpy==1.26 # numpy 2.0 not compatible at the moment
 scipy

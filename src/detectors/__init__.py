@@ -134,4 +134,30 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             bootstrap=if_cfg.get("bootstrap", False),
             n_jobs=if_cfg.get("n_jobs", -1),
         )
+    if name == "dino_linear_probe":
+        from src.detectors.dino_linear_probe import DINOv2LinearProbeDetector
+
+        train_block = config.get("_train_block") or {}
+        return DINOv2LinearProbeDetector(
+            model_name=config.get("model_name", "dinov2_vits14"),
+            resolution=config.get("resolution", 448),
+            device=config.get("device", "cuda:0"),
+            classification_mode=config.get("classification_mode", "binary"),
+            binary_loss=config.get("binary_loss", "bce"),
+            focal_gamma=config.get("focal_gamma", 2.0),
+            focal_alpha=config.get("focal_alpha", 0.25),
+            lambda_mc=config.get("lambda_mc", 1.0),
+            lr=config.get("lr", 1e-3),
+            weight_decay=config.get("weight_decay", 1e-4),
+            batch_size=config.get("batch_size", 4),
+            epochs=config.get("epochs", 50),
+            num_workers=config.get("num_workers", 0),
+            num_classes=config.get("num_classes", 4),
+            gt_overlap_threshold=config.get("gt_overlap_threshold", 0.5),
+            threshold_num_steps=config.get("threshold_num_steps", 101),
+            checkpoint_path=config.get("checkpoint_path"),
+            save_plots=train_block.get("save_plots", True),
+            log_format=train_block.get("log_format", "both"),
+            seed=seed,
+        )
     raise ValueError(f"Unknown detector: {name}")

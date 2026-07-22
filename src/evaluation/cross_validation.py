@@ -22,6 +22,8 @@ from src.severstal.transforms import (
     patches_to_points,
     scores_to_patch_predictions,
 )
+from src.training.data import LazySampleList
+from src.training.sampling import resolve_training_ids
 from src.visualization.severstal_viz import save_visualizations_pdf
 
 
@@ -84,6 +86,8 @@ def run_cross_validation(
         train_ids, val_ids = dataset.get_fold_split(fold_idx)
         shots = detector_cfg.get("shots", 8)
         ref_sampling = detector_cfg.get("reference_sampling", "class_balanced")
+        is_linear_probe = detector_cfg.get("name") == "dino_linear_probe"
+
         if detector_cfg.get("scoring_mode") == "prototype":
             ref_sampling = detector_cfg.get(
                 "prototype_reference_sampling", "defect_free"
@@ -94,21 +98,71 @@ def run_cross_validation(
             )
         elif detector_cfg.get("name") == "ensemble":
             ref_sampling = detector_cfg.get("reference_sampling", "defect_free")
-        ref_ids = dataset.select_reference_ids(
-            fold_idx,
-            shots,
-            fold_seed,
-            reference_sampling=ref_sampling,
-        )
-        if shots == 0:
-            print("  Mode: zero-shot (shots=0, no reference calibration)")
-        else:
-            print(f"  Mode: few-shot calibration (shots={shots})")
-        print(f"  Train: {len(train_ids)}, Val: {len(val_ids)}, Ref: {len(ref_ids)}")
 
-        detector = build_detector(detector_cfg, seed=fold_seed)
-        ref_samples = [dataset.load_sample(i) for i in ref_ids]
-        detector.fit(ref_samples)
+        if is_linear_probe:
+            ref_ids = resolve_training_ids(
+                dataset,
+                fold_idx,
+                shots,
+                fold_seed,
+                reference_sampling=ref_sampling,
+            )
+            if shots is None:
+                print("  Mode: full supervised (all train-fold images)")
+            elif shots == -1:
+                print(
+                    f"  Mode: all eligible train images "
+                    f"(shots=-1, sampling={ref_sampling})"
+                )
+            else:
+                print(f"  Mode: k-shot supervised training (shots={shots})")
+        else:
+            if shots is None:
+                raise ValueError(
+                    "detector.shots=null is only supported for dino_linear_probe"
+                )
+            ref_ids = dataset.select_reference_ids(
+                fold_idx,
+                shots,
+                fold_seed,
+                reference_sampling=ref_sampling,
+            )
+            if shots == 0:
+                print("  Mode: zero-shot (shots=0, no reference calibration)")
+            else:
+                print(f"  Mode: few-shot calibration (shots={shots})")
+
+        print(
+            f"  Train: {len(train_ids)}, Val: {len(val_ids)}, "
+            f"{'Fit' if is_linear_probe else 'Ref'}: {len(ref_ids)}"
+        )
+
+        fit_detector_cfg = dict(detector_cfg)
+        if is_linear_probe:
+            fit_detector_cfg["num_classes"] = data_cfg.get("num_classes", 4)
+            fit_detector_cfg["gt_overlap_threshold"] = patch_cfg[
+                "gt_overlap_threshold"
+            ]
+            fit_detector_cfg["_train_block"] = config.get("train", {})
+
+        detector = build_detector(fit_detector_cfg, seed=fold_seed)
+        ref_samples = LazySampleList(dataset, ref_ids)
+
+        pred_score_threshold = float(patch_cfg["pred_score_threshold"])
+        if is_linear_probe:
+            val_samples = LazySampleList(dataset, val_ids)
+            train_out_dir = fold_dir / "train"
+            detector.fit(
+                ref_samples,
+                val_samples=val_samples,
+                output_dir=train_out_dir,
+                train_cfg=config.get("train"),
+            )
+            if getattr(detector, "optimal_threshold", None) is not None:
+                pred_score_threshold = float(detector.optimal_threshold)
+                print(f"  Using optimal F1 threshold: {pred_score_threshold:.4f}")
+        else:
+            detector.fit([dataset.load_sample(i) for i in ref_ids])
 
         segmenter = build_segmenter(segmenter_cfg)
 
@@ -127,7 +181,7 @@ def run_cross_validation(
                 det_out=det_out,
                 sample=sample,
                 gt_overlap_threshold=patch_cfg["gt_overlap_threshold"],
-                pred_score_threshold=patch_cfg["pred_score_threshold"],
+                pred_score_threshold=pred_score_threshold,
                 smaller_edge_size=detector_cfg.get("resolution", 448),
                 num_classes=data_cfg.get("num_classes", 4),
                 supports_class=detector.supports_class_prediction,
@@ -135,7 +189,7 @@ def run_cross_validation(
             per_image_patch.append(patch_result)
 
             pred_patches = scores_to_patch_predictions(
-                det_out.patch_scores, patch_cfg["pred_score_threshold"]
+                det_out.patch_scores, pred_score_threshold
             )
             native_shape = sample.image.shape[:2]
 
@@ -195,6 +249,7 @@ def run_cross_validation(
             "n_train": len(train_ids),
             "n_val": len(val_ids),
             "n_ref": len(ref_ids),
+            "pred_score_threshold": pred_score_threshold,
             "patch": patch_summary,
             "mask": mask_summary,
         }
@@ -207,7 +262,7 @@ def run_cross_validation(
             save_visualizations_pdf(
                 viz_data,
                 fold_dir / "visualizations.pdf",
-                patch_cfg["pred_score_threshold"],
+                pred_score_threshold,
             )
 
     summary = _summarize_across_folds(fold_summaries)
