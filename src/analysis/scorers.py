@@ -46,7 +46,9 @@ class SobelFeatureScorer(BaseScorer):
     def score(self, bundle: FeatureBundle, config: AnalysisConfig) -> np.ndarray:
         feat_map = tokens_to_feature_map(bundle.patch_tokens, bundle.grid_size)
         norms = feature_sobel_norm(feat_map, config.sobel.norm_reduction)
-        return norms.squeeze(0).detach().cpu().numpy().astype(np.float32)
+        out = norms.squeeze(0).detach().cpu().numpy().astype(np.float32)
+        del feat_map, norms
+        return out
 
 
 class SobelImageScorer(BaseScorer):

@@ -13,7 +13,7 @@ from src.analysis.feature_extractors import DinoFeatureExtractor
 from src.analysis.label_mapping import map_patch_labels
 from src.analysis.plotting import plot_distribution_triptych, save_score_heatmap
 from src.analysis.scorers import score_bundle
-from src.evaluation.reproducibility import seed_all
+from src.evaluation.reproducibility import clear_cuda_memory, seed_all
 
 
 def run_analysis(config: AnalysisConfig) -> Path:
@@ -45,40 +45,45 @@ def run_analysis(config: AnalysisConfig) -> Path:
         native_shape = sample.image.shape[:2]
         bundles = extractor.extract(sample)
 
-        for layer_idx, bundle in bundles.items():
-            labels, coords = map_patch_labels(
-                sample.mask,
-                native_shape,
-                bundle.grid_size,
-                bundle.patch_size,
-                config.model.resolution,
-                rule=config.patch_label.rule,
-                threshold=config.patch_label.threshold,
-            )
-
-            for scorer_name in scorer_names:
-                scores = score_bundle(bundle, scorer_name, config)
-                aggregators[(scorer_name, layer_idx)].add(
-                    sample.image_id,
-                    scores,
-                    labels,
-                    coords,
+        try:
+            for layer_idx, bundle in bundles.items():
+                labels, coords = map_patch_labels(
+                    sample.mask,
+                    native_shape,
+                    bundle.grid_size,
+                    bundle.patch_size,
+                    config.model.resolution,
+                    rule=config.patch_label.rule,
+                    threshold=config.patch_label.threshold,
                 )
 
-                if config.export.save_heatmaps:
-                    out_dir = (
-                        run_dir
-                        / scorer_name
-                        / f"layer_{layer_idx}"
-                        / "heatmaps"
-                    )
-                    safe_id = sample.image_id.replace("/", "_")
-                    save_score_heatmap(
-                        sample.image,
+                for scorer_name in scorer_names:
+                    scores = score_bundle(bundle, scorer_name, config)
+                    aggregators[(scorer_name, layer_idx)].add(
+                        sample.image_id,
                         scores,
-                        out_dir / f"{safe_id}.png",
-                        title=f"{scorer_name} L{layer_idx}",
+                        labels,
+                        coords,
                     )
+
+                    if config.export.save_heatmaps:
+                        out_dir = (
+                            run_dir
+                            / scorer_name
+                            / f"layer_{layer_idx}"
+                            / "heatmaps"
+                        )
+                        safe_id = sample.image_id.replace("/", "_")
+                        save_score_heatmap(
+                            sample.image,
+                            scores,
+                            out_dir / f"{safe_id}.png",
+                            title=f"{scorer_name} L{layer_idx}",
+                        )
+                        del scores
+        finally:
+            del bundles
+            clear_cuda_memory()
 
     for (scorer_name, layer_idx), aggregator in aggregators.items():
         out_dir = run_dir / scorer_name / f"layer_{layer_idx}"
@@ -98,5 +103,6 @@ def run_analysis(config: AnalysisConfig) -> Path:
             f"AUROC={summary['separability'].get('auroc', 'n/a')}"
         )
 
+    clear_cuda_memory()
     print(f"Results saved to {run_dir}")
     return run_dir

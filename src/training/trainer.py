@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from src.backbones import get_model
-from src.evaluation.reproducibility import save_json
+from src.evaluation.reproducibility import clear_cuda_memory, save_json
 from src.severstal.dataset import SeverstalSample
 from src.training.data import (
     PatchImageDataset,
@@ -190,7 +190,10 @@ class PatchClassifierTrainer:
         tensor, _ = self._backbone.prepare_image(sample_image)
         with torch.inference_mode():
             feats = self._backbone.extract_features(tensor)
-        return int(feats.shape[-1])
+        dim = int(feats.shape[-1])
+        del tensor, feats
+        clear_cuda_memory()
+        return dim
 
     def _extract_patch_tokens_batch(
         self, images: list[np.ndarray]
@@ -212,7 +215,16 @@ class PatchClassifierTrainer:
                 # out: (1, N_patches, D) — clone so Linear can attach grads to weights
                 tokens_list.append(out.squeeze(0).clone())
                 grid_sizes.append(grid_size)
-        return torch.cat(tokens_list, dim=0), grid_sizes
+                del batch, out, tensor
+        tokens = torch.cat(tokens_list, dim=0)
+        del tokens_list
+        return tokens, grid_sizes
+
+    def cleanup(self) -> None:
+        """Drop model references and free CUDA cache (e.g. between folds)."""
+        self._backbone = None
+        self.classifier = None
+        clear_cuda_memory()
 
     def _build_loader(
         self, samples: Sequence[SeverstalSample], shuffle: bool
@@ -305,6 +317,9 @@ class PatchClassifierTrainer:
                     all_mc_pred.append(pred)
                     all_mc_tgt.append(tgt)
 
+            del tokens, binary_tgt, mc_tgt, binary_logits, mc_logits
+
+        clear_cuda_memory()
         scores_np = (
             np.concatenate(all_scores) if all_scores else np.zeros(0, dtype=np.float32)
         )
@@ -379,6 +394,9 @@ class PatchClassifierTrainer:
                         mc_correct += int((pred == tgt).sum().cpu())
                         mc_total += int(anomalous.sum().cpu())
 
+                del tokens, binary_tgt, mc_tgt, binary_logits, mc_logits
+
+        clear_cuda_memory()
         scores_np = np.concatenate(all_scores) if all_scores else np.zeros(0)
         binary_np = np.concatenate(all_binary) if all_binary else np.zeros(0)
         bin_m = _binary_metrics_at_threshold(scores_np, binary_np, threshold)
@@ -465,6 +483,10 @@ class PatchClassifierTrainer:
                 n_batches += 1
                 pbar.set_postfix(loss=f"{stats['loss']:.4f}")
 
+                del tokens, binary_tgt, mc_tgt, binary_logits, mc_logits, loss
+
+            clear_cuda_memory()
+
             row: dict[str, Any] = {
                 "epoch": epoch,
                 "train_loss": epoch_loss / max(n_batches, 1),
@@ -495,12 +517,16 @@ class PatchClassifierTrainer:
             if output_dir is not None:
                 save_history(self.history, output_dir, self.config.log_format)
 
+            clear_cuda_memory()
+
         # Optimal F1 threshold on validation (fallback to train if no val)
         thresh_samples = val_samples if val_samples else train_samples
         scores, targets, _, _ = self._collect_predictions(thresh_samples)
         self.optimal_threshold, thresh_metrics = find_optimal_f1_threshold(
             scores, targets, num_steps=self.config.threshold_num_steps
         )
+        del scores, targets
+        clear_cuda_memory()
 
         result = {
             "optimal_threshold": self.optimal_threshold,

@@ -8,6 +8,7 @@ import torch
 from src.analysis.config import AnalysisConfig
 from src.analysis.types import AnalysisSample, FeatureBundle
 from src.backbones import get_model
+from src.evaluation.reproducibility import clear_cuda_memory
 
 
 class DinoFeatureExtractor:
@@ -45,6 +46,9 @@ class DinoFeatureExtractor:
         self._ensure_model()
         return getattr(self._wrapper.model, "patch_size", 14)
 
+    def _needs_attentions(self) -> bool:
+        return "attention_rollout" in self.config.scorers
+
     def _tensor_to_display_image(self, tensor: torch.Tensor) -> np.ndarray:
         """Convert preprocessed CxHxW tensor to RGB uint8 for visualization."""
         img = tensor.detach().cpu().numpy().transpose(1, 2, 0)
@@ -65,12 +69,16 @@ class DinoFeatureExtractor:
             batch, num_tokens, 3, num_heads, head_dim
         )
         q, k, _v = qkv.unbind(2)
+        del qkv, _v
         q = q.permute(0, 2, 1, 3)
         k = k.permute(0, 2, 1, 3)
         scale = getattr(attn_module, "scale", head_dim**-0.5)
         weights = (q @ k.transpose(-2, -1)) * scale
+        del q, k
         weights = torch.softmax(weights, dim=-1)
-        return weights.detach().cpu().numpy()
+        out = weights.detach().cpu().numpy()
+        del weights
+        return out
 
     def _capture_attentions(self, image_tensor: torch.Tensor) -> list[np.ndarray]:
         assert self._wrapper is not None
@@ -92,6 +100,7 @@ class DinoFeatureExtractor:
         for blk in model.blocks:
             hooks.append(blk.attn.register_forward_hook(make_hook()))
 
+        batch = None
         try:
             batch = image_tensor.unsqueeze(0).to(self._wrapper.device)
             with torch.inference_mode():
@@ -99,6 +108,9 @@ class DinoFeatureExtractor:
         finally:
             for h in hooks:
                 h.remove()
+            if batch is not None:
+                del batch
+            clear_cuda_memory()
 
         return storage
 
@@ -109,59 +121,66 @@ class DinoFeatureExtractor:
         image_tensor, grid_size = self._wrapper.prepare_image(sample.image)
         processed_shape = (image_tensor.shape[1], image_tensor.shape[2])
         patch_size = self.patch_size
+        layer_indices = sorted(self.config.resolve_layer_indices(self.num_layers))
 
-        attentions = self._capture_attentions(image_tensor)
+        attentions: list[np.ndarray] = []
+        if self._needs_attentions():
+            attentions = self._capture_attentions(image_tensor)
+
         preprocessed_image = self._tensor_to_display_image(image_tensor)
 
         batch = image_tensor.unsqueeze(0).to(self._wrapper.device)
-        with torch.inference_mode():
-            layer_outputs = self._wrapper.model.get_intermediate_layers(
-                batch,
-                n=self.num_layers,
-                return_class_token=True,
-                norm=True,
-            )
-            forward_out = self._wrapper.model.forward_features(batch)
-
-        cls_last = forward_out["x_norm_clstoken"].squeeze(0).cpu().numpy()
-        patch_last = forward_out["x_norm_patchtokens"].squeeze(0).cpu().numpy()
-
-        layer_indices = self.config.resolve_layer_indices(self.num_layers)
-        bundles: dict[int, FeatureBundle] = {}
-
-        attn_all = [
-            self._normalize_attention(a) for a in attentions if a is not None
-        ]
-
-        for layer_idx in layer_indices:
-            if layer_idx < len(layer_outputs):
-                patch_tokens, cls_token = layer_outputs[layer_idx]
-                patch_np = patch_tokens.squeeze(0).cpu().numpy()
-                cls_np = cls_token.squeeze(0).cpu().numpy()
-            else:
-                patch_np = patch_last
-                cls_np = cls_last
-
-            expected = grid_size[0] * grid_size[1]
-            if patch_np.shape[0] != expected:
-                raise ValueError(
-                    f"Layer {layer_idx}: patch count {patch_np.shape[0]} != "
-                    f"grid {grid_size} ({expected})"
+        try:
+            with torch.inference_mode():
+                layer_outputs = self._wrapper.model.get_intermediate_layers(
+                    batch,
+                    n=layer_indices,
+                    return_class_token=True,
+                    norm=True,
                 )
 
-            attn_layer = attn_all[layer_idx] if layer_idx < len(attn_all) else None
+            attn_all = [
+                self._normalize_attention(a) for a in attentions if a is not None
+            ] or None
+            del attentions
 
-            bundles[layer_idx] = FeatureBundle(
-                layer_index=layer_idx,
-                cls_token=cls_np.astype(np.float32),
-                patch_tokens=patch_np.astype(np.float32),
-                grid_size=grid_size,
-                processed_shape=processed_shape,
-                patch_size=patch_size,
-                attention=attn_layer,
-                attentions_all_layers=attn_all if attn_all else None,
-                preprocessed_image=preprocessed_image,
-            )
+            bundles: dict[int, FeatureBundle] = {}
+            for layer_idx, (patch_tokens, cls_token) in zip(
+                layer_indices, layer_outputs
+            ):
+                patch_np = patch_tokens.squeeze(0).detach().cpu().numpy()
+                cls_np = cls_token.squeeze(0).detach().cpu().numpy()
+
+                expected = grid_size[0] * grid_size[1]
+                if patch_np.shape[0] != expected:
+                    raise ValueError(
+                        f"Layer {layer_idx}: patch count {patch_np.shape[0]} != "
+                        f"grid {grid_size} ({expected})"
+                    )
+
+                attn_layer = (
+                    attn_all[layer_idx]
+                    if attn_all is not None and layer_idx < len(attn_all)
+                    else None
+                )
+
+                bundles[layer_idx] = FeatureBundle(
+                    layer_index=layer_idx,
+                    cls_token=cls_np.astype(np.float32),
+                    patch_tokens=patch_np.astype(np.float32),
+                    grid_size=grid_size,
+                    processed_shape=processed_shape,
+                    patch_size=patch_size,
+                    attention=attn_layer,
+                    attentions_all_layers=attn_all,
+                    preprocessed_image=preprocessed_image,
+                )
+        finally:
+            del batch
+            if "layer_outputs" in locals():
+                del layer_outputs
+            del image_tensor
+            clear_cuda_memory()
 
         return bundles
 

@@ -9,7 +9,12 @@ from pathlib import Path
 import yaml
 
 from src.evaluation.cross_validation import load_config
-from src.evaluation.reproducibility import save_folds_json, save_json, seed_all
+from src.evaluation.reproducibility import (
+    clear_cuda_memory,
+    save_folds_json,
+    save_json,
+    seed_all,
+)
 from src.severstal.dataset import SeverstalDataset
 from src.training.data import LazySampleList
 from src.training.sampling import resolve_training_ids
@@ -155,6 +160,11 @@ def run_training(
         print(
             f"  Done. optimal_threshold={result.get('optimal_threshold')}"
         )
+
+        # Release backbone / classifier before the next fold
+        trainer.cleanup()
+        del trainer, train_samples, val_samples
+        clear_cuda_memory()
 
     save_json(all_results, run_dir / "summary.json")
     return all_results
