@@ -86,7 +86,9 @@ def run_cross_validation(
         train_ids, val_ids = dataset.get_fold_split(fold_idx)
         shots = detector_cfg.get("shots", 8)
         ref_sampling = detector_cfg.get("reference_sampling", "class_balanced")
+        reference_mode = detector_cfg.get("reference_mode")
         is_linear_probe = detector_cfg.get("name") == "dino_linear_probe"
+        ref_meta: dict | None = None
 
         if detector_cfg.get("scoring_mode") == "prototype":
             ref_sampling = detector_cfg.get(
@@ -116,6 +118,30 @@ def run_cross_validation(
                 )
             else:
                 print(f"  Mode: k-shot supervised training (shots={shots})")
+        elif reference_mode:
+            ref_meta = dataset.select_reference_composition(
+                fold_idx,
+                fold_seed,
+                reference_mode=reference_mode,
+                clean_shots=int(detector_cfg.get("clean_shots", 2)),
+                additional_shots=int(detector_cfg.get("additional_shots", 0)),
+                additional_sampling=str(
+                    detector_cfg.get("additional_sampling", "class_balanced")
+                ),
+            )
+            ref_ids = list(
+                dict.fromkeys(
+                    [
+                        *ref_meta["clean_reference_ids"],
+                        *ref_meta["additional_reference_ids"],
+                    ]
+                )
+            )
+            print(
+                f"  Mode: reference_mode={reference_mode} "
+                f"(clean={len(ref_meta['clean_reference_ids'])}, "
+                f"additional={len(ref_meta['additional_reference_ids'])})"
+            )
         else:
             if shots is None:
                 raise ValueError(
@@ -144,6 +170,11 @@ def run_cross_validation(
                 "gt_overlap_threshold"
             ]
             fit_detector_cfg["_train_block"] = config.get("train", {})
+        elif reference_mode:
+            fit_detector_cfg["num_classes"] = data_cfg.get("num_classes", 4)
+            fit_detector_cfg["gt_overlap_threshold"] = patch_cfg.get(
+                "gt_overlap_threshold", 0.5
+            )
 
         detector = build_detector(fit_detector_cfg, seed=fold_seed)
         ref_samples = LazySampleList(dataset, ref_ids)
@@ -161,6 +192,21 @@ def run_cross_validation(
             if getattr(detector, "optimal_threshold", None) is not None:
                 pred_score_threshold = float(detector.optimal_threshold)
                 print(f"  Using optimal F1 threshold: {pred_score_threshold:.4f}")
+        elif reference_mode and hasattr(detector, "fit_reference_composition"):
+            clean_ids = ref_meta["clean_reference_ids"]
+            add_ids = ref_meta["additional_reference_ids"]
+            bank_stats = detector.fit_reference_composition(
+                [dataset.load_sample(i) for i in clean_ids],
+                [dataset.load_sample(i) for i in add_ids],
+                reference_mode=reference_mode,
+            )
+            ref_meta["n_memory_patches_before_filtering"] = (
+                bank_stats.n_memory_patches_before_filtering
+            )
+            ref_meta["n_memory_patches_after_filtering"] = (
+                bank_stats.n_memory_patches_after_filtering
+            )
+            save_json(ref_meta, fold_dir / "reference_metadata.json")
         else:
             detector.fit([dataset.load_sample(i) for i in ref_ids])
 
@@ -253,6 +299,24 @@ def run_cross_validation(
             "patch": patch_summary,
             "mask": mask_summary,
         }
+        if ref_meta is not None:
+            fold_metrics["reference"] = {
+                "reference_mode": ref_meta.get("reference_mode"),
+                "clean_reference_ids": ref_meta.get("clean_reference_ids", []),
+                "additional_reference_ids": ref_meta.get(
+                    "additional_reference_ids", []
+                ),
+                "reference_image_has_defect": ref_meta.get(
+                    "reference_image_has_defect", {}
+                ),
+                "reference_classes": ref_meta.get("reference_classes", {}),
+                "n_memory_patches_before_filtering": ref_meta.get(
+                    "n_memory_patches_before_filtering", 0
+                ),
+                "n_memory_patches_after_filtering": ref_meta.get(
+                    "n_memory_patches_after_filtering", 0
+                ),
+            }
         save_json(fold_metrics, fold_dir / "metrics.json")
         all_fold_results[f"fold_{fold_idx}"] = fold_metrics
         fold_summaries["patch"].append(patch_summary)

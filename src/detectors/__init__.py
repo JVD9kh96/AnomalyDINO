@@ -19,6 +19,17 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             pca_random_state=seed,
             coreset_ratio=config.get("coreset_ratio"),
             neighbor_aggregate=config.get("neighbor_aggregate", False),
+            reference_mode=config.get("reference_mode"),
+            allow_oracle_reference_filtering=config.get(
+                "allow_oracle_reference_filtering", False
+            ),
+            use_dual_bank=config.get("use_dual_bank", False),
+            dual_bank_alpha=config.get("dual_bank_alpha", 1.0),
+            defect_mining_percentile=config.get("defect_mining_percentile", 99.5),
+            reference_purification=config.get("reference_purification"),
+            gt_overlap_threshold=config.get("gt_overlap_threshold", 0.5),
+            num_classes=config.get("num_classes", 4),
+            coreset_size=config.get("coreset_size"),
         )
     if name == "dino_sobel":
         from src.detectors.dino_sobel import DINOv2SobelDetector

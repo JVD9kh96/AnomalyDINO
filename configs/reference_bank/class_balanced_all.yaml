@@ -1,0 +1,49 @@
+# Weakly supervised class-balanced stress test (not unsupervised AD)
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+
+detector:
+  name: anomaly_dino
+  model_name: dinov2_vits14
+  resolution: 448
+  reference_mode: class_balanced_all
+  clean_shots: 0
+  additional_shots: 8
+  additional_sampling: class_balanced
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: false
+  masking: false
+  mask_ref_images: false
+  rotation: false
+  device: cuda:0
+  use_dual_bank: false
+  reference_purification:
+    normal_acceptance_percentile: 99.0
+    spatial_cleanup: false
+    min_rejected_component_patches: 2
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  min_prompt_area: 1
+  device: cuda:0
+
+output:
+  dir: results_refbank/class_balanced_all
+  save_visualizations: false
+  max_viz_images_per_fold: 10
