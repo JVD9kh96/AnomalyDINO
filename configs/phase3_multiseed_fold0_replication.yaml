@@ -1,0 +1,16 @@
+# Phase 3 execution contract.  The runner consumes its CLI-equivalent values
+# explicitly so every result artifact is named phase3_* under output_dir.
+phase: phase3_multiseed_fold0_replication
+fold: 0
+split_seed: 42
+seeds: [42, 43, 44, 45, 46]
+conditions: [clean, contaminated_all, auto_purified, oracle_purified]
+clean_shots: 2
+additional_shots: 8
+sam2: disabled
+output_dir: results_refbank/phase3
+paired_id_checks:
+  frozen_manifest_consumed_by_every_condition: true
+  validation_split_fixed_across_reference_seeds: true
+  clean_ids_across_all_conditions: true
+  additional_ids_across_expanded_conditions: true

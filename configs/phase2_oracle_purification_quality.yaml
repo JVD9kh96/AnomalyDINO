@@ -1,0 +1,20 @@
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+
+phase2:
+  manifest: results_reference_composition/phase0/phase0_fold0_seed42_paired_manifest.json
+  resolution: 448
+  patch_size: 14
+
+output:
+  dir: results_reference_composition/phase2
+  report_filename: phase2_purification_quality_report.json
+  distribution_filename: phase2_patch_overlap_distribution.npz

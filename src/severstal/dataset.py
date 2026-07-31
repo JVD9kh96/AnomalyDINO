@@ -51,8 +51,10 @@ class SeverstalDataset:
 
         self._image_ids = self._discover_image_ids()
         self._annotations = self._load_annotations()
+        self._classes_by_image = self._index_classes_by_image()
         self._has_defect = {
-            img_id: self._image_has_defect(img_id) for img_id in self._image_ids
+            image_id: bool(self._classes_by_image[image_id])
+            for image_id in self._image_ids
         }
 
         if folds_json_path and Path(folds_json_path).exists():
@@ -85,17 +87,26 @@ class SeverstalDataset:
         df["ClassId"] = df["ClassId"].astype(int)
         return df
 
-    def _image_has_defect(self, image_id: str) -> bool:
-        rows = self._annotations[self._annotations["ImageId"] == image_id]
-        if rows.empty:
+    @staticmethod
+    def _has_nonempty_rle(rle: object) -> bool:
+        if pd.isna(rle):
             return False
-        for _, row in rows.iterrows():
-            rle = row["EncodedPixels"]
-            if isinstance(rle, str) and rle.strip():
-                return True
-            if pd.notna(rle) and str(rle).strip():
-                return True
-        return False
+        value = str(rle).strip()
+        return bool(value) and value.lower() != "nan"
+
+    def _index_classes_by_image(self) -> dict[str, set[int]]:
+        """Index annotations once instead of rescanning the table per image."""
+        classes_by_image = {image_id: set() for image_id in self._image_ids}
+        for row in self._annotations.itertuples(index=False):
+            image_id = str(row.ImageId)
+            if image_id not in classes_by_image:
+                continue
+            if self._has_nonempty_rle(row.EncodedPixels):
+                classes_by_image[image_id].add(int(row.ClassId))
+        return classes_by_image
+
+    def _image_has_defect(self, image_id: str) -> bool:
+        return bool(self._classes_by_image.get(image_id, set()))
 
     def _fold_splits_from_json(
         self, folds_json_path: str | Path
@@ -134,18 +145,20 @@ class SeverstalDataset:
         train_ids, _ = self.get_fold_split(fold_idx)
         return [i for i in train_ids if not self._has_defect[i]]
 
+    def image_has_defect(self, image_id: str) -> bool:
+        """Return the persisted image-level defect status for ``image_id``."""
+        if image_id not in self._has_defect:
+            raise KeyError(f"Unknown image ID: {image_id}")
+        return bool(self._has_defect[image_id])
+
+    def get_image_classes(self, image_id: str) -> list[int]:
+        """Return sorted non-empty defect classes present in ``image_id``."""
+        if image_id not in self._has_defect:
+            raise KeyError(f"Unknown image ID: {image_id}")
+        return sorted(self._classes_by_image[image_id])
+
     def _image_has_class(self, image_id: str, class_id: int) -> bool:
-        rows = self._annotations[
-            (self._annotations["ImageId"] == image_id)
-            & (self._annotations["ClassId"] == class_id)
-        ]
-        for _, row in rows.iterrows():
-            rle = row["EncodedPixels"]
-            if isinstance(rle, str) and rle.strip():
-                return True
-            if pd.notna(rle) and str(rle).strip() and str(rle).lower() != "nan":
-                return True
-        return False
+        return class_id in self._classes_by_image.get(image_id, set())
 
     def get_train_ids_with_class(self, fold_idx: int, class_id: int) -> list[str]:
         """Train-fold image IDs that contain a non-empty mask for the given class."""

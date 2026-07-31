@@ -1,0 +1,8 @@
+phase1:
+  candidate_acceptance_percentile: 99.0
+  query_percentile: 99.5
+  score_quantiles: [0.0, 1.0, 5.0, 25.0, 50.0, 75.0, 95.0, 99.0, 99.5, 100.0]
+
+output:
+  dir: results_reference_composition/phase1
+  filename: phase1_calibration_report.json

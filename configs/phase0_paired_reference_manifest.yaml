@@ -1,0 +1,25 @@
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+
+phase0:
+  fold: 0
+  clean_shots: 2
+  additional_shots: 8
+  # class_balanced: labelled stress test; unverified: label-free candidate selection
+  additional_sampling: class_balanced
+  resolution: 448
+  patch_size: 14
+
+output:
+  dir: results_reference_composition/phase0
+  filename: phase0_fold{fold}_seed{seed}_paired_manifest.json

@@ -28,6 +28,10 @@ from src.detectors import build_detector
 from src.detectors.anomaly_dino import AnomalyDINODetector
 from src.detectors.reference_purification import oracle_keep_mask_from_gt
 from src.evaluation.mask_metrics import evaluate_mask_single, summarize_fold_mask_metrics
+from src.evaluation.reference_manifest import (
+    load_paired_reference_manifest,
+    reference_inputs_for_mode,
+)
 from src.evaluation.reference_bank_metrics import (
     collect_image_eval_item,
     compute_ranking_metrics,
@@ -60,6 +64,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--config", required=True, help="Base YAML config path")
     p.add_argument("--fold", type=int, default=0)
     p.add_argument("--seed", type=int, default=None, help="Overrides config seed")
+    p.add_argument(
+        "--split-seed",
+        type=int,
+        default=None,
+        help="Freeze the CV split independently from the reference-selection seed",
+    )
+    p.add_argument(
+        "--paired-manifest",
+        type=str,
+        default=None,
+        help="Immutable Phase 0 manifest consumed as the reference input pool",
+    )
     p.add_argument("--condition", required=True, choices=CONDITIONS)
     p.add_argument("--clean-shots", type=int, default=None)
     p.add_argument("--additional-shots", type=int, default=None)
@@ -87,6 +103,8 @@ def apply_cli_overrides(config: dict, args: argparse.Namespace) -> dict:
     det = cfg.setdefault("detector", {})
     if args.seed is not None:
         cfg["seed"] = int(args.seed)
+    if args.split_seed is not None:
+        cfg.setdefault("cv", {})["split_seed"] = int(args.split_seed)
     if args.clean_shots is not None:
         det["clean_shots"] = int(args.clean_shots)
     if args.additional_shots is not None:
@@ -414,8 +432,8 @@ def main() -> None:
     config = apply_cli_overrides(load_config(args.config), args)
     seed = int(config.get("seed", 42))
     fold_idx = int(args.fold)
-    fold_seed = seed + fold_idx
-    seed_all(fold_seed)
+    reference_seed = seed + fold_idx
+    seed_all(reference_seed)
 
     condition = args.condition
     out_dir = Path(
@@ -432,12 +450,13 @@ def main() -> None:
     detector_cfg = config["detector"]
     folds_path = out_dir / "folds.json"
 
+    split_seed = int(cv_cfg.get("split_seed", seed))
     dataset = SeverstalDataset(
         data_root=data_cfg["root"],
         image_shape=tuple(data_cfg.get("image_shape", [256, 1600])),
         num_classes=data_cfg.get("num_classes", 4),
         n_folds=cv_cfg.get("n_folds", 5),
-        seed=seed,
+        seed=split_seed,
         stratify=cv_cfg.get("stratify", True),
         shuffle=cv_cfg.get("shuffle", True),
         folds_json_path=folds_path if folds_path.exists() else None,
@@ -456,14 +475,47 @@ def main() -> None:
         additional_shots = 0
         mode = "clean"
 
-    ref_meta = dataset.select_reference_composition(
-        fold_idx,
-        fold_seed,
-        reference_mode=mode if condition != "synthetic_contamination" else "clean",
-        clean_shots=clean_shots,
-        additional_shots=additional_shots,
-        additional_sampling=additional_sampling,
-    )
+    if args.paired_manifest:
+        manifest = load_paired_reference_manifest(args.paired_manifest, dataset=dataset)
+        if int(manifest["fold"]) != fold_idx or int(manifest["seed"]) != seed:
+            raise ValueError(
+                "Paired manifest fold/seed does not match this run: "
+                f"manifest=({manifest['fold']}, {manifest['seed']}), "
+                f"run=({fold_idx}, {seed})"
+            )
+        selection = manifest["selection"]
+        if (
+            int(selection["clean_shots"]) != clean_shots
+            or int(selection["additional_shots"]) != additional_shots
+        ):
+            raise ValueError(
+                "Paired manifest shot counts do not match the requested study run"
+            )
+        input_mode = mode if condition != "synthetic_contamination" else "clean"
+        inputs = reference_inputs_for_mode(manifest, input_mode)
+        all_reference_ids = [
+            *inputs["clean_reference_ids"], *inputs["additional_reference_ids"]
+        ]
+        has_defect, classes = dataset.reference_image_metadata(all_reference_ids)
+        ref_meta = {
+            "reference_mode": input_mode,
+            **inputs,
+            "reference_image_has_defect": has_defect,
+            "reference_classes": classes,
+            "n_memory_patches_before_filtering": 0,
+            "n_memory_patches_after_filtering": 0,
+            "paired_manifest_id": manifest["manifest_id"],
+            "paired_manifest_path": str(Path(args.paired_manifest).resolve()),
+        }
+    else:
+        ref_meta = dataset.select_reference_composition(
+            fold_idx,
+            reference_seed,
+            reference_mode=mode if condition != "synthetic_contamination" else "clean",
+            clean_shots=clean_shots,
+            additional_shots=additional_shots,
+            additional_sampling=additional_sampling,
+        )
     # class_balanced_all composition already handled inside select_reference_composition
 
     fit_cfg = dict(detector_cfg)
@@ -479,7 +531,7 @@ def main() -> None:
                 "size_matched_* conditions require --coreset-size N"
             )
 
-    detector = build_detector(fit_cfg, seed=fold_seed)
+    detector = build_detector(fit_cfg, seed=reference_seed)
     assert isinstance(detector, AnomalyDINODetector)
 
     print(
@@ -514,7 +566,7 @@ def main() -> None:
             ref_meta,
             config,
             out_dir,
-            fold_seed,
+            reference_seed,
             skip_sam2=args.skip_sam2,
         )
         save_json(
@@ -531,7 +583,7 @@ def main() -> None:
         return
 
     fit_info = fit_for_condition(
-        condition, detector, dataset, ref_meta, config, fold_seed
+        condition, detector, dataset, ref_meta, config, reference_seed
     )
     ref_meta = fit_info["ref_meta"]
     save_json(ref_meta, out_dir / "reference_metadata.json")
@@ -576,12 +628,14 @@ def main() -> None:
             "condition": condition,
             "fold": fold_idx,
             "seed": seed,
-            "fold_seed": fold_seed,
+            "fold_seed": reference_seed,
+            "split_seed": split_seed,
             "n_train": len(train_ids),
             "reference": ref_meta,
             "fit_time_s": fit_info["fit_time_s"],
             "memory_bank_size": detector.last_bank_stats.final_memory_bank_size,
             "gt_masks_used_in_fitting": condition == "oracle_purified",
+            "sam2_skipped": bool(args.skip_sam2),
         }
     )
     save_json(metrics, out_dir / "metrics.json")

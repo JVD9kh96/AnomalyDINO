@@ -1,0 +1,49 @@
+Reusing completed clean, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s42
+Reusing completed contaminated_all, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s42
+Reusing completed auto_purified, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s42
+Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/oracle_purified.yaml --fold 0 --seed 42 --split-seed 42 --condition oracle_purified --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s42 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed42_paired_manifest.json --skip-sam2
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+Condition=oracle_purified fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+  Memory bank: clean=12800, candidates=51200, accepted=46821, rejected=4379, accept_frac=0.9145, calib_pct=None, calib_thr=None, final_size=59621
+AUPRC=0.10716397958532262 AUROC=0.8110451055145877 F1max=0.21234518452690143 FixedF1=0.11963293158612412 bank=59621 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s42
+Freezing paired inputs: /home/kalantary/AnomalyDino/venv/bin/python scripts/phase0_freeze_paired_inputs.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/phase0_paired_reference_manifest.yaml --fold 0 --seed 43 --output /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json
+  Manifest ID: b82569ffefe2f3306320e1be1c736916996a95d3487b3199b6b16267b0f8b9b2
+  Fold / seed: 0 / 43
+  Clean references: 2
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/clean.yaml --fold 0 --seed 43 --split-seed 42 --condition clean --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s43 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json --skip-sam2
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+Condition=clean fold=0 seed=43 clean=2 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
+AUPRC=0.12804677318706753 AUROC=0.8046476535720284 F1max=0.22855131008412705 FixedF1=0.22670008500248803 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s43
+Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/contaminated_all.yaml --fold 0 --seed 43 --split-seed 42 --condition contaminated_all --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s43 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json --skip-sam2
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
