@@ -1,465 +1,501 @@
-# [WACV2025] AnomalyDINO: Boosting Patch-based Few-shot Anomaly Detection with DINOv2 <img align="right" src="media/AnomalyDINO.png" style="height: 84px; max-width: 100%;">
+# Steel Repository Documentation
 
-*Simon Damm, Mike Laszkiewicz, Johannes Lederer, Asja Fischer*
+This repository contains two related systems:
 
-This is the official code to reproduce the experiments in the paper [AnomalyDINO: Boosting Patch-based Few-shot Anomaly Detection with DINOv2](https://arxiv.org/abs/2405.14529), accepted at IEEE/CVF Winter Conference on Applications of Computer Vision (WACV 2025).
+1. **AnomalyDINO** — the original WACV 2025 few-shot anomaly detection code for MVTec-AD / VisA.
+2. **Severstal CV stack** — a modular patch-level anomaly detection + SAM2 mask refinement pipeline for the [Severstal Steel Defect Detection](https://www.kaggle.com/competitions/severstal-steel-defect-detection) dataset, with a separate **analysis** package for probing DINO patch signals.
 
-## Prerequisits
-
-1. Create a virtual environment (e.g., `python -m venv .venvAnomalyDINO`), activate it (e.g., `source .venvAnomalyDINO/bin/activate`) and install the required dependencies for AnomalyDINO:
-    ```shell
-    pip install -r requirements.txt
-    ```
-    Info: If you want to use `faiss` with GPU-acceleration we recommend setting up a conda environment with the required packages instead (only conda installation is supported, see, e.g., [here](https://github.com/facebookresearch/faiss/wiki/Installing-Faiss#why-dont-you-support-installing-via-xxx-)). To perform similarity search on CPU set the additional flag `--faiss_on_cpu`.
-
-2. Download and prepare the datasets [MVTec-AD](https://www.mvtec.com/company/research/datasets/mvtec-ad) and [VisA](https://github.com/amazon-science/spot-diff) from their official sources.
-For VisA, follow the instruction in the official repo to organize the data in the official 1-class splits. 
-The default data roots are `data/mvtec_anomaly_detection` for MVTec-AD, and `data/VisA_pytorch/1cls/` for VisA. 
-Please adapt the function calls below if necessary. 
-Alternatively, prepare your own dataset accordingly:
-    ```
-    your_data_root
-    ├── object1
-    │   ├── ground_truth        # anomaly annotations per anomaly type (optional)
-    │   │   ├── anomaly_type1
-    │   │   ├── ...
-    │   ├── test                # test images per anomaly type & 'good' (if applicable)
-    │   │   ├── anomaly_type1    
-    │   │   ├── ...
-    │   │   └── good
-    │   └── train               # train/reference images (without anomalies)
-    │       └── good
-    ├── object2
-    │   ├── ...
-    ```
-When no 'good' test set is available, just inference is performed (no evaluation of detection/segmentation metrics possible).
-
-## Usage
-
-### Short Demo
-Get started with the minimal demo to perform few-shot anomaly detection (`demo_AD_DINO.ipynb`).
-
-### Few-shot anomaly detection
-
-For the full evaluation, run the script `run_anomalydino.py` on the selected dataset for a given number of shots and repetitions (seeds).
-The preprocessing to your dataset can be specified in `src/utils.py` in `get_dataset_info`, default is "agnostic" (apply masking whenever PCA-based masking works well & augment reference samples by rotations, see the paper).
-
-The results for the default setting, i.e., all considered shots, three repetitions, and agnostic preprocessing, can be reproduced by calling:
-```shell
-python run_anomalydino.py --dataset MVTec --shots 1 2 4 8 16 --num_seeds 3 --preprocess agnostic --data_root data/mvtec_anomaly_detection
-```
-
-```shell
-python run_anomalydino.py --dataset VisA --shots 1 2 4 8 16 --num_seeds 3 --preprocess agnostic --data_root data/VisA_pytorch/1cls/
-```
-
-For a faster inspection use, e.g.,
-```shell
-python run_anomalydino.py --dataset MVTec --shots 1 --num_seeds 1 --preprocess informed --data_root data/mvtec_anomaly_detection
-```
-
-The script automatically creates some example plots, plots some anomaly maps for each object, and automatically evaluates each run (activate evaluation of segementation with `--eval_segm` if applicable).
-
-Evaluation results are saved in the respective results directory as `metrics_seed={seed}.json` for each seed.
-
-
-### Batched-Zero-Shot Anomay Detection
-To reproduce the results in the *batched* zero-shot scenario, run `run_anomalydino_batched.py` with appropriate arguments:
-
-```shell
-python run_anomalydino_batched.py --dataset MVTec --data_root data/mvtec_anomaly_detection
-```
-```shell
-python run_anomalydino_batched.py --dataset VisA --data_root data/VisA_pytorch/1cls/
-```
+If you want to plug in a **custom detector**, start with [Adding a custom detector](#adding-a-custom-detector). The rest of this document explains the layout, contracts, and how existing pieces fit together.
 
 ---
 
-## Tutorial: Severstal Steel Defect Detection Evaluation
+## Table of contents
 
-This repository extends AnomalyDINO with a modular evaluation protocol for the [Severstal Steel Defect Detection](https://www.kaggle.com/competitions/severstal-steel-defect-detection) dataset. The pipeline runs K-fold cross-validation, reports patch-level detection metrics (precision / recall / F1) and SAM2 mask-level metrics (IoU / Dice), and saves results as JSON plus visualization PDFs.
+1. [Repository structure](#1-repository-structure)
+2. [Architecture overview](#2-architecture-overview)
+3. [Data](#3-data)
+4. [Detector system](#4-detector-system)
+5. [Built-in detectors](#5-built-in-detectors)
+6. [Cross-validation evaluation](#6-cross-validation-evaluation)
+7. [Segmenters (SAM2)](#7-segmenters-sam2)
+8. [Analysis package](#8-analysis-package)
+9. [Configs and entry points](#9-configs-and-entry-points)
+10. [Adding a custom detector](#adding-a-custom-detector)
+11. [Adding a custom analysis scorer](#adding-a-custom-analysis-scorer)
+12. [Tips and pitfalls](#tips-and-pitfalls)
 
-### Environment setup
+---
 
-1. **Create and activate a virtual environment** (recommended):
+## 1. Repository structure
 
-    ```shell
-    python -m venv .venv
-    # Linux / macOS
-    source .venv/bin/activate
-    # Windows (PowerShell)
-    .venv\Scripts\Activate.ps1
-    ```
+```
+Steel/
+├── configs/                  # YAML configs (CV + analysis)
+├── scripts/                  # Threshold / ensemble tuning CLIs
+├── src/
+│   ├── detectors/            # Pluggable anomaly detectors (Severstal)
+│   ├── evaluation/           # K-fold CV, metrics, threshold tuning
+│   ├── severstal/            # Dataset, RLE, patch geometry
+│   ├── segmenters/           # SAM2 mask refinement
+│   ├── analysis/             # Patch signal distribution probes
+│   ├── visualization/        # Severstal PDF overlays
+│   ├── backbones.py          # DINOv2 / ViT wrappers
+│   ├── detection.py          # Legacy AnomalyDINO object loop (MVTec/VisA)
+│   ├── post_eval.py          # Legacy MVTec/VisA metrics
+│   ├── utils.py              # Augment, maps, dataset info
+│   └── visualize.py          # Legacy sample plots
+├── tests/                    # Unit / smoke tests
+├── run_severstal_cv.py       # Primary Severstal CV entry point
+├── run_analysis.py           # Patch distribution analysis
+├── run_anomalydino.py        # Original MVTec/VisA few-shot eval
+├── run_anomalydino_batched.py
+├── requirements.txt
+└── README.md                 # Paper repro + Severstal tutorial
+```
 
-2. **Install PyTorch** for your CUDA version from [pytorch.org](https://pytorch.org/) if not already installed.
+### Module roles
 
-3. **Install dependencies**:
+| Package / module | Role |
+|------------------|------|
+| `src/detectors/` | Anomaly detectors implementing `BaseAnomalyDetector`. Factory: `build_detector()`. |
+| `src/evaluation/` | Orchestrates K-fold CV (`cross_validation.py`), patch/mask metrics, threshold & ensemble tuning. |
+| `src/severstal/` | Loads images + RLE masks, fold splits, reference sampling, patch grid / GT label / SAM2 prompt helpers. |
+| `src/segmenters/` | Turns anomalous patches into masks (SAM2 via Ultralytics). |
+| `src/analysis/` | Scores every patch with GT labels; reports separability (AUROC, KS, …). No CV, no SAM2. |
+| `src/visualization/` | Per-fold PDF overlays of image / GT / pred patches / SAM2. |
+| `src/backbones.py` | Shared DINOv2 loading (`get_model`). |
+| `src/detection.py`, `post_eval.py`, `utils.py`, `visualize.py` | Original AnomalyDINO MVTec/VisA path (not the Severstal detector API). |
 
-    ```shell
-    pip install -r requirements.txt
-    ```
+### Detectors package breakdown
 
-    Notes:
-    - **FAISS**: `faiss-gpu` is listed in `requirements.txt`. If GPU FAISS is unavailable, install `faiss-cpu` instead and set `detector.faiss_on_cpu: true` in the config.
-    - **SAM2**: Ultralytics downloads the SAM2 weights (e.g. `sam2.1_b.pt`) automatically on first use.
-    - **DINOv2**: Backbone weights are fetched via `torch.hub` on first run.
+| File | Purpose |
+|------|---------|
+| `base.py` | `BaseAnomalyDetector`, `DetectorOutput` |
+| `__init__.py` | `build_detector(config, seed)` factory |
+| `anomaly_dino.py` | FAISS kNN memory-bank detector |
+| `dino_sobel.py` | Feature-space Sobel norms |
+| `dino_cls_cosine.py` | CLS↔patch cosine / prototype |
+| `dino_attention_rollout.py` | Attention rollout scores |
+| `dino_mahalanobis.py` | PaDiM-style diagonal Mahalanobis + PCA |
+| `dino_knn_rollout.py` | kNN + reference rollout deviation fusion |
+| `dino_iforest_rollout.py` | IsolationForest + rollout fusion |
+| `ensemble.py` | Weighted z-score ensemble of sub-detectors |
+| `dino_features.py` | Shared token / rollout / fusion helpers |
+| `attention_features.py` | Attention capture + rollout math |
+| `cls_patch_features.py` | CLS–patch cosine helpers |
+| `sobel_features.py` | Sobel norms + calibration / score modes |
+| `coreset.py` | Greedy coreset for memory banks |
 
-4. **Verify the install** (no dataset or GPU required):
+---
 
-    ```shell
-    python tests/test_severstal_unit.py
-    ```
+## 2. Architecture overview
 
-### Dataset preparation
+### Severstal CV path (main path for custom detectors)
 
-Download the Severstal competition data and place it under `data/severstal/`:
+```
+YAML config
+    │
+    ▼
+run_severstal_cv.py
+    │
+    ▼
+run_cross_validation()
+    │
+    ├─ SeverstalDataset ──► fold split + select_reference_ids
+    │
+    ├─ build_detector() ──► detector.fit(refs)
+    │
+    ├─ for each val sample:
+    │     detector.predict(sample) ──► DetectorOutput (patch_scores)
+    │           │
+    │           ├─► patch metrics (P/R/F1 vs GT patches)
+    │           └─► binarize ──► bboxes/points ──► SAM2 ──► IoU/Dice
+    │
+    └─ results_severstal/<timestamp>/
+```
+
+There is **no separate train/infer binary** for Severstal: “training” is `detector.fit(reference_samples)` inside each fold; inference and metrics happen in the same run.
+
+### Analysis path (signal exploration, not evaluation)
+
+```
+configs/analysis_severstal.yaml
+    │
+    ▼
+run_analysis.py → src.analysis.cli → run_analysis()
+    │
+    ├─ DinoFeatureExtractor (CLS / patch / attention per layer)
+    ├─ map GT mask → patch labels
+    ├─ scorers (cls_patch_cosine, sobel_feature, …)
+    └─ distributions + AUROC/AUPRC/… under results_analysis/
+```
+
+Use analysis to decide *which signals look useful*. Then implement a CV detector and tune `pred_score_threshold` separately — analysis score scales are **not** interchangeable with kNN / Mahalanobis / IsolationForest scores.
+
+---
+
+## 3. Data
+
+### Severstal layout
 
 ```
 data/severstal/
-├── train_images/          # all training images (.jpg)
-└── train.csv              # annotations: ImageId, ClassId, EncodedPixels
+├── train_images/     # *.jpg (256 × 1600)
+└── train.csv         # ImageId, ClassId, EncodedPixels
 ```
 
-- Images are **256 × 1600** pixels.
-- `train.csv` lists defect segments per class (`ClassId` 1–4) in run-length-encoded (RLE) format.
-- Images with no rows in `train.csv` are treated as defect-free (normal).
+- Images with no rows in `train.csv` are treated as defect-free.
+- Four defect classes (`ClassId` 1–4), RLE-encoded masks.
 
-### Configuration
+### Core types (`src/severstal/dataset.py`)
 
-All experiment settings live in [`configs/severstal.yaml`](configs/severstal.yaml). Key options:
+```python
+@dataclass
+class SeverstalSample:
+    image_id: str
+    image_path: Path
+    masks_by_class: dict[int, np.ndarray]  # class_id → binary mask
+    has_defect: bool
+    image: np.ndarray                      # RGB, (H, W, 3)
+```
 
-| Section | Parameter | Description |
-|---------|-----------|-------------|
-| `cv` | `n_folds` | Number of cross-validation folds (default: 5) |
-| `patch_eval` | `gt_overlap_threshold` | Fraction of patch pixels that must be defective for a GT patch to be positive |
-| `patch_eval` | `pred_score_threshold` | Fixed absolute threshold on patch anomaly scores |
-| `detector` | `shots` | Number of reference images per fold; with `class_balanced`, must be divisible by 4 (e.g. 8 → 2 per class) |
-| `detector` | `reference_sampling` | `class_balanced` (default): equal shots per defect class; `defect_free`: legacy normal-only images |
-| `detector` | `model_name` | DINOv2 backbone (e.g. `dinov2_vits14`) |
-| `segmenter` | `model` | SAM2 checkpoint for Ultralytics (e.g. `sam2.1_b.pt`) |
-| `output` | `dir` | Root directory for results |
+`SeverstalDataset` handles discovery, annotations, stratified K-fold splits, and reference selection:
 
-### Running an experiment
+| `reference_sampling` | Behavior |
+|----------------------|----------|
+| `class_balanced` | `shots` images evenly across the 4 defect classes (`shots` must be divisible by 4) |
+| `defect_free` | Only normal (no-defect) images |
 
-**Full 5-fold cross-validation:**
+`shots: 0` → empty reference list (zero-shot detectors; `fit()` may be a no-op).
+
+### Patch geometry (`src/severstal/transforms.py`)
+
+Detectors and metrics share DINOv2-style preprocessing:
+
+- Resize so the smaller edge equals `resolution` (default `448`).
+- Crop so H/W are multiples of `patch_size` (14 for DINOv2).
+- `compute_processed_shape(native_shape, smaller_edge_size, patch_size)` returns `(processed_shape, grid_size)`.
+
+GT patch labels use `gt_overlap_threshold` (fraction of defective pixels in a patch). Predicted patches are binarized with `pred_score_threshold`, then converted to bboxes/points for SAM2.
+
+### MVTec / VisA (legacy)
+
+Used only by `run_anomalydino.py` / `run_anomalydino_batched.py` via `src/detection.py` and `src/utils.get_dataset_info`. That path does **not** use `BaseAnomalyDetector`.
+
+---
+
+## 4. Detector system
+
+### Base class (`src/detectors/base.py`)
+
+```python
+@dataclass
+class DetectorOutput:
+    image_id: str
+    patch_scores: np.ndarray              # (grid_h, grid_w), higher = more anomalous
+    grid_size: tuple[int, int]
+    processed_shape: tuple[int, int]
+    patch_size: int
+    patch_valid_mask: np.ndarray | None = None      # optional (H, W) bool
+    patch_class_scores: np.ndarray | None = None    # optional (H, W, C)
+
+
+class BaseAnomalyDetector(ABC):
+    @abstractmethod
+    def fit(self, reference_samples: list[SeverstalSample]) -> None: ...
+
+    @abstractmethod
+    def predict(self, sample: SeverstalSample) -> DetectorOutput: ...
+
+    @property
+    @abstractmethod
+    def supports_class_prediction(self) -> bool: ...
+
+    @property
+    def name(self) -> str:
+        return self.__class__.__name__
+```
+
+**You must implement:** `fit`, `predict`, `supports_class_prediction`.
+
+### `DetectorOutput` contract
+
+| Field | Shape | Meaning |
+|-------|-------|---------|
+| `patch_scores` | `(grid_h, grid_w)` | Continuous anomaly scores; **higher = more anomalous** |
+| `grid_size` | `(grid_h, grid_w)` | Patch grid after resize/crop |
+| `processed_shape` | `(H, W)` | Image size after preprocessing |
+| `patch_size` | `int` | Patch edge in pixels (14 for DINOv2) |
+| `patch_valid_mask` | `(H, W)` or `None` | Patches included in metrics (e.g. exclude PCA background) |
+| `patch_class_scores` | `(H, W, C)` or `None` | Per-class scores; only if `supports_class_prediction` is `True` |
+
+`processed_shape` / `patch_size` **must** match the geometry used for GT alignment in `src/severstal/transforms.py`. Prefer calling `compute_processed_shape(...)` rather than inventing your own resize logic.
+
+### Factory registration (`src/detectors/__init__.py`)
+
+```python
+def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
+    name = config.get("name", "anomaly_dino")
+    if name == "anomaly_dino":
+        ...
+    # add your branch here
+    raise ValueError(f"Unknown detector: {name}")
+```
+
+The CV loop calls:
+
+```python
+detector = build_detector(detector_cfg, seed=fold_seed)
+detector.fit(ref_samples)
+out = detector.predict(sample)  # → DetectorOutput
+```
+
+### Registered detector names
+
+| `detector.name` | Class |
+|-----------------|-------|
+| `anomaly_dino` | `AnomalyDINODetector` |
+| `dino_sobel` | `DINOv2SobelDetector` |
+| `dino_cls_cosine` | `DINOv2ClsPatchCosineDetector` |
+| `dino_attention_rollout` | `DINOv2AttentionRolloutDetector` |
+| `dino_mahalanobis` | `DINOv2MahalanobisDetector` |
+| `dino_knn_rollout` | `DINOv2KnnRolloutDetector` |
+| `dino_iforest_rollout` | `DINOv2IForestRolloutDetector` |
+| `ensemble` | `EnsembleDetector` (via `build_ensemble_detector`) |
+
+---
+
+## 5. Built-in detectors
+
+Shared YAML knobs for most detectors:
+
+```yaml
+detector:
+  name: <factory_key>
+  model_name: dinov2_vits14   # dinov2_vitb14, dinov2_vitl14, …
+  resolution: 448
+  device: cuda:0
+  shots: 8                   # 0 = zero-shot where supported
+  reference_sampling: class_balanced  # or defect_free
+```
+
+Always pair with:
+
+```yaml
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: <tuned>   # use scripts/tune_patch_threshold.py
+```
+
+### `anomaly_dino` — FAISS kNN memory bank
+
+- **Fit:** build a patch feature memory bank from references (optional coreset, rotation, masking).
+- **Predict:** kNN distance grid (`knn_metric`, `k_neighbors`).
+- **Requires** `shots > 0` for a meaningful bank.
+- Config: `configs/severstal.yaml`
+
+| Extra options | Description |
+|---------------|-------------|
+| `knn_metric` | `L2_normalized` (default) or `L2` |
+| `k_neighbors` | Neighbors for scoring (default `1`) |
+| `faiss_on_cpu` | Force CPU FAISS |
+| `coreset_ratio` | Greedy subsample of bank (`null` = keep all) |
+| `neighbor_aggregate` | 3×3 mean on features before indexing |
+| `masking` / `mask_ref_images` / `rotation` | Preprocessing / augment options |
 
 ```shell
 python run_severstal_cv.py --config configs/severstal.yaml
-```
-
-**Single fold (useful for debugging):**
-
-```shell
-python run_severstal_cv.py --config configs/severstal.yaml --fold 0
-```
-
-**Override paths or detector from the command line:**
-
-```shell
-python run_severstal_cv.py --config configs/severstal.yaml --data_root data/severstal --detector anomaly_dino
-```
-
-#### What happens during a run
-
-For each fold:
-
-1. Training images are split into train / validation (stratified by defect presence).
-2. A **memory bank** is built from reference images in the train split. By default (`reference_sampling: class_balanced`), `detector.shots` images are chosen evenly across the 4 defect classes (e.g. 8 shots → 2 train images containing class 1, 2 with class 2, etc.). Set `reference_sampling: defect_free` to use only normal (defect-free) images instead.
-3. Each validation image is scored at **patch level** by the anomaly detector.
-4. Predicted anomalous patches are passed as **bounding-box prompts** to SAM2 for mask refinement.
-5. Metrics and visualizations are saved.
-
-#### Output structure
-
-Results are written to `results_severstal/<timestamp>/`:
-
-```
-results_severstal/<timestamp>/
-├── config.yaml              # resolved config for reproducibility
-├── folds.json               # image → validation fold assignment
-├── summary.json             # mean ± std across folds
-├── fold_0/
-│   ├── metrics.json         # patch + mask metrics for this fold
-│   └── visualizations.pdf   # GT/pred overlays (patch + mask level)
-├── fold_1/
-│   └── ...
-└── ...
-```
-
-**Metrics reported:**
-
-- **Patch level** — TP / FP / FN at patch granularity; precision, recall, F1 aggregated globally (sum over all patches) and as image-level means. Class-agnostic metrics are always computed; class-wise metrics require a class-aware detector.
-- **Mask level** — IoU and Dice between SAM2-predicted masks and GT, aggregated globally and per-image.
-
-Report **both** patch F1 and mask IoU/Dice when comparing detectors — patch F1 alone does not always predict SAM2 quality.
-
-### Threshold tuning
-
-Do **not** reuse analysis score distributions to set `pred_score_threshold` for kNN or Mahalanobis detectors (different score scales). Use the tuning scripts on a validation fold:
-
-```shell
-# Patch threshold sweep with PR curve + F1-optimal and recall@0.7 operating points
 python scripts/tune_patch_threshold.py --config configs/severstal.yaml --fold 0
-
-# Optional SAM2 preview on a val subset
-python scripts/tune_patch_threshold.py --config configs/severstal.yaml --fold 0 --with-sam2
-
-# Ensemble weights: tune on fold 0, benchmark on folds 1-4
-python scripts/tune_ensemble_weights.py --config configs/severstal_dino_ensemble.yaml --tune-fold 0
 ```
 
-Outputs land in `results_threshold_tuning/<timestamp>/` (`pr_curve.png`, `operating_points.png`, `threshold_tuning.json`) or `results_ensemble_tuning/<timestamp>/`.
+### `dino_sobel` — feature-space Sobel
 
-Under patch imbalance (~30:1 healthy:anomaly), prefer the **recall@0.7** threshold for SAM2 downstream when recall matters more than precision.
+- High Sobel norms in DINOv2 embedding space as anomaly cues.
+- `shots: 0` → zero-shot; `shots > 0` → global calibration from refs.
+- Config: `configs/severstal_dino_sobel.yaml`
+- Analysis counterpart: `sobel_feature` scorer.
 
-### Detector ↔ analysis mapping
+| Option | Values | Notes |
+|--------|--------|-------|
+| `sobel.norm_reduction` | `l2`, `mean`, `max` | Aggregate across embedding dims |
+| `score_mode` | `raw`, `per_image_zscore`, `per_image_iqr`, `per_image_percentile` | How norms become scores |
 
-| CV detector | Config | Analysis scorer | Notes |
-|-------------|--------|-----------------|-------|
-| `anomaly_dino` | [`severstal.yaml`](configs/severstal.yaml) | — | kNN distance; tune threshold via script |
-| `dino_cls_cosine` | [`severstal_dino_cls_cosine.yaml`](configs/severstal_dino_cls_cosine.yaml) | `cls_patch_cosine` | `scoring_mode: per_image` (zero-shot) |
-| `dino_cls_cosine` (prototype) | [`severstal_dino_cls_cosine_prototype.yaml`](configs/severstal_dino_cls_cosine_prototype.yaml) | — | `scoring_mode: prototype`, `defect_free` refs |
-| `dino_attention_rollout` | [`severstal_dino_attention_rollout.yaml`](configs/severstal_dino_attention_rollout.yaml) | `attention_rollout` | Zero-shot; `shots>0` only global z-score (rankings unchanged) |
-| `dino_knn_rollout` | [`severstal_dino_knn_rollout.yaml`](configs/severstal_dino_knn_rollout.yaml) | — | kNN + reference rollout deviation; **shots changes rankings** |
-| `dino_iforest_rollout` | [`severstal_dino_iforest_rollout.yaml`](configs/severstal_dino_iforest_rollout.yaml) | — | IsolationForest + reference rollout deviation; **shots changes rankings** |
-| `dino_mahalanobis` | [`severstal_dino_mahalanobis.yaml`](configs/severstal_dino_mahalanobis.yaml) | — | PaDiM-style diagonal Mahalanobis + PCA |
-| `dino_mahalanobis` (multi-layer) | [`severstal_dino_mahalanobis_multilayer.yaml`](configs/severstal_dino_mahalanobis_multilayer.yaml) | — | `layers: [4, 8, 11]` |
-| `ensemble` | [`severstal_dino_ensemble.yaml`](configs/severstal_dino_ensemble.yaml) | — | Weighted z-score fusion; tune on fold 0 only |
-| `dino_sobel` | [`severstal_dino_sobel.yaml`](configs/severstal_dino_sobel.yaml) | `sobel_feature` | `sobel_feature` AUROC ~0.44 — analysis only, not primary CV |
+Suggested thresholds: `raw` ~0.35; `per_image_zscore` ~2.0 (with `zscore_k: 2.0`).
 
-### DINOv2 Sobel detector (`dino_sobel`)
-
-A built-in, self-supervised detector that applies Sobel edge detection in DINOv2 patch embedding space. High gradient norms in feature space are treated as anomaly cues.
-
-**Run with the dedicated config:**
-
-```shell
-python run_severstal_cv.py --config configs/severstal_dino_sobel.yaml
-```
-
-Or switch detector in any config:
-
-```yaml
-detector:
-  name: dino_sobel
-```
-
-#### Zero-shot vs few-shot calibration
-
-| `shots` | Behavior |
-|---------|----------|
-| `0` | **Zero-shot** — no reference images; `fit()` is a no-op. Scoring uses only the test image (and per-image `score_mode` stats). |
-| `> 0` | **Few-shot calibration** — reference images from the train fold (via `reference_sampling`) are used to compute global Sobel-norm statistics (`ref_mean`, `ref_std`, …). Test norms are adjusted as `(norm - ref_mean) / ref_std` before `score_mode` is applied. With `class_balanced`, `shots` must be divisible by 4. |
-
-#### Detector config options
-
-| Parameter | Values | Description |
-|-----------|--------|-------------|
-| `model_name` | `dinov2_vits14`, `dinov2_vitb14`, `dinov2_vitl14`, … | DINOv2 backbone |
-| `sobel.norm_reduction` | `l2`, `mean`, `max` | How to aggregate Sobel magnitude across embedding dimensions |
-| `score_mode` | see table below | How Sobel norms become `patch_scores` |
-| `zscore_k` | float (default `2.0`) | Reference for thresholding z-scores (pairs with `pred_score_threshold`) |
-| `iqr_k` | float (default `1.5`) | Divisor for `per_image_iqr` scores |
-| `percentile` | float (default `95`) | Percentile cutoff for `per_image_percentile` |
-| `masking` | `true` / `false` | Optional DINOv2 PCA background mask (excluded patches scored as 0) |
-
-#### `score_mode` options
-
-All modes output continuous `patch_scores`; the evaluation pipeline still binarizes them with `patch_eval.pred_score_threshold` unless scores are already on a known scale.
-
-| `score_mode` | What it does | Suggested `pred_score_threshold` |
-|--------------|--------------|----------------------------------|
-| `raw` | Sobel norm (calibrated if `shots > 0`) | Tune empirically (e.g. `0.35`) |
-| `per_image_zscore` | Per-image z-score: `(norm - mean) / std`. With calibration, reference z-scoring replaces per-image mean/std | `2.0` (aligns with `zscore_k`) |
-| `per_image_iqr` | Distance above Q3 relative to IQR: `(norm - Q3) / IQR`, scaled by `iqr_k` | `0.5`–`1.0` |
-| `per_image_percentile` | Positive part above the per-image `percentile` threshold, max-normalized to [0, 1] | `0.1`–`0.5` |
-
-**Example — zero-shot with z-score scoring:**
-
-```yaml
-detector:
-  name: dino_sobel
-  shots: 0
-  score_mode: per_image_zscore
-
-patch_eval:
-  pred_score_threshold: 2.0
-```
-
-**Example — few-shot calibrated raw scores:**
-
-```yaml
-detector:
-  name: dino_sobel
-  shots: 8
-  reference_sampling: class_balanced
-  score_mode: raw
-
-patch_eval:
-  pred_score_threshold: 0.35
-```
-
-### DINOv2 CLS cosine detector (`dino_cls_cosine`)
-
-Patch anomaly scores from CLS-to-patch cosine similarity at a chosen transformer layer.
+### `dino_cls_cosine` — CLS↔patch cosine
 
 | `scoring_mode` | Behavior |
 |----------------|----------|
-| `per_image` (default) | `cos(cls_test, patch_test)` — matches `cls_patch_cosine` analysis scorer |
-| `prototype` | `1 - cos(mean_cls_defect_free, patch_test)` — higher = more anomalous; uses `prototype_reference_sampling: defect_free` |
+| `per_image` | `cos(cls_test, patch_test)` — zero-shot OK (`shots: 0`) |
+| `prototype` | `1 - cos(mean_cls_defect_free, patch_test)` — needs `shots > 0`, `defect_free` refs |
 
-**Run:**
+Configs: `configs/severstal_dino_cls_cosine.yaml`, `configs/severstal_dino_cls_cosine_prototype.yaml`  
+Analysis counterpart: `cls_patch_cosine`.
 
-```shell
-python run_severstal_cv.py --config configs/severstal_dino_cls_cosine.yaml
-python run_severstal_cv.py --config configs/severstal_dino_cls_cosine_prototype.yaml
-```
+### `dino_attention_rollout` — attention rollout
 
-#### Zero-shot vs few-shot calibration
+- CLS→patch attention rollout across layers.
+- Zero-shot with `shots: 0`; `shots > 0` only applies global z-score calibration (rankings largely unchanged).
+- Config: `configs/severstal_dino_attention_rollout.yaml`
+- Analysis counterpart: `attention_rollout`.
 
-| `shots` | `per_image` | `prototype` |
-|---------|-------------|-------------|
-| `0` | Zero-shot raw cosine (tune from analysis) | Not supported |
-| `> 0` | Score z-score calibration | CLS prototype from defect-free refs + score calibration |
+| `attention_rollout.*` | Typical |
+|-----------------------|---------|
+| `average_heads` | `true` |
+| `include_residual` | `true` |
+| `discard_ratio` | `0.0` or `0.7` |
+| `last_n_layers` | `null` or `4` |
+| `head_reduction` | `mean` / `max` |
 
-#### Detector config options
+For few-shot attention that **actually changes with shots**, use `dino_knn_rollout` or `dino_iforest_rollout`.
 
-| Parameter | Values | Description |
-|-----------|--------|-------------|
-| `scoring_mode` | `per_image`, `prototype` | How CLS reference is chosen |
-| `prototype_reference_sampling` | `defect_free` (default) | Reference images for prototype CLS |
-| `layer` | `last` or int | Transformer layer |
-| `shots` | int | Reference images; `0` = zero-shot (`per_image` only) |
+### `dino_knn_rollout` — kNN + rollout deviation
 
-**Example — prototype few-shot:**
+- Memory-bank kNN **plus** per-cell `|rollout - ref_mean| / ref_std`.
+- **Requires `shots > 0`.** Changing shots changes both bank and rollout baseline.
+- Config: `configs/severstal_dino_knn_rollout.yaml`
 
 ```yaml
-detector:
-  name: dino_cls_cosine
-  scoring_mode: prototype
-  prototype_reference_sampling: defect_free
-  shots: 8
-
-patch_eval:
-  pred_score_threshold: 0.15  # tune via scripts/tune_patch_threshold.py
+fusion:
+  mode: weighted_sum   # weighted_sum | product | max
+  knn_weight: 0.5
+  rollout_weight: 0.5
 ```
 
-### DINOv2 attention rollout detector (`dino_attention_rollout`)
+### `dino_iforest_rollout` — IsolationForest + rollout
 
-Patch anomaly scores from CLS-to-patch attention rollout across all transformer layers. Matches the `attention_rollout` analysis scorer.
+- Same fusion idea as kNN+rollout, but the first branch is sklearn `IsolationForest` on reference patch features (`-score_samples` → higher = more anomalous).
+- **Requires `shots > 0`.**
+- Config: `configs/severstal_dino_iforest_rollout.yaml`
 
-**Run with the dedicated config:**
-
-```shell
-python run_severstal_cv.py --config configs/severstal_dino_attention_rollout.yaml
+```yaml
+iforest:
+  n_estimators: 200
+  max_samples: auto
+  contamination: auto
+  max_features: 1.0
+  bootstrap: false
+  n_jobs: -1
+fusion:
+  mode: weighted_sum
+  iforest_weight: 0.5
+  rollout_weight: 0.5
 ```
 
-#### Zero-shot vs few-shot calibration
+### `dino_mahalanobis` — PaDiM-style Mahalanobis
 
-Same `shots` / `reference_sampling` behavior as `dino_cls_cosine` and `dino_sobel`. When `shots > 0`, scores are reference-normalized z-scores and require separate threshold tuning.
+- Per-position diagonal Mahalanobis on patch features with optional PCA.
+- **Requires `shots > 0`**; defaults to `prototype_reference_sampling: defect_free`.
+- Configs: `configs/severstal_dino_mahalanobis.yaml`, `configs/severstal_dino_mahalanobis_multilayer.yaml`
 
-#### Detector config options
-
-| Parameter | Values | Description |
-|-----------|--------|-------------|
-| `model_name` | `dinov2_vits14`, … | DINOv2 backbone |
-| `attention_rollout.average_heads` | bool (default `true`) | Average attention heads before rollout |
-| `attention_rollout.include_residual` | bool (default `true`) | Add identity to each layer attention |
-| `attention_rollout.discard_ratio` | float (default `0.0`) | Sparsify low-attention weights (try `0.7`) |
-| `attention_rollout.last_n_layers` | int or null | Rollout over last N layers only (try `4`) |
-| `attention_rollout.head_reduction` | `mean`, `max` | Aggregate heads before rollout |
-| `shots` | int (default `0`) | Reference images for calibration; `0` = off |
-| `reference_sampling` | `class_balanced`, `defect_free` | How reference images are chosen when `shots > 0` |
-
-Tune zero-shot thresholds from analysis distributions or `scripts/tune_patch_threshold.py`.
-
-For few-shot attention signal that **actually changes** with `shots`, use [`dino_knn_rollout`](#dino_knn_rollout-detector-dino_knn_rollout) instead.
-
-### DINO kNN + rollout detector (`dino_knn_rollout`)
-
-Combines AnomalyDINO kNN patch distances with **reference-anchored rollout deviation** (`|rollout - ref_mean| / ref_std` per grid cell). Unlike standalone `dino_attention_rollout`, changing `shots` changes both the memory bank and the normal rollout baseline, so threshold tuning metrics should differ across `shots: 8` vs `16`.
-
-**Requires `shots > 0`** and uses `reference_sampling: class_balanced` by default (same as [`severstal.yaml`](configs/severstal.yaml)).
-
-```shell
-# Tune threshold on fold 0 (verify metrics change when you edit shots)
-python scripts/tune_patch_threshold.py --config configs/severstal_dino_knn_rollout.yaml --fold 0
-
-# CV after setting pred_score_threshold from tuning output
-python run_severstal_cv.py --config configs/severstal_dino_knn_rollout.yaml --fold 0
-```
-
-| Parameter | Description |
-|-----------|-------------|
-| `knn_metric` | `L2_normalized` (default) or `L2` |
-| `k_neighbors` | kNN neighbors (default `1`) |
-| `attention_rollout.*` | Same as `dino_attention_rollout` (`last_n_layers`, `discard_ratio`, `head_reduction`, …) |
-| `fusion.mode` | `weighted_sum` (default), `product`, or `max` |
-| `fusion.knn_weight` / `fusion.rollout_weight` | Branch weights for `weighted_sum` |
-| `coreset_ratio` | Optional memory-bank subsampling |
-| `neighbor_aggregate` | 3×3 neighbor mean on patch features before kNN |
-
-### DINO IsolationForest + rollout detector (`dino_iforest_rollout`)
-
-Same idea as `dino_knn_rollout`, but replaces the kNN branch with an **IsolationForest** fitted on reference patch features. The IsolationForest per-patch anomaly score is `-score_samples(X)` (higher = more anomalous). Changing `shots` changes the fitted forest and rollout baseline, so tuning metrics should differ for `shots: 8` vs `16`.
-
-```shell
-# Tune threshold on fold 0
-python scripts/tune_patch_threshold.py --config configs/severstal_dino_iforest_rollout.yaml --fold 0
-
-# CV after setting pred_score_threshold from tuning output
-python run_severstal_cv.py --config configs/severstal_dino_iforest_rollout.yaml --fold 0
-```
-
-| Parameter | Description |
-|-----------|-------------|
-| `iforest.n_estimators` | Number of trees (default `200`) |
-| `iforest.max_samples` | Subsample size per tree (`auto` by default) |
-| `iforest.contamination` | Used internally by sklearn (we still tune `pred_score_threshold`) |
-| `iforest.max_features` | Feature subsampling fraction (default `1.0`) |
-| `fusion.iforest_weight` / `fusion.rollout_weight` | Branch weights for `weighted_sum` |
-
-### DINOv2 Mahalanobis detector (`dino_mahalanobis`)
-
-PaDiM-style per-position diagonal Mahalanobis distance on DINOv2 patch features with optional PCA (`pca_components: 50`). Uses `prototype_reference_sampling: defect_free` by default.
-
-```shell
-python run_severstal_cv.py --config configs/severstal_dino_mahalanobis.yaml
-python run_severstal_cv.py --config configs/severstal_dino_mahalanobis_multilayer.yaml
-```
-
-| Parameter | Description |
-|-----------|-------------|
+| Option | Description |
+|--------|-------------|
 | `layers` | `last`, int, or list e.g. `[4, 8, 11]` |
-| `pca_components` | PCA dim before fitting (default `50`) |
-| `neighbor_aggregate` | 3×3 spatial mean pooling on features before fit/predict |
-| `shots` | Must be `> 0` |
+| `pca_components` | PCA dim before fit (default `50`) |
+| `neighbor_aggregate` | 3×3 spatial mean before fit/predict |
 
-### Ensemble detector (`ensemble`)
+### `ensemble` — weighted z-score fusion
 
-Weighted sum of sub-detectors after per-image z-score normalization. Tune weights on **fold 0 val only**; report metrics on **folds 1–4** to avoid circular evaluation.
+- Fits each sub-detector; at predict time, z-scores each map per image and takes a weighted sum.
+- Tune weights on **fold 0 only**; report on folds 1–4.
+- Config: `configs/severstal_dino_ensemble.yaml`
 
 ```shell
 python scripts/tune_ensemble_weights.py --config configs/severstal_dino_ensemble.yaml
 python run_severstal_cv.py --config configs/severstal_dino_ensemble.yaml
 ```
 
-### AnomalyDINO (`anomaly_dino`) options
+### Detector ↔ analysis mapping
 
-| Parameter | Description |
-|-----------|-------------|
-| `coreset_ratio` | Greedy coreset subsampling of memory bank (e.g. `0.1`); `null` = keep all |
-| `neighbor_aggregate` | 3×3 neighbor mean on patch features before indexing |
+| CV detector | Analysis scorer | Notes |
+|-------------|-----------------|-------|
+| `anomaly_dino` | — | Tune threshold via script |
+| `dino_cls_cosine` (`per_image`) | `cls_patch_cosine` | Same raw signal |
+| `dino_attention_rollout` | `attention_rollout` | Same raw signal |
+| `dino_sobel` | `sobel_feature` | Exploration; weak AUROC alone |
+| `dino_knn_rollout` / `dino_iforest_rollout` / `dino_mahalanobis` / `ensemble` | — | Fit-dependent; always tune CV threshold |
 
-Tune `pred_score_threshold` with `scripts/tune_patch_threshold.py` — do not copy thresholds from cosine/Sobel configs.
+---
 
-Use [`run_analysis.py`](run_analysis.py) with `configs/analysis_severstal.yaml` to compare analysis scorers (AUROC). Analysis validates signal existence; CV detectors need per-detector threshold tuning.
+## 6. Cross-validation evaluation
 
-### Patch signal distribution analysis
+**Entry:** `python run_severstal_cv.py --config configs/<name>.yaml [--fold N]`
 
-The `src/analysis/` package compares patch-level DINO signals between healthy and anomalous regions using ground-truth masks. It is separate from the CV evaluation pipeline and useful for understanding which features separate defects.
+**Orchestrator:** `src/evaluation/cross_validation.py::run_cross_validation`
 
-**Run on Severstal:**
+Per fold:
+
+1. Stratified train/val split; select `shots` reference IDs.
+2. `build_detector` → `fit(refs)`.
+3. For each val image: `predict` → continuous patch scores.
+4. Binarize with `pred_score_threshold`; compare to GT patches (`gt_overlap_threshold`) → precision / recall / F1.
+5. Anomalous patches → bboxes (or points) → SAM2 → IoU / Dice.
+6. Write `fold_*/metrics.json` and optional `visualizations.pdf`.
+7. Aggregate mean±std → `summary.json`.
+
+### Output layout
+
+```
+results_severstal/<timestamp>/
+├── config.yaml
+├── folds.json
+├── summary.json
+└── fold_0/
+    ├── metrics.json
+    └── visualizations.pdf
+```
+
+### Metrics
+
+| Level | Metrics | Module |
+|-------|---------|--------|
+| Patch | TP/FP/FN → P/R/F1 (global + image-mean); class-wise if detector supports it | `src/evaluation/patch_metrics.py` |
+| Mask | IoU, Dice vs SAM2 | `src/evaluation/mask_metrics.py` |
+
+Report **both** patch F1 and mask IoU/Dice when comparing methods.
+
+### Threshold tuning
+
+```shell
+python scripts/tune_patch_threshold.py --config configs/<detector>.yaml --fold 0
+python scripts/tune_patch_threshold.py --config configs/<detector>.yaml --fold 0 --with-sam2
+```
+
+Outputs go to `results_threshold_tuning/<timestamp>/`. Under heavy healthy:anomaly imbalance, prefer operating points like **recall@0.7** when SAM2 recall matters more than precision.
+
+---
+
+## 7. Segmenters (SAM2)
+
+Interface (`src/segmenters/base.py`):
+
+```python
+class BaseSegmenter(ABC):
+    @abstractmethod
+    def segment(self, image: np.ndarray, prompts: SegmenterPrompts) -> SegmenterOutput: ...
+```
+
+Factory: `build_segmenter()` in `src/segmenters/__init__.py`.  
+Implementation: `src/segmenters/sam2_ultralytics.py` (Ultralytics downloads weights such as `sam2.1_b.pt` on first use).
+
+Typical config:
+
+```yaml
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox    # or point-style prompts from transforms
+  min_prompt_area: 1
+  device: cuda:0
+```
+
+---
+
+## 8. Analysis package
+
+**Purpose:** Test whether DINO-derived patch signals separate healthy vs anomalous patches using GT masks — **without** memory banks, CV folds, or SAM2.
+
+**Entry:**
 
 ```shell
 python run_analysis.py --config configs/analysis_severstal.yaml
@@ -467,47 +503,110 @@ python run_analysis.py --config configs/analysis_severstal.yaml --all-scorers
 python run_analysis.py --config configs/analysis_severstal.yaml --scorer cls_patch_cosine --max_images 50
 ```
 
-**Built-in scorers:**
+**Flow (`src/analysis/anomaly_distribution.py::run_analysis`):**
 
-| Scorer | Description |
-|--------|-------------|
-| `cls_patch_cosine` | Cosine similarity between CLS token and each patch token |
-| `patch_l2` | L2 norm of each patch token |
-| `sobel_feature` | Feature-space Sobel norm (default; reuses `sobel_features.py`) |
-| `sobel_image` | Image-space Sobel magnitude pooled per patch |
-| `attention_rollout` | CLS-to-patch attention rollout score |
+1. Load typed `AnalysisConfig` from YAML.
+2. Build `DinoFeatureExtractor`; resolve layers (`last` / `all` / indices).
+3. Iterate Severstal images via adapters → `AnalysisSample`.
+4. Extract CLS / patch tokens / attentions → `FeatureBundle` per layer.
+5. Map GT mask → patch labels (`overlap_ratio_threshold`, etc.).
+6. Run each scorer → aggregate healthy vs anomaly scores.
+7. Export `.npy`, `summary.json` (AUROC, AUPRC, KS, Wasserstein, Cohen’s d), `distribution.png`, optional heatmaps.
 
-**Key config options** ([`configs/analysis_severstal.yaml`](configs/analysis_severstal.yaml)):
+### Built-in scorers (`src/analysis/scorers.py`)
 
-| Parameter | Description |
-|-----------|-------------|
-| `layers` | `last`, `all`, or list of layer indices |
-| `patch_label.rule` | `center_point`, `any_overlap`, `overlap_ratio_threshold` (default), `majority_vote` |
-| `patch_label.threshold` | Overlap fraction for `overlap_ratio_threshold` (default 0.5) |
-| `sobel.norm_reduction` | `l2`, `mean`, or `max` for feature-space Sobel |
+| Name | Signal |
+|------|--------|
+| `cls_patch_cosine` | Cosine(CLS, patch) |
+| `patch_l2` | L2 norm of patch token |
+| `sobel_feature` | Sobel on feature map |
+| `sobel_image` | Image-space Sobel pooled per patch |
+| `attention_rollout` | CLS→patch attention rollout |
 
-**Output** (`results_analysis/<timestamp>/`):
+### Analysis config sketch
 
+```yaml
+seed: 42
+device: cuda:0
+output_dir: results_analysis
+model: { name: dinov2_vits14, resolution: 448 }
+dataset: { name: severstal, root: data/severstal, image_shape: [256, 1600] }
+layers: last
+patch_label: { rule: overlap_ratio_threshold, threshold: 0.5 }
+scorers: [cls_patch_cosine, patch_l2, sobel_feature, attention_rollout]
 ```
-{scorer}/layer_{k}/
-  healthy_scores.npy
-  anomaly_scores.npy
-  patch_labels.npy
-  summary.json          # means, KS, Wasserstein, Cohen's d, AUROC, AUPRC
-  distribution.png      # 3-panel raw-count histogram
-  per_image_scores/
-  heatmaps/
+
+### Analysis vs CV
+
+| | Analysis | CV (`run_severstal_cv`) |
+|--|----------|-------------------------|
+| Goal | Signal existence / separability | End-to-end detector quality |
+| Fit / refs | No | Yes (`fit` + `shots`) |
+| Threshold | N/A (ranking metrics) | `pred_score_threshold` |
+| SAM2 | No | Yes |
+| Custom extension | `BaseScorer` | `BaseAnomalyDetector` |
+
+---
+
+## 9. Configs and entry points
+
+### CV config skeleton
+
+```yaml
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+
+detector:
+  name: anomaly_dino
+  # … detector-specific keys …
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  device: cuda:0
+
+output:
+  dir: results_severstal
+  save_visualizations: true
+  max_viz_images_per_fold: 20
 ```
 
-**Adding a new scorer:** subclass `BaseScorer` in [`src/analysis/scorers.py`](src/analysis/scorers.py) and register in `SCORER_REGISTRY`.
+Ready-made configs live under `configs/severstal*.yaml` and `configs/analysis_severstal.yaml`.
 
-### Adding a new anomaly detector
+### CLI cheat sheet
 
-The evaluation framework is built around a pluggable detector interface. To add your own method:
+| Command | Role |
+|---------|------|
+| `python run_severstal_cv.py --config ... [--fold N]` | Full / single-fold CV |
+| `python run_analysis.py --config configs/analysis_severstal.yaml` | Patch signal analysis |
+| `python scripts/tune_patch_threshold.py --config ... --fold 0` | Sweep `pred_score_threshold` |
+| `python scripts/tune_ensemble_weights.py --config ...` | Ensemble weight search |
+| `python run_anomalydino.py ...` | Legacy MVTec/VisA few-shot |
+| `python tests/test_severstal_unit.py` | Smoke tests (no GPU/data required for basic checks) |
 
-#### 1. Subclass `BaseAnomalyDetector`
+CLI overrides for CV: `--data_root`, `--detector`, `--fold`.
 
-Create a new file, e.g. `src/detectors/my_detector.py`:
+---
+
+## Adding a custom detector
+
+### 1. Subclass `BaseAnomalyDetector`
+
+Create e.g. `src/detectors/my_detector.py`:
 
 ```python
 from __future__ import annotations
@@ -520,28 +619,31 @@ from src.severstal.transforms import compute_processed_shape
 
 
 class MyDetector(BaseAnomalyDetector):
-    def __init__(self, device: str = "cuda:0", **kwargs):
+    def __init__(self, device: str = "cuda:0", resolution: int = 448, **kwargs):
         self.device = device
-        # your init here
+        self.resolution = resolution
+        # store hyperparameters / model handles here
 
     @property
     def supports_class_prediction(self) -> bool:
-        # Return True if you produce per-class patch scores
-        return False
+        return False  # True only if you fill patch_class_scores
 
     def fit(self, reference_samples: list[SeverstalSample]) -> None:
-        # Build state from defect-free reference images
-        # reference_samples[i].image is an RGB numpy array (H, W, 3)
+        # Build memory bank / stats / forest / etc.
+        # reference_samples[i].image is RGB (H, W, 3)
+        # May be empty when shots == 0
         pass
 
     def predict(self, sample: SeverstalSample) -> DetectorOutput:
         native_shape = sample.image.shape[:2]
-        patch_size = 14  # must match your backbone's patch size
+        patch_size = 14  # must match backbone
         processed_shape, grid_size = compute_processed_shape(
-            native_shape, smaller_edge_size=448, patch_size=patch_size
+            native_shape,
+            smaller_edge_size=self.resolution,
+            patch_size=patch_size,
         )
 
-        # patch_scores: (grid_h, grid_w), higher = more anomalous
+        # (grid_h, grid_w), higher = more anomalous
         patch_scores = np.zeros(grid_size, dtype=np.float32)
 
         return DetectorOutput(
@@ -550,79 +652,140 @@ class MyDetector(BaseAnomalyDetector):
             grid_size=grid_size,
             processed_shape=processed_shape,
             patch_size=patch_size,
-            patch_valid_mask=None,          # optional (H_grid, W_grid) bool mask
-            patch_class_scores=None,        # optional (H, W, C) if class-aware
+            patch_valid_mask=None,
+            patch_class_scores=None,
         )
 ```
 
-**Contract for `DetectorOutput`:**
+Use `src/detectors/anomaly_dino.py` or `dino_iforest_rollout.py` as full reference implementations. Shared DINO helpers live in `dino_features.py`, `attention_features.py`, `cls_patch_features.py`, and `sobel_features.py`.
 
-| Field | Shape | Description |
-|-------|-------|-------------|
-| `patch_scores` | `(grid_h, grid_w)` | Continuous anomaly score per patch |
-| `grid_size` | `(grid_h, grid_w)` | Patch grid dimensions after model resize/crop |
-| `processed_shape` | `(H, W)` | Image size after preprocessing (before patchification) |
-| `patch_size` | int | Patch edge length in pixels (14 for DINOv2) |
-| `patch_valid_mask` | `(grid_h, grid_w)` or `None` | Patches to include in metrics (exclude background) |
-| `patch_class_scores` | `(grid_h, grid_w, C)` or `None` | Per-class scores; set only if `supports_class_prediction` is `True` |
+### 2. Register in the factory
 
-Use [`src/detectors/anomaly_dino.py`](src/detectors/anomaly_dino.py) as a reference implementation.
-
-#### 2. Register the detector in the factory
-
-Add your detector to [`src/detectors/__init__.py`](src/detectors/__init__.py):
+In `src/detectors/__init__.py`, inside `build_detector`:
 
 ```python
-def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
-    name = config.get("name", "anomaly_dino")
-    if name == "anomaly_dino":
-        ...
-    elif name == "my_detector":
-        from src.detectors.my_detector import MyDetector
-        return MyDetector(device=config.get("device", "cuda:0"))
-    raise ValueError(f"Unknown detector: {name}")
+if name == "my_detector":
+    from src.detectors.my_detector import MyDetector
+    return MyDetector(
+        device=config.get("device", "cuda:0"),
+        resolution=config.get("resolution", 448),
+        # map YAML keys → constructor args
+        # use `seed` for any RNG (PCA, forests, …)
+    )
 ```
 
-#### 3. Add config entries
-
-In `configs/severstal.yaml` (or your own config file):
+### 3. Add a YAML config
 
 ```yaml
+# configs/severstal_my_detector.yaml
+seed: 42
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.5   # tune after first dry run
+
 detector:
   name: my_detector
   device: cuda:0
-  # any custom hyperparameters for your detector
+  resolution: 448
+  shots: 8
+  reference_sampling: class_balanced
+  # your hyperparameters …
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  device: cuda:0
+
+output:
+  dir: results_severstal
+  save_visualizations: true
+  max_viz_images_per_fold: 20
 ```
 
-Then run:
+### 4. Run and tune
+
+```shell
+# Smoke: single fold
+python run_severstal_cv.py --config configs/severstal_my_detector.yaml --fold 0
+
+# Tune decision threshold on fold 0 val
+python scripts/tune_patch_threshold.py --config configs/severstal_my_detector.yaml --fold 0
+
+# Full CV after updating pred_score_threshold in the YAML
+python run_severstal_cv.py --config configs/severstal_my_detector.yaml
+```
+
+Or override the name without a new file:
 
 ```shell
 python run_severstal_cv.py --config configs/severstal.yaml --detector my_detector
 ```
 
-#### Tips
+### Checklist for a working plug-in
 
-- **Preprocessing alignment**: GT masks are aligned to your patch grid in [`src/severstal/transforms.py`](src/severstal/transforms.py). If your detector uses different resize/crop logic, update `compute_processed_shape` / `resize_mask_like_model` accordingly, or ensure your `processed_shape` and `patch_size` match the actual preprocessing.
-- **Class-aware detectors**: Set `supports_class_prediction = True` and populate `patch_class_scores` to enable class-wise patch and mask metrics.
-- **Reproducibility**: The orchestrator calls `seed_all(seed + fold_idx)` at the start of each fold. Use the passed `seed` in `build_detector` for any randomized components.
-
----
-
-This work uses the following ressources and datasets:
-- [DINOv2](https://github.com/facebookresearch/dinov2), code and model available under Apache 2.0 license.
-- The [MVTec-AD dataset](https://www.mvtec.com/company/research/datasets/mvtec-ad), available under the CC BY-NC-SA 4.0 license.
-- The [VisA dataset](https://github.com/amazon-science/spot-diff), available under the CC BY 4.0 license.
+- [ ] Subclasses `BaseAnomalyDetector` with `fit` / `predict` / `supports_class_prediction`
+- [ ] Returns `DetectorOutput` with **higher scores = more anomalous**
+- [ ] `processed_shape` / `patch_size` / `grid_size` match `compute_processed_shape`
+- [ ] Registered under a unique string in `build_detector`
+- [ ] YAML has `detector.name` plus any custom keys you read in the factory
+- [ ] Threshold tuned with `tune_patch_threshold.py` (do not copy thresholds from other detectors)
+- [ ] Optional: class-aware metrics via `patch_class_scores` + `supports_class_prediction=True`
+- [ ] Optional: probe the raw signal first with a custom analysis scorer (below)
 
 ---
 
-If you find this repository useful in your research/project, please consider citing the paper:
+## Adding a custom analysis scorer
 
+For early signal checks only (not a substitute for a CV detector):
+
+1. Subclass `BaseScorer` in `src/analysis/scorers.py`:
+
+```python
+class MyScorer(BaseScorer):
+    name = "my_scorer"
+
+    def score(self, bundle: FeatureBundle, config: AnalysisConfig) -> np.ndarray:
+        # return (grid_h, grid_w) float scores
+        ...
 ```
-@inproceedings{damm2024anomalydino,
-      title={AnomalyDINO: Boosting Patch-based Few-shot Anomaly Detection with DINOv2}, 
-      author={Simon Damm and Mike Laszkiewicz and Johannes Lederer and Asja Fischer},
-      booktitle={Proceedings of the Winter Conference on Applications of Computer Vision (WACV 2025)},
-      year={2025},
-      url={https://arxiv.org/abs/2405.14529}, 
-}
-```
+
+2. Register in `SCORER_REGISTRY`.
+3. Add the name under `scorers:` in `configs/analysis_severstal.yaml` (or pass `--scorer my_scorer`).
+
+---
+
+## Tips and pitfalls
+
+- **Geometry first.** Misaligned `processed_shape` / `patch_size` silently breaks GT labels and SAM2 prompts. Prefer `compute_processed_shape` and the same `resolution` as DINOv2 preprocessing.
+- **Score polarity.** Metrics treat high scores as anomalous. If your method naturally outputs “similarity to normal,” invert it (as `prototype` cosine does with `1 - cos`).
+- **Zero-shot vs few-shot.** Empty refs when `shots: 0` — `fit` must tolerate that if you claim zero-shot support.
+- **`class_balanced` shots.** Must be divisible by `num_classes` (4).
+- **Reference policy overrides.** Some detectors force `defect_free` refs (e.g. Mahalanobis, CLS prototype, ensemble defaults) inside `run_cross_validation` — check that function if refs look wrong.
+- **Do not reuse analysis thresholds** for kNN / Mahalanobis / IsolationForest / fused detectors.
+- **Reproducibility.** Each fold uses `seed_all(seed + fold_idx)`; pass `seed` from `build_detector` into any randomized fit (PCA, forests, coreset).
+- **Legacy path.** MVTec/VisA scripts do not go through `BaseAnomalyDetector`; custom Severstal detectors only need the factory + CV config path.
+
+---
+
+## Quick mental model
+
+| Layer | Abstraction | Extend by |
+|-------|-------------|-----------|
+| Signal probe | `BaseScorer` | `SCORER_REGISTRY` |
+| Anomaly map | `BaseAnomalyDetector` | `build_detector` |
+| Mask refine | `BaseSegmenter` | `build_segmenter` |
+| Eval loop | `run_cross_validation` | YAML + scripts |
+
+Custom methods almost always mean: **implement `BaseAnomalyDetector` → register → YAML → tune threshold → `run_severstal_cv.py`.**

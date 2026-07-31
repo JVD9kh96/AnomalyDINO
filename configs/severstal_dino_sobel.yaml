@@ -20,7 +20,7 @@ detector:
   model_name: dinov2_vits14
   resolution: 448
   device: cuda:0
-  shots: 0                        # 0 = zero-shot; >0 = few-shot calibration
+  shots: 8                        # 0 = zero-shot; >0 = few-shot calibration
   reference_sampling: class_balanced
 
   sobel:

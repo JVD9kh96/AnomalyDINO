@@ -13,11 +13,11 @@ cv:
 patch_eval:
   gt_overlap_threshold: 0.5
   # Tune from analysis cls_patch_cosine/layer_11 distributions (zero-shot raw scale)
-  pred_score_threshold: 0.75
+  pred_score_threshold: 0.239768
 
 detector:
   name: dino_cls_cosine
-  model_name: dinov2_vits14
+  model_name: dinov2_vitb14
   resolution: 448
   device: cuda:0
   layer: last

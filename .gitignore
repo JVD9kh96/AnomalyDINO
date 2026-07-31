@@ -13,3 +13,5 @@ src/__pycache__/
 .cursorindexingignore
 .vscode
 .specstory
+*.pt
+*.pdf

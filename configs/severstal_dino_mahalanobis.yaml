@@ -12,7 +12,7 @@ cv:
 
 patch_eval:
   gt_overlap_threshold: 0.5
-  pred_score_threshold: 2.0
+  pred_score_threshold: 10.525639 
 
 detector:
   name: dino_mahalanobis

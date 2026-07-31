@@ -1,3 +1,4 @@
+
 seed: 42
 
 data:
@@ -13,17 +14,17 @@ cv:
 patch_eval:
   gt_overlap_threshold: 0.5
   # Tune with: python scripts/tune_patch_threshold.py --config configs/severstal_dino_knn_rollout.yaml --fold 0
-  pred_score_threshold: 0.5
+  pred_score_threshold: 1.119703
 
 detector:
   name: dino_knn_rollout
   model_name: dinov2_vits14
-  resolution: 448
+  resolution: 224
   device: cuda:0
-  shots: 8
+  shots: 32
   reference_sampling: class_balanced
   knn_metric: L2_normalized
-  k_neighbors: 1
+  k_neighbors: 5
   faiss_on_cpu: false
   masking: false
   mask_ref_images: false

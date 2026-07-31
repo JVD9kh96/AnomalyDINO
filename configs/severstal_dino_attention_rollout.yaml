@@ -19,7 +19,7 @@ detector:
   model_name: dinov2_vits14
   resolution: 448
   device: cuda:0
-  shots: 0
+  shots: 8
   reference_sampling: class_balanced
   attention_rollout:
     average_heads: true

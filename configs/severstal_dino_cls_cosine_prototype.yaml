@@ -13,7 +13,7 @@ cv:
 patch_eval:
   gt_overlap_threshold: 0.5
   # Tune with: python scripts/tune_patch_threshold.py --config configs/severstal_dino_cls_cosine_prototype.yaml
-  pred_score_threshold: 0.15
+  pred_score_threshold: -1.191555 
 
 detector:
   name: dino_cls_cosine
