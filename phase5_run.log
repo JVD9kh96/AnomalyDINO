@@ -1,0 +1,764 @@
+Phase 5 selected purification: {'condition': 'fixed_ratio_trim', 'source': 'phase4_recommended_setting', 'trim_fraction': 0.2}
+[manifest clean=1 additional=0] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean1_additional0_manifest.json
+  Manifest ID: 518e7fb611ac034dbde5d3bd8a4dccaee653854ffe8dd421f8f157dc1165fef9
+  Fold / seed: 0 / 42
+  Clean references: 1
+  Additional references: 0
+  Defect-bearing candidates: 0
+  Candidate patches: 0
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 1/9: clean_1] starting
+Condition=clean fold=0 seed=42 clean=1 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=6400, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=6400
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  [clean_1] still running (1.0 min)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.0 min
+  Validation progress: 200/2514 (8.0%) | elapsed=1.1 min | ETA=13.0 min
+  [clean_1] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.7 min | ETA=12.5 min
+  [clean_1] still running (3.0 min)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.3 min | ETA=12.0 min
+  Validation progress: 500/2514 (19.9%) | elapsed=2.8 min | ETA=11.4 min
+  [clean_1] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.4 min | ETA=10.9 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.0 min | ETA=10.3 min
+  [clean_1] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=4.5 min | ETA=9.7 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.1 min | ETA=9.2 min
+  [clean_1] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=5.7 min | ETA=8.7 min
+  [clean_1] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.3 min | ETA=8.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=6.9 min | ETA=7.6 min
+  [clean_1] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.5 min | ETA=7.0 min
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.1 min | ETA=6.4 min
+  [clean_1] still running (9.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=8.7 min | ETA=5.9 min
+  [clean_1] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.3 min | ETA=5.3 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=9.8 min | ETA=4.7 min
+  [clean_1] still running (11.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.5 min | ETA=4.2 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.0 min | ETA=3.6 min
+  [clean_1] still running (12.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=11.7 min | ETA=3.0 min
+  [clean_1] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.2 min | ETA=2.4 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=12.8 min | ETA=1.8 min
+  [clean_1] still running (14.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=13.4 min | ETA=1.2 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.0 min | ETA=0.7 min
+  [clean_1] still running (15.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=14.6 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=14.7 min | ETA=0.0 min
+  [clean_1] still running (16.0 min)
+AUPRC=0.06968513936178707 AUROC=0.7032583574770704 F1max=0.13538114553520658 FixedF1=0.062210353214539486 bank=6400 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_clean_1_s42
+  [clean_1] completed in 16.4 min
+[manifest clean=2 additional=0] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean2_additional0_manifest.json
+  Manifest ID: c74b959af80a57a61a490cf7d77b0ac0256f12d6d4b9f55b96a0355d7b216b94
+  Fold / seed: 0 / 42
+  Clean references: 2
+  Additional references: 0
+  Defect-bearing candidates: 0
+  Candidate patches: 0
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 2/9: clean_2] starting
+Condition=clean fold=0 seed=42 clean=2 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.5 min | ETA=13.1 min
+  [clean_2] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.1 min | ETA=12.8 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.7 min | ETA=12.5 min
+  [clean_2] still running (2.0 min)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.3 min | ETA=12.0 min
+  Validation progress: 500/2514 (19.9%) | elapsed=2.9 min | ETA=11.5 min
+  [clean_2] still running (3.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.5 min | ETA=11.0 min
+  [clean_2] still running (4.0 min)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.0 min | ETA=10.5 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.6 min | ETA=9.9 min
+  [clean_2] still running (5.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.2 min | ETA=9.4 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=5.8 min | ETA=8.8 min
+  [clean_2] still running (6.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.4 min | ETA=8.2 min
+  [clean_2] still running (7.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.0 min | ETA=7.6 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.5 min | ETA=7.0 min
+  [clean_2] still running (8.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.1 min | ETA=6.5 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=8.7 min | ETA=5.9 min
+  [clean_2] still running (9.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.3 min | ETA=5.3 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=9.9 min | ETA=4.7 min
+  [clean_2] still running (10.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.5 min | ETA=4.2 min
+  [clean_2] still running (11.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.0 min | ETA=3.6 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=11.6 min | ETA=3.0 min
+  [clean_2] still running (12.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.2 min | ETA=2.4 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=12.8 min | ETA=1.8 min
+  [clean_2] still running (13.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=13.4 min | ETA=1.2 min
+  [clean_2] still running (14.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.0 min | ETA=0.7 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=14.5 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=14.6 min | ETA=0.0 min
+  [clean_2] still running (15.0 min)
+AUPRC=0.10152548135619827 AUROC=0.8183485299015728 F1max=0.1907505459901468 FixedF1=0.18095309422514144 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_clean_2_s42
+  [clean_2] completed in 15.6 min
+[manifest clean=4 additional=0] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean4_additional0_manifest.json
+  Manifest ID: 98cf181684c097a515e7420878dfe410aaf2ca7e482b222b13722ea1a03745a2
+  Fold / seed: 0 / 42
+  Clean references: 4
+  Additional references: 0
+  Defect-bearing candidates: 0
+  Candidate patches: 0
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 3/9: clean_4] starting
+Condition=clean fold=0 seed=42 clean=4 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=25600, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=25600
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=13.7 min
+  [clean_4] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.3 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=12.9 min
+  [clean_4] still running (2.0 min)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.5 min
+  [clean_4] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.0 min | ETA=12.0 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.6 min | ETA=11.4 min
+  [clean_4] still running (4.0 min)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.2 min | ETA=10.8 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.8 min | ETA=10.3 min
+  [clean_4] still running (5.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.4 min | ETA=9.7 min
+  [clean_4] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.0 min | ETA=9.1 min
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.6 min | ETA=8.5 min
+  [clean_4] still running (7.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.2 min | ETA=7.9 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.8 min | ETA=7.3 min
+  [clean_4] still running (8.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.4 min | ETA=6.7 min
+  [clean_4] still running (9.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.0 min | ETA=6.1 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.6 min | ETA=5.5 min
+  [clean_4] still running (10.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.2 min | ETA=4.9 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.8 min | ETA=4.3 min
+  [clean_4] still running (11.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.4 min | ETA=3.7 min
+  [clean_4] still running (12.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.0 min | ETA=3.1 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.6 min | ETA=2.5 min
+  [clean_4] still running (13.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.2 min | ETA=1.9 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=13.8 min | ETA=1.3 min
+  [clean_4] still running (14.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.4 min | ETA=0.7 min
+  [clean_4] still running (15.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.0 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.1 min | ETA=0.0 min
+  [clean_4] still running (16.0 min)
+AUPRC=0.1048803671590098 AUROC=0.8134105768514832 F1max=0.20033453606794935 FixedF1=0.17696263645533078 bank=25600 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_clean_4_s42
+  [clean_4] completed in 16.2 min
+[manifest clean=8 additional=0] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean8_additional0_manifest.json
+  Manifest ID: 62bf32e3d02fd3564e765302343242d351487143ab7fb0d2788b717a31900d72
+  Fold / seed: 0 / 42
+  Clean references: 8
+  Additional references: 0
+  Defect-bearing candidates: 0
+  Candidate patches: 0
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 4/9: clean_8] starting
+Condition=clean fold=0 seed=42 clean=8 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=51200, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=51200
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  [clean_8] still running (1.0 min)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.3 min
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.8 min
+  [clean_8] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.5 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.0 min
+  [clean_8] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.1 min | ETA=12.4 min
+  [clean_8] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.7 min | ETA=11.9 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.3 min
+  [clean_8] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.0 min | ETA=10.7 min
+  [clean_8] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.6 min | ETA=10.1 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.3 min | ETA=9.5 min
+  [clean_8] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.9 min | ETA=8.9 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.5 min | ETA=8.2 min
+  [clean_8] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.1 min | ETA=7.6 min
+  [clean_8] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.8 min | ETA=7.0 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.4 min | ETA=6.4 min
+  [clean_8] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.0 min | ETA=5.7 min
+  [clean_8] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.7 min | ETA=5.1 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.3 min | ETA=4.5 min
+  [clean_8] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.9 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.5 min | ETA=3.2 min
+  [clean_8] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.2 min | ETA=2.6 min
+  [clean_8] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.8 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.4 min | ETA=1.3 min
+  [clean_8] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.1 min | ETA=0.7 min
+  [clean_8] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.7 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.8 min | ETA=0.0 min
+  [clean_8] still running (17.0 min)
+AUPRC=0.10297499822887063 AUROC=0.7954313583813606 F1max=0.19862725776613688 FixedF1=0.146955393712073 bank=51200 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_clean_8_s42
+  [clean_8] completed in 17.0 min
+[manifest clean=2 additional=8] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean2_additional8_manifest.json
+  Manifest ID: ff643873549cee9ab182df83a532150cf59cb5b1fd88cacba1755e72160956ef
+  Fold / seed: 0 / 42
+  Clean references: 2
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 5/9: expanded_full_2plus8] starting
+Condition=contaminated_all fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=64000
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.5 min
+  [expanded_full_2plus8] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.3 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  [expanded_full_2plus8] still running (2.0 min)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [expanded_full_2plus8] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.7 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.1 min
+  [expanded_full_2plus8] still running (4.0 min)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.5 min
+  [expanded_full_2plus8] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=10.9 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.7 min | ETA=10.3 min
+  [expanded_full_2plus8] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.6 min
+  [expanded_full_2plus8] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.0 min | ETA=9.0 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [expanded_full_2plus8] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.3 min | ETA=7.7 min
+  [expanded_full_2plus8] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.6 min | ETA=6.5 min
+  [expanded_full_2plus8] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.2 min | ETA=5.8 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.8 min | ETA=5.2 min
+  [expanded_full_2plus8] still running (11.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.5 min | ETA=4.5 min
+  [expanded_full_2plus8] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.1 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.8 min | ETA=3.3 min
+  [expanded_full_2plus8] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.4 min | ETA=2.6 min
+  [expanded_full_2plus8] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.0 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.7 min | ETA=1.4 min
+  [expanded_full_2plus8] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.3 min | ETA=0.7 min
+  [expanded_full_2plus8] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.0 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.0 min | ETA=0.0 min
+AUPRC=0.09505026959358408 AUROC=0.7968901394934514 F1max=0.19330336049339145 FixedF1=0.07848236265221298 bank=64000 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_expanded_full_2plus8_s42
+  [expanded_full_2plus8] completed in 17.0 min
+[run 6/9: expanded_random_budget_2plus8] starting
+Condition=contaminated_all fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=51200
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=15.1 min
+  [expanded_random_budget_2plus8] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [expanded_random_budget_2plus8] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.3 min
+  [expanded_random_budget_2plus8] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.7 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.1 min
+  [expanded_random_budget_2plus8] still running (4.0 min)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.5 min
+  [expanded_random_budget_2plus8] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=10.8 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.7 min | ETA=10.2 min
+  [expanded_random_budget_2plus8] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.3 min | ETA=9.6 min
+  [expanded_random_budget_2plus8] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.0 min | ETA=9.0 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.6 min | ETA=8.3 min
+  [expanded_random_budget_2plus8] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.2 min | ETA=7.7 min
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  [expanded_random_budget_2plus8] still running (9.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.5 min | ETA=6.4 min
+  [expanded_random_budget_2plus8] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.1 min | ETA=5.8 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.8 min | ETA=5.2 min
+  [expanded_random_budget_2plus8] still running (11.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.4 min | ETA=4.5 min
+  [expanded_random_budget_2plus8] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.0 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.7 min | ETA=3.3 min
+  [expanded_random_budget_2plus8] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.3 min | ETA=2.6 min
+  [expanded_random_budget_2plus8] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.9 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.5 min | ETA=1.4 min
+  [expanded_random_budget_2plus8] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.2 min | ETA=0.7 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.8 min | ETA=0.1 min
+  [expanded_random_budget_2plus8] still running (16.0 min)
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.9 min | ETA=0.0 min
+AUPRC=0.0949790371105435 AUROC=0.7967777168151002 F1max=0.19316611638446657 FixedF1=0.07994113745647488 bank=51200 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_expanded_random_budget_2plus8_s42
+  [expanded_random_budget_2plus8] completed in 16.8 min
+[manifest clean=1 additional=8] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean1_additional8_manifest.json
+  Manifest ID: 52008a75f41459a2ee0d67930c2a9385bc417300fd834797c249f76b8109c7c8
+  Fold / seed: 0 / 42
+  Clean references: 1
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 7/9: purified_budget_1plus8] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=1 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=6400, candidates=51200, accepted=40960, rejected=10240, accept_frac=0.8000, calib_pct=None, calib_thr=0.30557310581207275, final_size=47360
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  [purified_budget_1plus8] still running (1.0 min)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.1 min
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.6 min
+  [purified_budget_1plus8] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.2 min
+  [purified_budget_1plus8] still running (3.0 min)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.8 min
+  Validation progress: 500/2514 (19.9%) | elapsed=3.1 min | ETA=12.3 min
+  [purified_budget_1plus8] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.7 min | ETA=11.8 min
+  [purified_budget_1plus8] still running (5.0 min)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.3 min | ETA=11.1 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.9 min | ETA=10.5 min
+  [purified_budget_1plus8] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.5 min | ETA=9.9 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.2 min | ETA=9.3 min
+  [purified_budget_1plus8] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.8 min | ETA=8.7 min
+  [purified_budget_1plus8] still running (8.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.4 min | ETA=8.1 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.0 min | ETA=7.5 min
+  [purified_budget_1plus8] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.7 min | ETA=6.9 min
+  [purified_budget_1plus8] still running (10.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.3 min | ETA=6.3 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.9 min | ETA=5.6 min
+  [purified_budget_1plus8] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.5 min | ETA=5.0 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.1 min | ETA=4.4 min
+  [purified_budget_1plus8] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.7 min | ETA=3.8 min
+  [purified_budget_1plus8] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.4 min | ETA=3.2 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.0 min | ETA=2.6 min
+  [purified_budget_1plus8] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.6 min | ETA=1.9 min
+  [purified_budget_1plus8] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.2 min | ETA=1.3 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.8 min | ETA=0.7 min
+  [purified_budget_1plus8] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.5 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.6 min | ETA=0.0 min
+  [purified_budget_1plus8] still running (17.0 min)
+AUPRC=0.09097078272215921 AUROC=0.7656658814492366 F1max=0.18102552907165206 FixedF1=0.06524451657167758 bank=47360 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_purified_budget_1plus8_s42
+  [purified_budget_1plus8] completed in 17.2 min
+[run 8/9: purified_budget_2plus8] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  [purified_budget_2plus8] still running (1.0 min)
+  [purified_budget_2plus8] still running (2.0 min)
+  [purified_budget_2plus8] still running (3.0 min)
+  [purified_budget_2plus8] still running (4.0 min)
+  [purified_budget_2plus8] still running (5.0 min)
+  [purified_budget_2plus8] still running (6.0 min)
+  [purified_budget_2plus8] still running (7.0 min)
+  [purified_budget_2plus8] still running (8.0 min)
+  [purified_budget_2plus8] still running (9.0 min)
+  [purified_budget_2plus8] still running (10.0 min)
+  [purified_budget_2plus8] still running (11.0 min)
+  [purified_budget_2plus8] still running (12.0 min)
+  [purified_budget_2plus8] still running (13.0 min)
+  [purified_budget_2plus8] still running (14.0 min)
+  [purified_budget_2plus8] still running (15.0 min)
+  [purified_budget_2plus8] still running (16.0 min)
+  [purified_budget_2plus8] still running (17.0 min)
+  [purified_budget_2plus8] still running (18.0 min)
+  [purified_budget_2plus8] still running (19.0 min)
+  [purified_budget_2plus8] still running (20.0 min)
+  [purified_budget_2plus8] still running (21.0 min)
+  [purified_budget_2plus8] still running (22.0 min)
+  [purified_budget_2plus8] still running (23.0 min)
+  [purified_budget_2plus8] still running (24.0 min)
+  [purified_budget_2plus8] still running (25.0 min)
+  [purified_budget_2plus8] still running (26.0 min)
+  [purified_budget_2plus8] still running (27.0 min)
+  [purified_budget_2plus8] still running (28.0 min)
+  [purified_budget_2plus8] still running (29.0 min)
+  [purified_budget_2plus8] still running (30.0 min)
+  [purified_budget_2plus8] still running (31.0 min)
+  [purified_budget_2plus8] still running (32.0 min)
+  [purified_budget_2plus8] still running (33.0 min)
+  [purified_budget_2plus8] still running (34.0 min)
+  [purified_budget_2plus8] still running (35.0 min)
+  [purified_budget_2plus8] still running (36.0 min)
+  [purified_budget_2plus8] still running (37.0 min)
+  [purified_budget_2plus8] still running (38.0 min)
+  [purified_budget_2plus8] still running (39.0 min)
+  [purified_budget_2plus8] still running (40.0 min)
+  [purified_budget_2plus8] still running (41.0 min)
+  [purified_budget_2plus8] still running (42.0 min)
+  [purified_budget_2plus8] still running (43.0 min)
+  [purified_budget_2plus8] still running (44.0 min)
+  [purified_budget_2plus8] still running (45.0 min)
+  [purified_budget_2plus8] still running (46.0 min)
+  [purified_budget_2plus8] still running (47.0 min)
+  [purified_budget_2plus8] still running (48.0 min)
+  [purified_budget_2plus8] still running (49.0 min)
+  [purified_budget_2plus8] still running (50.0 min)
+  [purified_budget_2plus8] still running (51.0 min)
+  [purified_budget_2plus8] still running (52.0 min)
+  [purified_budget_2plus8] still running (53.0 min)
+  [purified_budget_2plus8] still running (54.0 min)
+  [purified_budget_2plus8] still running (55.0 min)
+  [purified_budget_2plus8] still running (56.0 min)
+  [purified_budget_2plus8] still running (57.0 min)
+  [purified_budget_2plus8] still running (58.0 min)
+  [purified_budget_2plus8] still running (59.0 min)
+  [purified_budget_2plus8] still running (60.0 min)
+  [purified_budget_2plus8] still running (61.0 min)
+  [purified_budget_2plus8] still running (62.0 min)
+  [purified_budget_2plus8] still running (63.0 min)
+  [purified_budget_2plus8] still running (64.0 min)
+  [purified_budget_2plus8] still running (65.0 min)
+  [purified_budget_2plus8] still running (66.0 min)
+  [purified_budget_2plus8] still running (67.0 min)
+  [purified_budget_2plus8] still running (68.0 min)
+  [purified_budget_2plus8] still running (69.0 min)
+  [purified_budget_2plus8] still running (70.0 min)
+  [purified_budget_2plus8] still running (71.0 min)
+  [purified_budget_2plus8] still running (72.0 min)
+  Memory bank: clean=12800, candidates=51200, accepted=40960, rejected=10240, accept_frac=0.8000, calib_pct=None, calib_thr=0.31217384338378906, final_size=51200
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  [purified_budget_2plus8] still running (73.0 min)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=15.0 min
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.9 min
+  [purified_budget_2plus8] still running (74.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.3 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.7 min
+  [purified_budget_2plus8] still running (75.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.0 min | ETA=12.1 min
+  [purified_budget_2plus8] still running (76.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.6 min | ETA=11.5 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.2 min | ETA=10.9 min
+  [purified_budget_2plus8] still running (77.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=4.8 min | ETA=10.3 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.5 min | ETA=9.8 min
+  [purified_budget_2plus8] still running (78.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.1 min | ETA=9.2 min
+  [purified_budget_2plus8] still running (79.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.7 min | ETA=8.6 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.4 min | ETA=8.0 min
+  [purified_budget_2plus8] still running (80.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.0 min | ETA=7.4 min
+  [purified_budget_2plus8] still running (81.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.6 min | ETA=6.8 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.2 min | ETA=6.2 min
+  [purified_budget_2plus8] still running (82.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.8 min | ETA=5.6 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.5 min | ETA=5.0 min
+  [purified_budget_2plus8] still running (83.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.1 min | ETA=4.4 min
+  [purified_budget_2plus8] still running (84.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.7 min | ETA=3.8 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.3 min | ETA=3.2 min
+  [purified_budget_2plus8] still running (85.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.0 min | ETA=2.6 min
+  [purified_budget_2plus8] still running (86.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.6 min | ETA=1.9 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.2 min | ETA=1.3 min
+  [purified_budget_2plus8] still running (87.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.8 min | ETA=0.7 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.5 min | ETA=0.1 min
+  [purified_budget_2plus8] still running (88.0 min)
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.6 min | ETA=0.0 min
+AUPRC=0.10838159519342128 AUROC=0.813187018227823 F1max=0.21503712371044018 FixedF1=0.06197663204473308 bank=51200 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_purified_budget_2plus8_s42
+  [purified_budget_2plus8] completed in 88.9 min
+[manifest clean=4 additional=8] freezing
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean4_additional8_manifest.json
+  Manifest ID: 66eed7ad336119b253ae036362817d19d1dedcca5a04176ce547810594a559e5
+  Fold / seed: 0 / 42
+  Clean references: 4
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+  [manifest] completed in 0.1 min
+[run 9/9: purified_budget_4plus8] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=4 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  [purified_budget_4plus8] still running (1.0 min)
+  [purified_budget_4plus8] still running (2.0 min)
+  [purified_budget_4plus8] still running (3.0 min)
+  [purified_budget_4plus8] still running (4.0 min)
+  [purified_budget_4plus8] still running (5.0 min)
+  [purified_budget_4plus8] still running (6.0 min)
+  [purified_budget_4plus8] still running (7.0 min)
+  [purified_budget_4plus8] still running (8.0 min)
+  [purified_budget_4plus8] still running (9.0 min)
+  [purified_budget_4plus8] still running (10.0 min)
+  [purified_budget_4plus8] still running (11.0 min)
+  [purified_budget_4plus8] still running (12.0 min)
+  [purified_budget_4plus8] still running (13.0 min)
+  [purified_budget_4plus8] still running (14.0 min)
+  [purified_budget_4plus8] still running (15.0 min)
+  [purified_budget_4plus8] still running (16.0 min)
+  [purified_budget_4plus8] still running (17.0 min)
+  [purified_budget_4plus8] still running (18.0 min)
+  [purified_budget_4plus8] still running (19.0 min)
+  [purified_budget_4plus8] still running (20.0 min)
+  [purified_budget_4plus8] still running (21.0 min)
+  [purified_budget_4plus8] still running (22.0 min)
+  [purified_budget_4plus8] still running (23.0 min)
+  [purified_budget_4plus8] still running (24.0 min)
+  [purified_budget_4plus8] still running (25.0 min)
+  [purified_budget_4plus8] still running (26.0 min)
+  [purified_budget_4plus8] still running (27.0 min)
+  [purified_budget_4plus8] still running (28.0 min)
+  [purified_budget_4plus8] still running (29.0 min)
+  [purified_budget_4plus8] still running (30.0 min)
+  [purified_budget_4plus8] still running (31.0 min)
+  [purified_budget_4plus8] still running (32.0 min)
+  [purified_budget_4plus8] still running (33.0 min)
+  [purified_budget_4plus8] still running (34.0 min)
+  [purified_budget_4plus8] still running (35.0 min)
+  [purified_budget_4plus8] still running (36.0 min)
+  [purified_budget_4plus8] still running (37.0 min)
+  [purified_budget_4plus8] still running (38.0 min)
+  [purified_budget_4plus8] still running (39.0 min)
+  [purified_budget_4plus8] still running (40.0 min)
+  [purified_budget_4plus8] still running (41.0 min)
+  [purified_budget_4plus8] still running (42.0 min)
+  [purified_budget_4plus8] still running (43.0 min)
+  [purified_budget_4plus8] still running (44.0 min)
+  [purified_budget_4plus8] still running (45.0 min)
+  [purified_budget_4plus8] still running (46.0 min)
+  [purified_budget_4plus8] still running (47.0 min)
+  [purified_budget_4plus8] still running (48.0 min)
+  [purified_budget_4plus8] still running (49.0 min)
+  [purified_budget_4plus8] still running (50.0 min)
+  [purified_budget_4plus8] still running (51.0 min)
+  [purified_budget_4plus8] still running (52.0 min)
+  [purified_budget_4plus8] still running (53.0 min)
+  [purified_budget_4plus8] still running (54.0 min)
+  [purified_budget_4plus8] still running (55.0 min)
+  [purified_budget_4plus8] still running (56.0 min)
+  [purified_budget_4plus8] still running (57.0 min)
+  [purified_budget_4plus8] still running (58.0 min)
+  [purified_budget_4plus8] still running (59.0 min)
+  [purified_budget_4plus8] still running (60.0 min)
+  [purified_budget_4plus8] still running (61.0 min)
+  [purified_budget_4plus8] still running (62.0 min)
+  [purified_budget_4plus8] still running (63.0 min)
+  [purified_budget_4plus8] still running (64.0 min)
+  [purified_budget_4plus8] still running (65.0 min)
+  [purified_budget_4plus8] still running (66.0 min)
+  [purified_budget_4plus8] still running (67.0 min)
+  [purified_budget_4plus8] still running (68.0 min)
+  [purified_budget_4plus8] still running (69.0 min)
+  [purified_budget_4plus8] still running (70.0 min)
+  [purified_budget_4plus8] still running (71.0 min)
+  [purified_budget_4plus8] still running (72.0 min)
+  [purified_budget_4plus8] still running (73.0 min)
+  [purified_budget_4plus8] still running (74.0 min)
+  [purified_budget_4plus8] still running (75.0 min)
+  [purified_budget_4plus8] still running (76.0 min)
+  [purified_budget_4plus8] still running (77.0 min)
+  [purified_budget_4plus8] still running (78.0 min)
+  [purified_budget_4plus8] still running (79.0 min)
+  [purified_budget_4plus8] still running (80.0 min)
+  [purified_budget_4plus8] still running (81.0 min)
+  [purified_budget_4plus8] still running (82.0 min)
+  [purified_budget_4plus8] still running (83.0 min)
+  [purified_budget_4plus8] still running (84.0 min)
+  [purified_budget_4plus8] still running (85.0 min)
+  [purified_budget_4plus8] still running (86.0 min)
+  [purified_budget_4plus8] still running (87.0 min)
+  [purified_budget_4plus8] still running (88.0 min)
+  [purified_budget_4plus8] still running (89.0 min)
+  Memory bank: clean=25600, candidates=51200, accepted=40960, rejected=10240, accept_frac=0.8000, calib_pct=None, calib_thr=0.24851644039154053, final_size=51200
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  [purified_budget_4plus8] still running (90.0 min)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.6 min
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.9 min
+  [purified_budget_4plus8] still running (91.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.3 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.7 min
+  [purified_budget_4plus8] still running (92.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.0 min | ETA=12.1 min
+  [purified_budget_4plus8] still running (93.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.6 min | ETA=11.6 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.2 min | ETA=11.0 min
+  [purified_budget_4plus8] still running (94.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=4.8 min | ETA=10.4 min
+  [purified_budget_4plus8] still running (95.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.5 min | ETA=9.8 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.1 min | ETA=9.2 min
+  [purified_budget_4plus8] still running (96.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.7 min | ETA=8.7 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.4 min | ETA=8.1 min
+  [purified_budget_4plus8] still running (97.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.0 min | ETA=7.5 min
+  [purified_budget_4plus8] still running (98.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.6 min | ETA=6.9 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.3 min | ETA=6.3 min
+  [purified_budget_4plus8] still running (99.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.9 min | ETA=5.7 min
+  [purified_budget_4plus8] still running (100.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.5 min | ETA=5.0 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.1 min | ETA=4.4 min
+  [purified_budget_4plus8] still running (101.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.8 min | ETA=3.8 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.4 min | ETA=3.2 min
+  [purified_budget_4plus8] still running (102.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.0 min | ETA=2.6 min
+  [purified_budget_4plus8] still running (103.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.7 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.3 min | ETA=1.3 min
+  [purified_budget_4plus8] still running (104.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.9 min | ETA=0.7 min
+  [purified_budget_4plus8] still running (105.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.6 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.6 min | ETA=0.0 min
+  [purified_budget_4plus8] still running (106.0 min)
+AUPRC=0.11380791038723083 AUROC=0.8149747902447944 F1max=0.21777648022712212 FixedF1=0.13645168203162872 bank=51200 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_purified_budget_4plus8_s42
+  [purified_budget_4plus8] completed in 106.0 min
+Wrote Phase 5 report: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_exact_memory_budget_controls_report.json

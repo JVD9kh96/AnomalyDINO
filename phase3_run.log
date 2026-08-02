@@ -1,7 +1,20 @@
-Reusing completed clean, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s42
-Reusing completed contaminated_all, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s42
-Reusing completed auto_purified, seed 42: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s42
-Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/oracle_purified.yaml --fold 0 --seed 42 --split-seed 42 --condition oracle_purified --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s42 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed42_paired_manifest.json --skip-sam2
+Phase 3: 20 runs | fold=0 | split_seed=42 | reference_seeds=[42, 43, 44, 45, 46] | SAM2=disabled
+[seed 42] reusing frozen manifest: phase3_fold0_seed42_paired_manifest.json
+[run 1/20: clean, seed 42] reusing completed output
+[run 2/20: contaminated_all, seed 42] reusing completed output
+[run 3/20: auto_purified, seed 42] reusing completed output
+[run 4/20: oracle_purified, seed 42] reusing completed output
+[seed 43] reusing frozen manifest: phase3_fold0_seed43_paired_manifest.json
+[run 5/20: clean, seed 43] reusing completed output
+[run 6/20: contaminated_all, seed 43] reusing completed output
+[run 7/20: auto_purified, seed 43] reusing completed output
+[run 8/20: oracle_purified, seed 43] reusing completed output
+[seed 44] reusing frozen manifest: phase3_fold0_seed44_paired_manifest.json
+[run 9/20: clean, seed 44] starting
+Condition=clean fold=0 seed=44 clean=2 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
 Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
 /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
   warnings.warn("xFormers is not available (SwiGLU)")
@@ -9,37 +22,243 @@ Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_ma
   warnings.warn("xFormers is not available (Attention)")
 /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
   warnings.warn("xFormers is not available (Block)")
-Condition=oracle_purified fold=0 seed=42 clean=2 additional=8
+  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=13.4 min
+  [run 9/20: clean, seed 44] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.1 min | ETA=13.0 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.7 min | ETA=12.7 min
+  [run 9/20: clean, seed 44] still running (2.0 min elapsed)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.3 min | ETA=12.2 min
+  [run 9/20: clean, seed 44] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=2.9 min | ETA=11.8 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.5 min | ETA=11.2 min
+  [run 9/20: clean, seed 44] still running (4.0 min elapsed)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.1 min | ETA=10.6 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.7 min | ETA=10.0 min
+  [run 9/20: clean, seed 44] still running (5.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.2 min | ETA=9.4 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=5.8 min | ETA=8.8 min
+  [run 9/20: clean, seed 44] still running (6.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.4 min | ETA=8.2 min
+  [run 9/20: clean, seed 44] still running (7.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.0 min | ETA=7.7 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.6 min | ETA=7.1 min
+  [run 9/20: clean, seed 44] still running (8.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.2 min | ETA=6.5 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=8.7 min | ETA=5.9 min
+  [run 9/20: clean, seed 44] still running (9.0 min elapsed)
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.3 min | ETA=5.3 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=9.9 min | ETA=4.7 min
+  [run 9/20: clean, seed 44] still running (10.0 min elapsed)
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.5 min | ETA=4.1 min
+  [run 9/20: clean, seed 44] still running (11.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.0 min | ETA=3.6 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=11.7 min | ETA=3.0 min
+  [run 9/20: clean, seed 44] still running (12.0 min elapsed)
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.2 min | ETA=2.4 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=12.8 min | ETA=1.8 min
+  [run 9/20: clean, seed 44] still running (13.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=13.4 min | ETA=1.2 min
+  [run 9/20: clean, seed 44] still running (14.0 min elapsed)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.0 min | ETA=0.7 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=14.6 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=14.6 min | ETA=0.0 min
+  [run 9/20: clean, seed 44] still running (15.0 min elapsed)
+AUPRC=0.08769976109689047 AUROC=0.7448574939792929 F1max=0.17323601878108874 FixedF1=0.05103758913155554 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s44
+  [run 9/20: clean, seed 44] completed in 15.6 min
+[run 10/20: contaminated_all, seed 44] starting
+Condition=contaminated_all fold=0 seed=44 clean=2 additional=8
 Loading model: dinov2_vits14
 Device: cuda
 Smaller edge size: 448
-  Memory bank: clean=12800, candidates=51200, accepted=46821, rejected=4379, accept_frac=0.9145, calib_pct=None, calib_thr=None, final_size=59621
-AUPRC=0.10716397958532262 AUROC=0.8110451055145877 F1max=0.21234518452690143 FixedF1=0.11963293158612412 bank=59621 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s42
-Freezing paired inputs: /home/kalantary/AnomalyDino/venv/bin/python scripts/phase0_freeze_paired_inputs.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/phase0_paired_reference_manifest.yaml --fold 0 --seed 43 --output /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=64000
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.7 min
+  [run 10/20: contaminated_all, seed 44] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.5 min
+  [run 10/20: contaminated_all, seed 44] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.0 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [run 10/20: contaminated_all, seed 44] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.8 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.1 min
+  [run 10/20: contaminated_all, seed 44] still running (4.0 min elapsed)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.5 min
+  [run 10/20: contaminated_all, seed 44] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=10.9 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  [run 10/20: contaminated_all, seed 44] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [run 10/20: contaminated_all, seed 44] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [run 10/20: contaminated_all, seed 44] still running (8.0 min elapsed)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.3 min | ETA=7.8 min
+  [run 10/20: contaminated_all, seed 44] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.0 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.6 min | ETA=6.5 min
+  [run 10/20: contaminated_all, seed 44] still running (10.0 min elapsed)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.4 min | ETA=5.9 min
+  [run 10/20: contaminated_all, seed 44] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.0 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.6 min | ETA=4.6 min
+  [run 10/20: contaminated_all, seed 44] still running (12.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.3 min | ETA=4.0 min
+  [run 10/20: contaminated_all, seed 44] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.9 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.5 min | ETA=2.7 min
+  [run 10/20: contaminated_all, seed 44] still running (14.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.2 min | ETA=2.0 min
+  [run 10/20: contaminated_all, seed 44] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.9 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.6 min | ETA=0.7 min
+  [run 10/20: contaminated_all, seed 44] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.2 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.3 min | ETA=0.0 min
+  [run 10/20: contaminated_all, seed 44] still running (17.0 min elapsed)
+AUPRC=0.11201340650578116 AUROC=0.8064954966188478 F1max=0.2129660710972352 FixedF1=0.13348322726125075 bank=64000 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s44
+  [run 10/20: contaminated_all, seed 44] completed in 17.2 min
+[run 11/20: auto_purified, seed 44] starting
+Condition=auto_purified fold=0 seed=44 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51190, rejected=10, accept_frac=0.9998, calib_pct=99.0, calib_thr=0.5120694869756699, final_size=63990
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.7 min
+  [run 11/20: auto_purified, seed 44] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [run 11/20: auto_purified, seed 44] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.2 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.7 min | ETA=14.2 min
+  [run 11/20: auto_purified, seed 44] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.5 min
+  [run 11/20: auto_purified, seed 44] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=4.0 min | ETA=12.8 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.7 min | ETA=12.1 min
+  [run 11/20: auto_purified, seed 44] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.3 min | ETA=11.4 min
+  [run 11/20: auto_purified, seed 44] still running (6.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=6.0 min | ETA=10.7 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.6 min | ETA=10.0 min
+  [run 11/20: auto_purified, seed 44] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.4 min | ETA=9.5 min
+  [run 11/20: auto_purified, seed 44] still running (8.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=8.1 min | ETA=8.9 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.7 min | ETA=8.2 min
+  [run 11/20: auto_purified, seed 44] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.4 min | ETA=7.5 min
+  [run 11/20: auto_purified, seed 44] still running (10.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=10.0 min | ETA=6.8 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.7 min | ETA=6.1 min
+  [run 11/20: auto_purified, seed 44] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.4 min | ETA=5.4 min
+  [run 11/20: auto_purified, seed 44] still running (12.0 min elapsed)
+  Validation progress: 1800/2514 (71.6%) | elapsed=12.1 min | ETA=4.8 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.8 min | ETA=4.1 min
+  [run 11/20: auto_purified, seed 44] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.4 min | ETA=3.5 min
+  [run 11/20: auto_purified, seed 44] still running (14.0 min elapsed)
+  Validation progress: 2100/2514 (83.5%) | elapsed=14.1 min | ETA=2.8 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.7 min | ETA=2.1 min
+  [run 11/20: auto_purified, seed 44] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.4 min | ETA=1.4 min
+  [run 11/20: auto_purified, seed 44] still running (16.0 min elapsed)
+  Validation progress: 2400/2514 (95.5%) | elapsed=16.1 min | ETA=0.8 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.8 min | ETA=0.1 min
+  [run 11/20: auto_purified, seed 44] still running (17.0 min elapsed)
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.9 min | ETA=0.0 min
+AUPRC=0.11202153618544343 AUROC=0.8064976432301741 F1max=0.21297351588518265 FixedF1=0.008659699315099443 bank=63990 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s44
+  [run 11/20: auto_purified, seed 44] completed in 17.9 min
+[run 12/20: oracle_purified, seed 44] starting
+Condition=oracle_purified fold=0 seed=44 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=48844, rejected=2356, accept_frac=0.9540, calib_pct=None, calib_thr=None, final_size=61644
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.5 min
+  [run 12/20: oracle_purified, seed 44] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.2 min
+  [run 12/20: oracle_purified, seed 44] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.7 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.2 min
+  [run 12/20: oracle_purified, seed 44] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.8 min
+  [run 12/20: oracle_purified, seed 44] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.3 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.6 min
+  [run 12/20: oracle_purified, seed 44] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=11.0 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  [run 12/20: oracle_purified, seed 44] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [run 12/20: oracle_purified, seed 44] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [run 12/20: oracle_purified, seed 44] still running (8.0 min elapsed)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.4 min | ETA=7.9 min
+  [run 12/20: oracle_purified, seed 44] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.0 min | ETA=7.2 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.7 min | ETA=6.5 min
+  [run 12/20: oracle_purified, seed 44] still running (10.0 min elapsed)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.3 min | ETA=5.9 min
+  [run 12/20: oracle_purified, seed 44] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.9 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.6 min | ETA=4.6 min
+  [run 12/20: oracle_purified, seed 44] still running (12.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.2 min | ETA=4.0 min
+  [run 12/20: oracle_purified, seed 44] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.9 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.6 min | ETA=2.7 min
+  [run 12/20: oracle_purified, seed 44] still running (14.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.2 min | ETA=2.0 min
+  [run 12/20: oracle_purified, seed 44] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.9 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.5 min | ETA=0.7 min
+  [run 12/20: oracle_purified, seed 44] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.1 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.2 min | ETA=0.0 min
+  [run 12/20: oracle_purified, seed 44] still running (17.0 min elapsed)
+AUPRC=0.11811967303484538 AUROC=0.811933206536856 F1max=0.22382314480547671 FixedF1=0.14899291095747538 bank=61644 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s44
+  [run 12/20: oracle_purified, seed 44] completed in 17.3 min
+[seed 45] freezing paired inputs
 Phase 0 paired inputs frozen
-  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json
-  Manifest ID: b82569ffefe2f3306320e1be1c736916996a95d3487b3199b6b16267b0f8b9b2
-  Fold / seed: 0 / 43
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json
+  Manifest ID: 0a008db67ea0e9b16fcc23a43ccde5d4dafa708320998e78059334a09e1a84da
+  Fold / seed: 0 / 45
   Clean references: 2
   Additional references: 8
   Defect-bearing candidates: 8
   Candidate patches: 51200
   Leakage check: passed
-Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/clean.yaml --fold 0 --seed 43 --split-seed 42 --condition clean --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s43 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json --skip-sam2
-Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
-/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
-  warnings.warn("xFormers is not available (SwiGLU)")
-/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
-  warnings.warn("xFormers is not available (Attention)")
-/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
-  warnings.warn("xFormers is not available (Block)")
-Condition=clean fold=0 seed=43 clean=2 additional=0
+[run 13/20: clean, seed 45] starting
+Condition=clean fold=0 seed=45 clean=2 additional=0
 Loading model: dinov2_vits14
 Device: cuda
 Smaller edge size: 448
-  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
-AUPRC=0.12804677318706753 AUROC=0.8046476535720284 F1max=0.22855131008412705 FixedF1=0.22670008500248803 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s43
-Running: /home/kalantary/AnomalyDino/venv/bin/python scripts/run_reference_composition_study.py --config /home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/contaminated_all.yaml --fold 0 --seed 43 --split-seed 42 --condition contaminated_all --clean-shots 2 --additional-shots 8 --output-dir /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s43 --paired-manifest /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json --skip-sam2
 Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
 /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
   warnings.warn("xFormers is not available (SwiGLU)")
@@ -47,3 +266,476 @@ Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_ma
   warnings.warn("xFormers is not available (Attention)")
 /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
   warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.0 min
+  [run 13/20: clean, seed 45] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.4 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.0 min
+  [run 13/20: clean, seed 45] still running (2.0 min elapsed)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.6 min
+  [run 13/20: clean, seed 45] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.0 min | ETA=12.0 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.6 min | ETA=11.4 min
+  [run 13/20: clean, seed 45] still running (4.0 min elapsed)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.2 min | ETA=10.9 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.8 min | ETA=10.3 min
+  [run 13/20: clean, seed 45] still running (5.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.4 min | ETA=9.7 min
+  [run 13/20: clean, seed 45] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.0 min | ETA=9.1 min
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.6 min | ETA=8.5 min
+  [run 13/20: clean, seed 45] still running (7.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.2 min | ETA=7.9 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.8 min | ETA=7.3 min
+  [run 13/20: clean, seed 45] still running (8.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.4 min | ETA=6.7 min
+  [run 13/20: clean, seed 45] still running (9.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.1 min | ETA=6.1 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.7 min | ETA=5.5 min
+  [run 13/20: clean, seed 45] still running (10.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.3 min | ETA=4.9 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.9 min | ETA=4.3 min
+  [run 13/20: clean, seed 45] still running (11.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.5 min | ETA=3.7 min
+  [run 13/20: clean, seed 45] still running (12.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.1 min | ETA=3.1 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.6 min | ETA=2.5 min
+  [run 13/20: clean, seed 45] still running (13.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.3 min | ETA=1.9 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=13.9 min | ETA=1.3 min
+  [run 13/20: clean, seed 45] still running (14.0 min elapsed)
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.5 min | ETA=0.7 min
+  [run 13/20: clean, seed 45] still running (15.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.1 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.2 min | ETA=0.0 min
+  [run 13/20: clean, seed 45] still running (16.0 min elapsed)
+AUPRC=0.10663327897315052 AUROC=0.7893162749653307 F1max=0.19680317399805275 FixedF1=0.0271361403738321 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s45
+  [run 13/20: clean, seed 45] completed in 16.1 min
+[run 14/20: contaminated_all, seed 45] starting
+Condition=contaminated_all fold=0 seed=45 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=64000
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.9 min
+  [run 14/20: contaminated_all, seed 45] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.6 min
+  [run 14/20: contaminated_all, seed 45] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.3 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=14.0 min
+  [run 14/20: contaminated_all, seed 45] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.4 min
+  [run 14/20: contaminated_all, seed 45] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=4.0 min | ETA=12.7 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.6 min | ETA=12.0 min
+  [run 14/20: contaminated_all, seed 45] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.3 min | ETA=11.4 min
+  [run 14/20: contaminated_all, seed 45] still running (6.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=6.0 min | ETA=10.7 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.6 min | ETA=10.0 min
+  [run 14/20: contaminated_all, seed 45] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.3 min | ETA=9.4 min
+  [run 14/20: contaminated_all, seed 45] still running (8.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=8.0 min | ETA=8.8 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.7 min | ETA=8.1 min
+  [run 14/20: contaminated_all, seed 45] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.4 min | ETA=7.5 min
+  [run 14/20: contaminated_all, seed 45] still running (10.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=10.0 min | ETA=6.8 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.7 min | ETA=6.1 min
+  [run 14/20: contaminated_all, seed 45] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.3 min | ETA=5.4 min
+  [run 14/20: contaminated_all, seed 45] still running (12.0 min elapsed)
+  Validation progress: 1800/2514 (71.6%) | elapsed=12.1 min | ETA=4.8 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.7 min | ETA=4.1 min
+  [run 14/20: contaminated_all, seed 45] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.4 min | ETA=3.4 min
+  [run 14/20: contaminated_all, seed 45] still running (14.0 min elapsed)
+  Validation progress: 2100/2514 (83.5%) | elapsed=14.1 min | ETA=2.8 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.7 min | ETA=2.1 min
+  [run 14/20: contaminated_all, seed 45] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.4 min | ETA=1.4 min
+  [run 14/20: contaminated_all, seed 45] still running (16.0 min elapsed)
+  Validation progress: 2400/2514 (95.5%) | elapsed=16.0 min | ETA=0.8 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.7 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.8 min | ETA=0.0 min
+  [run 14/20: contaminated_all, seed 45] still running (17.0 min elapsed)
+AUPRC=0.10353992553184505 AUROC=0.7989804445512774 F1max=0.20149172672750926 FixedF1=0.11560114463304662 bank=64000 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s45
+  [run 14/20: contaminated_all, seed 45] completed in 17.8 min
+[run 15/20: auto_purified, seed 45] starting
+Condition=auto_purified fold=0 seed=45 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51198, rejected=2, accept_frac=1.0000, calib_pct=99.0, calib_thr=0.563427642583847, final_size=63998
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.8 min
+  [run 15/20: auto_purified, seed 45] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.5 min
+  [run 15/20: auto_purified, seed 45] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.2 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.7 min
+  [run 15/20: auto_purified, seed 45] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.4 min
+  [run 15/20: auto_purified, seed 45] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=4.0 min | ETA=12.6 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.6 min | ETA=12.0 min
+  [run 15/20: auto_purified, seed 45] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.3 min | ETA=11.3 min
+  [run 15/20: auto_purified, seed 45] still running (6.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.9 min | ETA=10.6 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.6 min | ETA=9.9 min
+  [run 15/20: auto_purified, seed 45] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.3 min | ETA=9.3 min
+  [run 15/20: auto_purified, seed 45] still running (8.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=8.0 min | ETA=8.7 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.6 min | ETA=8.0 min
+  [run 15/20: auto_purified, seed 45] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.3 min | ETA=7.4 min
+  [run 15/20: auto_purified, seed 45] still running (10.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.9 min | ETA=6.7 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.6 min | ETA=6.0 min
+  [run 15/20: auto_purified, seed 45] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.2 min | ETA=5.4 min
+  [run 15/20: auto_purified, seed 45] still running (12.0 min elapsed)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.9 min | ETA=4.7 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.6 min | ETA=4.1 min
+  [run 15/20: auto_purified, seed 45] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.3 min | ETA=3.4 min
+  [run 15/20: auto_purified, seed 45] still running (14.0 min elapsed)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.9 min | ETA=2.7 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.6 min | ETA=2.1 min
+  [run 15/20: auto_purified, seed 45] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.2 min | ETA=1.4 min
+  [run 15/20: auto_purified, seed 45] still running (16.0 min elapsed)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.9 min | ETA=0.8 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.6 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.7 min | ETA=0.0 min
+  [run 15/20: auto_purified, seed 45] still running (17.0 min elapsed)
+AUPRC=0.10354178705233734 AUROC=0.7989817312325378 F1max=0.20149172672750926 FixedF1=0.0010173567799161803 bank=63998 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s45
+  [run 15/20: auto_purified, seed 45] completed in 17.8 min
+[run 16/20: oracle_purified, seed 45] starting
+Condition=oracle_purified fold=0 seed=45 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=47830, rejected=3370, accept_frac=0.9342, calib_pct=None, calib_thr=None, final_size=60630
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.5 min
+  [run 16/20: oracle_purified, seed 45] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.3 min
+  [run 16/20: oracle_purified, seed 45] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [run 16/20: oracle_purified, seed 45] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.9 min
+  [run 16/20: oracle_purified, seed 45] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=4.0 min | ETA=12.6 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.6 min | ETA=11.9 min
+  [run 16/20: oracle_purified, seed 45] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.3 min | ETA=11.3 min
+  [run 16/20: oracle_purified, seed 45] still running (6.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.9 min | ETA=10.6 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.5 min | ETA=9.9 min
+  [run 16/20: oracle_purified, seed 45] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.2 min | ETA=9.2 min
+  [run 16/20: oracle_purified, seed 45] still running (8.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.6 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.6 min | ETA=8.0 min
+  [run 16/20: oracle_purified, seed 45] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.2 min | ETA=7.3 min
+  [run 16/20: oracle_purified, seed 45] still running (10.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.9 min | ETA=6.7 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.5 min | ETA=6.0 min
+  [run 16/20: oracle_purified, seed 45] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.1 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.8 min | ETA=4.7 min
+  [run 16/20: oracle_purified, seed 45] still running (12.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.4 min | ETA=4.0 min
+  [run 16/20: oracle_purified, seed 45] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.2 min | ETA=3.4 min
+  [run 16/20: oracle_purified, seed 45] still running (14.0 min elapsed)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.8 min | ETA=2.7 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.5 min | ETA=2.1 min
+  [run 16/20: oracle_purified, seed 45] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.1 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.7 min | ETA=0.7 min
+  [run 16/20: oracle_purified, seed 45] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.4 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.5 min | ETA=0.0 min
+  [run 16/20: oracle_purified, seed 45] still running (17.0 min elapsed)
+AUPRC=0.11147333557044402 AUROC=0.8051243395309873 F1max=0.21278125462951936 FixedF1=0.14651897567032618 bank=60630 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s45
+  [run 16/20: oracle_purified, seed 45] completed in 17.8 min
+[seed 46] freezing paired inputs
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json
+  Manifest ID: 5b85ede3c2c9a33fd5953c6e4524f089f42027e731badbe05ccbcb68ce7ce8be
+  Fold / seed: 0 / 46
+  Clean references: 2
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+[run 17/20: clean, seed 46] starting
+Condition=clean fold=0 seed=46 clean=2 additional=0
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=0, accepted=0, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=12800
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=13.8 min
+  [run 17/20: clean, seed 46] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=13.3 min
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.0 min
+  [run 17/20: clean, seed 46] still running (2.0 min elapsed)
+  Validation progress: 400/2514 (15.9%) | elapsed=2.4 min | ETA=12.6 min
+  [run 17/20: clean, seed 46] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.0 min | ETA=12.1 min
+  Validation progress: 600/2514 (23.9%) | elapsed=3.6 min | ETA=11.6 min
+  [run 17/20: clean, seed 46] still running (4.0 min elapsed)
+  Validation progress: 700/2514 (27.8%) | elapsed=4.3 min | ETA=11.1 min
+  Validation progress: 800/2514 (31.8%) | elapsed=4.9 min | ETA=10.4 min
+  [run 17/20: clean, seed 46] still running (5.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.5 min | ETA=9.8 min
+  [run 17/20: clean, seed 46] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.1 min | ETA=9.2 min
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.7 min | ETA=8.6 min
+  [run 17/20: clean, seed 46] still running (7.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.3 min | ETA=8.0 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=7.9 min | ETA=7.3 min
+  [run 17/20: clean, seed 46] still running (8.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.5 min | ETA=6.7 min
+  [run 17/20: clean, seed 46] still running (9.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.1 min | ETA=6.2 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=9.7 min | ETA=5.5 min
+  [run 17/20: clean, seed 46] still running (10.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.3 min | ETA=4.9 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=10.9 min | ETA=4.3 min
+  [run 17/20: clean, seed 46] still running (11.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=11.5 min | ETA=3.7 min
+  [run 17/20: clean, seed 46] still running (12.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.1 min | ETA=3.1 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=12.7 min | ETA=2.5 min
+  [run 17/20: clean, seed 46] still running (13.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.4 min | ETA=1.9 min
+  [run 17/20: clean, seed 46] still running (14.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.0 min | ETA=1.3 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=14.5 min | ETA=0.7 min
+  [run 17/20: clean, seed 46] still running (15.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.1 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.2 min | ETA=0.0 min
+  [run 17/20: clean, seed 46] still running (16.0 min elapsed)
+AUPRC=0.08505526525150074 AUROC=0.7620478498860397 F1max=0.1580911580759141 FixedF1=0.004308920378089505 bank=12800 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s46
+  [run 17/20: clean, seed 46] completed in 16.1 min
+[run 18/20: contaminated_all, seed 46] starting
+Condition=contaminated_all fold=0 seed=46 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=None, calib_thr=None, final_size=64000
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.6 min
+  [run 18/20: contaminated_all, seed 46] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.5 min
+  [run 18/20: contaminated_all, seed 46] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=2.0 min | ETA=14.6 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.8 min
+  [run 18/20: contaminated_all, seed 46] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.1 min
+  [run 18/20: contaminated_all, seed 46] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.8 min
+  [run 18/20: contaminated_all, seed 46] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.1 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.9 min | ETA=10.5 min
+  [run 18/20: contaminated_all, seed 46] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.6 min | ETA=10.0 min
+  [run 18/20: contaminated_all, seed 46] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.2 min | ETA=9.3 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.6 min
+  [run 18/20: contaminated_all, seed 46] still running (8.0 min elapsed)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.5 min | ETA=7.9 min
+  [run 18/20: contaminated_all, seed 46] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.1 min | ETA=7.3 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.8 min | ETA=6.6 min
+  [run 18/20: contaminated_all, seed 46] still running (10.0 min elapsed)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.4 min | ETA=5.9 min
+  [run 18/20: contaminated_all, seed 46] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.1 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.7 min | ETA=4.7 min
+  [run 18/20: contaminated_all, seed 46] still running (12.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.4 min | ETA=4.0 min
+  [run 18/20: contaminated_all, seed 46] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.0 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.6 min | ETA=2.7 min
+  [run 18/20: contaminated_all, seed 46] still running (14.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.3 min | ETA=2.0 min
+  [run 18/20: contaminated_all, seed 46] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.9 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.7 min | ETA=0.7 min
+  [run 18/20: contaminated_all, seed 46] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.3 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.4 min | ETA=0.0 min
+  [run 18/20: contaminated_all, seed 46] still running (17.0 min elapsed)
+AUPRC=0.08436627968061318 AUROC=0.7625268859532206 F1max=0.1699234593978806 FixedF1=0.08967347879054534 bank=64000 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s46
+  [run 18/20: contaminated_all, seed 46] completed in 17.3 min
+[run 19/20: auto_purified, seed 46] starting
+Condition=auto_purified fold=0 seed=46 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=51200, rejected=0, accept_frac=1.0000, calib_pct=99.0, calib_thr=0.6081040191650391, final_size=64000
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.7 min
+  [run 19/20: auto_purified, seed 46] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [run 19/20: auto_purified, seed 46] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.1 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=14.0 min
+  [run 19/20: auto_purified, seed 46] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.2 min
+  [run 19/20: auto_purified, seed 46] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.5 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.6 min | ETA=11.9 min
+  [run 19/20: auto_purified, seed 46] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.2 min
+  [run 19/20: auto_purified, seed 46] still running (6.0 min elapsed)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.9 min | ETA=10.5 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.5 min | ETA=9.9 min
+  [run 19/20: auto_purified, seed 46] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.3 min | ETA=9.3 min
+  [run 19/20: auto_purified, seed 46] still running (8.0 min elapsed)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.9 min | ETA=8.7 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.5 min | ETA=8.0 min
+  [run 19/20: auto_purified, seed 46] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.2 min | ETA=7.3 min
+  [run 19/20: auto_purified, seed 46] still running (10.0 min elapsed)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.8 min | ETA=6.6 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.5 min | ETA=6.0 min
+  [run 19/20: auto_purified, seed 46] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.1 min | ETA=5.3 min
+  [run 19/20: auto_purified, seed 46] still running (12.0 min elapsed)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.8 min | ETA=4.7 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.5 min | ETA=4.0 min
+  [run 19/20: auto_purified, seed 46] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.1 min | ETA=3.4 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.8 min | ETA=2.7 min
+  [run 19/20: auto_purified, seed 46] still running (14.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.4 min | ETA=2.1 min
+  [run 19/20: auto_purified, seed 46] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.1 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.7 min | ETA=0.7 min
+  [run 19/20: auto_purified, seed 46] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.5 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.6 min | ETA=0.0 min
+  [run 19/20: auto_purified, seed 46] still running (17.0 min elapsed)
+AUPRC=0.08436627968061318 AUROC=0.7625268859532206 F1max=0.1699234593978806 FixedF1=0.00036831555726143814 bank=64000 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s46
+  [run 19/20: auto_purified, seed 46] completed in 17.6 min
+[run 20/20: oracle_purified, seed 46] starting
+Condition=oracle_purified fold=0 seed=46 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=48667, rejected=2533, accept_frac=0.9505, calib_pct=None, calib_thr=None, final_size=61467
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.6 min
+  [run 20/20: oracle_purified, seed 46] still running (1.0 min elapsed)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.3 min
+  [run 20/20: oracle_purified, seed 46] still running (2.0 min elapsed)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [run 20/20: oracle_purified, seed 46] still running (3.0 min elapsed)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.1 min
+  [run 20/20: oracle_purified, seed 46] still running (4.0 min elapsed)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.7 min
+  [run 20/20: oracle_purified, seed 46] still running (5.0 min elapsed)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.1 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  [run 20/20: oracle_purified, seed 46] still running (6.0 min elapsed)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.8 min
+  [run 20/20: oracle_purified, seed 46] still running (7.0 min elapsed)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.6 min
+  [run 20/20: oracle_purified, seed 46] still running (8.0 min elapsed)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.5 min | ETA=7.9 min
+  [run 20/20: oracle_purified, seed 46] still running (9.0 min elapsed)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.1 min | ETA=7.3 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.8 min | ETA=6.6 min
+  [run 20/20: oracle_purified, seed 46] still running (10.0 min elapsed)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.4 min | ETA=5.9 min
+  [run 20/20: oracle_purified, seed 46] still running (11.0 min elapsed)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.0 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.7 min | ETA=4.6 min
+  [run 20/20: oracle_purified, seed 46] still running (12.0 min elapsed)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.4 min | ETA=4.0 min
+  [run 20/20: oracle_purified, seed 46] still running (13.0 min elapsed)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.1 min | ETA=3.4 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.7 min | ETA=2.7 min
+  [run 20/20: oracle_purified, seed 46] still running (14.0 min elapsed)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.3 min | ETA=2.0 min
+  [run 20/20: oracle_purified, seed 46] still running (15.0 min elapsed)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.0 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.6 min | ETA=0.7 min
+  [run 20/20: oracle_purified, seed 46] still running (16.0 min elapsed)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.3 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.4 min | ETA=0.0 min
+  [run 20/20: oracle_purified, seed 46] still running (17.0 min elapsed)
+AUPRC=0.09235238350818695 AUROC=0.7687066772970873 F1max=0.18178621947131304 FixedF1=0.125546196760111 bank=61467 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s46
+  [run 20/20: oracle_purified, seed 46] completed in 17.6 min
+Wrote Phase 3 report: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_multiseed_fold0_replication_report.json
+Wrote individual runs: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_individual_runs.csv
+Wrote paired deltas: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_paired_deltas.csv
+naive_minus_clean AUPRC mean=-0.001108 signs(+/-/0)=1/4/0
+auto_minus_naive AUPRC mean=0.001834 signs(+/-/0)=4/0/1

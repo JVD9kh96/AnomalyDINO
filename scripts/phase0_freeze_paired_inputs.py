@@ -33,6 +33,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fold", type=int, default=None, help="Override phase0.fold.")
     parser.add_argument("--seed", type=int, default=None, help="Override config seed.")
     parser.add_argument(
+        "--clean-shots", type=int, default=None, help="Override phase0.clean_shots."
+    )
+    parser.add_argument(
+        "--additional-shots", type=int, default=None, help="Override phase0.additional_shots."
+    )
+    parser.add_argument(
         "--output",
         type=str,
         default=None,
@@ -53,6 +59,16 @@ def main() -> None:
 
     fold = int(phase_cfg.get("fold", 0) if args.fold is None else args.fold)
     seed = int(config.get("seed", 42) if args.seed is None else args.seed)
+    clean_shots = int(
+        phase_cfg.get("clean_shots", 2)
+        if args.clean_shots is None
+        else args.clean_shots
+    )
+    additional_shots = int(
+        phase_cfg.get("additional_shots", 8)
+        if args.additional_shots is None
+        else args.additional_shots
+    )
 
     dataset = SeverstalDataset(
         data_root=data_cfg["root"],
@@ -67,8 +83,8 @@ def main() -> None:
         dataset,
         fold=fold,
         seed=seed,
-        clean_shots=int(phase_cfg.get("clean_shots", 2)),
-        additional_shots=int(phase_cfg.get("additional_shots", 8)),
+        clean_shots=clean_shots,
+        additional_shots=additional_shots,
         additional_sampling=phase_cfg.get(
             "additional_sampling", "class_balanced"
         ),

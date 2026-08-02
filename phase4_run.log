@@ -1,0 +1,661 @@
+[Phase 4] freezing paired input manifest
+Phase 0 paired inputs frozen
+  Manifest: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_fold0_seed42_paired_manifest.json
+  Manifest ID: ff643873549cee9ab182df83a532150cf59cb5b1fd88cacba1755e72160956ef
+  Fold / seed: 0 / 42
+  Clean references: 2
+  Additional references: 8
+  Defect-bearing candidates: 8
+  Candidate patches: 51200
+  Leakage check: passed
+  [manifest] completed in 0.0 min
+[run 1/11: auto_p95] starting
+Condition=auto_purified fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=47187, rejected=4013, accept_frac=0.9216, calib_pct=95.0, calib_thr=0.3769809335470199, final_size=59987
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.8 min
+  [auto_p95] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.3 min
+  [auto_p95] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.8 min | ETA=13.6 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.0 min
+  [auto_p95] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.1 min | ETA=12.5 min
+  [auto_p95] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.7 min | ETA=11.8 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.3 min | ETA=11.3 min
+  [auto_p95] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.0 min | ETA=10.7 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.6 min | ETA=10.1 min
+  [auto_p95] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.3 min | ETA=9.5 min
+  [auto_p95] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=6.9 min | ETA=8.9 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.5 min | ETA=8.3 min
+  [auto_p95] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.2 min | ETA=7.7 min
+  [auto_p95] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.5 min | ETA=6.4 min
+  [auto_p95] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.1 min | ETA=5.8 min
+  [auto_p95] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.8 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.4 min | ETA=4.5 min
+  [auto_p95] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.1 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.7 min | ETA=3.3 min
+  [auto_p95] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.4 min | ETA=2.6 min
+  [auto_p95] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.0 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.6 min | ETA=1.4 min
+  [auto_p95] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.3 min | ETA=0.7 min
+  [auto_p95] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.9 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.0 min | ETA=0.0 min
+  [auto_p95] still running (17.0 min)
+AUPRC=0.10067051869782263 AUROC=0.8044924962366707 F1max=0.20150650201400902 FixedF1=0.0702429357296614 bank=59987 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_auto_p95_s42
+  [auto_p95] completed in 17.2 min
+[run 2/11: random_matched_p95] starting
+Condition=random_filtered fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=47187, rejected=4013, accept_frac=0.9216, calib_pct=95.0, calib_thr=0.3769809335470199, final_size=59987
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.4 min
+  [random_matched_p95] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.8 min
+  [random_matched_p95] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.1 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [random_matched_p95] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.8 min
+  [random_matched_p95] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.2 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.5 min
+  [random_matched_p95] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=10.9 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.7 min | ETA=10.3 min
+  [random_matched_p95] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [random_matched_p95] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.0 min | ETA=9.0 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [random_matched_p95] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.3 min | ETA=7.8 min
+  [random_matched_p95] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.6 min | ETA=6.5 min
+  [random_matched_p95] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.2 min | ETA=5.8 min
+  [random_matched_p95] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.9 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.5 min | ETA=4.6 min
+  [random_matched_p95] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.2 min | ETA=3.9 min
+  [random_matched_p95] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.8 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.4 min | ETA=2.6 min
+  [random_matched_p95] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.1 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.7 min | ETA=1.4 min
+  [random_matched_p95] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.4 min | ETA=0.7 min
+  [random_matched_p95] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.0 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.1 min | ETA=0.0 min
+  [random_matched_p95] still running (17.0 min)
+AUPRC=0.09514238697733139 AUROC=0.7971279607250601 F1max=0.19353057983564825 FixedF1=0.051289948117789204 bank=59987 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_random_matched_p95_s42
+  [random_matched_p95] completed in 17.4 min
+[run 3/11: auto_p97_5] starting
+Condition=auto_purified fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=48307, rejected=2893, accept_frac=0.9435, calib_pct=97.5, calib_thr=0.39411565363407136, final_size=61107
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.8 min
+  [auto_p97_5] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [auto_p97_5] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.0 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [auto_p97_5] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.8 min
+  [auto_p97_5] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.3 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.6 min
+  [auto_p97_5] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=11.0 min
+  [auto_p97_5] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [auto_p97_5] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.5 min
+  [auto_p97_5] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.4 min | ETA=7.9 min
+  [auto_p97_5] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.1 min | ETA=7.2 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.7 min | ETA=6.6 min
+  [auto_p97_5] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.4 min | ETA=5.9 min
+  [auto_p97_5] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.0 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.7 min | ETA=4.6 min
+  [auto_p97_5] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.3 min | ETA=4.0 min
+  [auto_p97_5] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.0 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.6 min | ETA=2.7 min
+  [auto_p97_5] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.3 min | ETA=2.0 min
+  [auto_p97_5] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.0 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.6 min | ETA=0.7 min
+  [auto_p97_5] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.2 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.3 min | ETA=0.0 min
+  [auto_p97_5] still running (17.0 min)
+AUPRC=0.099120857245904 AUROC=0.8025755727981839 F1max=0.19903821849192335 FixedF1=0.05124822668902113 bank=61107 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_auto_p97_5_s42
+  [auto_p97_5] completed in 17.4 min
+[run 4/11: random_matched_p97_5] starting
+Condition=random_filtered fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=48307, rejected=2893, accept_frac=0.9435, calib_pct=97.5, calib_thr=0.39411565363407136, final_size=61107
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.4 min
+  [random_matched_p97_5] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.3 min
+  [random_matched_p97_5] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.1 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [random_matched_p97_5] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=13.1 min
+  [random_matched_p97_5] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.7 min
+  [random_matched_p97_5] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=11.0 min
+  [random_matched_p97_5] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [random_matched_p97_5] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [random_matched_p97_5] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.4 min | ETA=7.8 min
+  [random_matched_p97_5] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.0 min | ETA=7.2 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.7 min | ETA=6.5 min
+  [random_matched_p97_5] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.3 min | ETA=5.9 min
+  [random_matched_p97_5] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.9 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.6 min | ETA=4.6 min
+  [random_matched_p97_5] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.2 min | ETA=3.9 min
+  [random_matched_p97_5] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.8 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.5 min | ETA=2.7 min
+  [random_matched_p97_5] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.1 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.8 min | ETA=1.4 min
+  [random_matched_p97_5] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.4 min | ETA=0.7 min
+  [random_matched_p97_5] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.0 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.1 min | ETA=0.0 min
+  [random_matched_p97_5] still running (17.0 min)
+AUPRC=0.09514554828398951 AUROC=0.7971101541402928 F1max=0.19353081351772658 FixedF1=0.037144462267052716 bank=61107 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_random_matched_p97_5_s42
+  [random_matched_p97_5] completed in 17.2 min
+[run 5/11: auto_p99] starting
+Condition=auto_purified fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=49092, rejected=2108, accept_frac=0.9588, calib_pct=99.0, calib_thr=0.4094563591480256, final_size=61892
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.5 min
+  [auto_p99] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.6 min
+  [auto_p99] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.3 min
+  [auto_p99] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.1 min | ETA=12.7 min
+  [auto_p99] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.0 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.4 min
+  [auto_p99] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.0 min | ETA=10.8 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.7 min | ETA=10.2 min
+  [auto_p99] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.3 min | ETA=9.6 min
+  [auto_p99] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.0 min | ETA=9.0 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.6 min | ETA=8.3 min
+  [auto_p99] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.2 min | ETA=7.7 min
+  [auto_p99] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.5 min | ETA=6.4 min
+  [auto_p99] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.1 min | ETA=5.8 min
+  [auto_p99] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.8 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.4 min | ETA=4.5 min
+  [auto_p99] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.1 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.7 min | ETA=3.3 min
+  [auto_p99] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.3 min | ETA=2.6 min
+  [auto_p99] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.0 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.6 min | ETA=1.4 min
+  [auto_p99] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.2 min | ETA=0.7 min
+  [auto_p99] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.9 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.0 min | ETA=0.0 min
+  [auto_p99] still running (17.0 min)
+AUPRC=0.09801814168587047 AUROC=0.8013512708265079 F1max=0.19761876434881345 FixedF1=0.03477127535678113 bank=61892 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_auto_p99_s42
+  [auto_p99] completed in 17.2 min
+[run 6/11: random_matched_p99] starting
+Condition=random_filtered fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=49092, rejected=2108, accept_frac=0.9588, calib_pct=99.0, calib_thr=0.4094563591480256, final_size=61892
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.8 min
+  [random_matched_p99] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.6 min
+  [random_matched_p99] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.1 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.6 min
+  [random_matched_p99] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=13.0 min
+  [random_matched_p99] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.8 min
+  [random_matched_p99] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.1 min
+  [random_matched_p99] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.5 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.5 min | ETA=9.8 min
+  [random_matched_p99] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.2 min | ETA=9.2 min
+  [random_matched_p99] still running (8.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.6 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.5 min | ETA=7.9 min
+  [random_matched_p99] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.1 min | ETA=7.3 min
+  [random_matched_p99] still running (10.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.8 min | ETA=6.6 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.6 min | ETA=6.0 min
+  [random_matched_p99] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.2 min | ETA=5.4 min
+  [random_matched_p99] still running (12.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.9 min | ETA=4.7 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.5 min | ETA=4.0 min
+  [random_matched_p99] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.2 min | ETA=3.4 min
+  [random_matched_p99] still running (14.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.8 min | ETA=2.7 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.5 min | ETA=2.1 min
+  [random_matched_p99] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.1 min | ETA=1.4 min
+  [random_matched_p99] still running (16.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.9 min | ETA=0.8 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.5 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.6 min | ETA=0.0 min
+  [random_matched_p99] still running (17.0 min)
+AUPRC=0.09510577408633532 AUROC=0.7970427604008955 F1max=0.19342321055803208 FixedF1=0.026850093474021477 bank=61892 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_random_matched_p99_s42
+  [random_matched_p99] completed in 17.6 min
+[run 7/11: auto_p99_5] starting
+Condition=auto_purified fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=49527, rejected=1673, accept_frac=0.9673, calib_pct=99.5, calib_thr=0.42006662130355804, final_size=62327
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.9 min
+  [auto_p99_5] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [auto_p99_5] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.2 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.6 min
+  [auto_p99_5] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=13.0 min
+  [auto_p99_5] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.7 min
+  [auto_p99_5] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.1 min
+  [auto_p99_5] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.4 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.8 min
+  [auto_p99_5] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.2 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.5 min
+  [auto_p99_5] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.6 min | ETA=8.0 min
+  [auto_p99_5] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.2 min | ETA=7.3 min
+  [auto_p99_5] still running (10.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.8 min | ETA=6.6 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.5 min | ETA=6.0 min
+  [auto_p99_5] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.1 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.8 min | ETA=4.7 min
+  [auto_p99_5] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.4 min | ETA=4.0 min
+  [auto_p99_5] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.1 min | ETA=3.4 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.7 min | ETA=2.7 min
+  [auto_p99_5] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.4 min | ETA=2.1 min
+  [auto_p99_5] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.0 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.7 min | ETA=0.7 min
+  [auto_p99_5] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.3 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.4 min | ETA=0.0 min
+  [auto_p99_5] still running (17.0 min)
+AUPRC=0.09747718745987716 AUROC=0.8006252442560039 F1max=0.19694931429665197 FixedF1=0.027162198640533583 bank=62327 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_auto_p99_5_s42
+  [auto_p99_5] completed in 17.5 min
+[run 8/11: random_matched_p99_5] starting
+Condition=random_filtered fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=49527, rejected=1673, accept_frac=0.9673, calib_pct=99.5, calib_thr=0.42006662130355804, final_size=62327
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.8 min
+  [random_matched_p99_5] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=15.1 min
+  [random_matched_p99_5] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.3 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.7 min
+  [random_matched_p99_5] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=13.0 min
+  [random_matched_p99_5] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.9 min | ETA=12.4 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.7 min
+  [random_matched_p99_5] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.2 min | ETA=11.1 min
+  [random_matched_p99_5] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.5 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.5 min | ETA=9.8 min
+  [random_matched_p99_5] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.2 min
+  [random_matched_p99_5] still running (8.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.8 min | ETA=8.5 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.4 min | ETA=7.9 min
+  [random_matched_p99_5] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.1 min | ETA=7.2 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.7 min | ETA=6.6 min
+  [random_matched_p99_5] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.4 min | ETA=5.9 min
+  [random_matched_p99_5] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.0 min | ETA=5.3 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.7 min | ETA=4.6 min
+  [random_matched_p99_5] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.4 min | ETA=4.0 min
+  [random_matched_p99_5] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.0 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.6 min | ETA=2.7 min
+  [random_matched_p99_5] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.3 min | ETA=2.0 min
+  [random_matched_p99_5] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.9 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.6 min | ETA=0.7 min
+  [random_matched_p99_5] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.2 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.3 min | ETA=0.0 min
+  [random_matched_p99_5] still running (17.0 min)
+AUPRC=0.09507739830762241 AUROC=0.7969695918213769 F1max=0.19337272601683314 FixedF1=0.02145223928952319 bank=62327 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_random_matched_p99_5_s42
+  [random_matched_p99_5] completed in 17.6 min
+[run 9/11: trim_5pct] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=48640, rejected=2560, accept_frac=0.9500, calib_pct=None, calib_thr=0.40050268173217773, final_size=61440
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=15.3 min
+  [trim_5pct] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.8 min
+  [trim_5pct] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.4 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.6 min | ETA=13.8 min
+  [trim_5pct] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.3 min | ETA=13.3 min
+  [trim_5pct] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=4.0 min | ETA=12.6 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.7 min | ETA=12.1 min
+  [trim_5pct] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.3 min | ETA=11.4 min
+  [trim_5pct] still running (6.0 min)
+  Validation progress: 900/2514 (35.8%) | elapsed=6.0 min | ETA=10.7 min
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.6 min | ETA=10.0 min
+  [trim_5pct] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.3 min | ETA=9.4 min
+  [trim_5pct] still running (8.0 min)
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.9 min | ETA=8.7 min
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.6 min | ETA=8.0 min
+  [trim_5pct] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.3 min | ETA=7.4 min
+  [trim_5pct] still running (10.0 min)
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.9 min | ETA=6.7 min
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.6 min | ETA=6.1 min
+  [trim_5pct] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=11.2 min | ETA=5.4 min
+  [trim_5pct] still running (12.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.9 min | ETA=4.7 min
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.6 min | ETA=4.1 min
+  [trim_5pct] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=13.2 min | ETA=3.4 min
+  [trim_5pct] still running (14.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.9 min | ETA=2.7 min
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.5 min | ETA=2.1 min
+  [trim_5pct] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=15.2 min | ETA=1.4 min
+  [trim_5pct] still running (16.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.9 min | ETA=0.8 min
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.5 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.6 min | ETA=0.0 min
+  [trim_5pct] still running (17.0 min)
+AUPRC=0.09870896065081532 AUROC=0.8019952763446029 F1max=0.19862905329044597 FixedF1=0.03910710341332849 bank=61440 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_trim_5pct_s42
+  [trim_5pct] completed in 17.7 min
+[run 10/11: trim_10pct] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=46080, rejected=5120, accept_frac=0.9000, calib_pct=None, calib_thr=0.3620942234992981, final_size=58880
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.4 min
+  [trim_10pct] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.2 min | ETA=14.4 min
+  [trim_10pct] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=13.9 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.3 min
+  [trim_10pct] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.1 min | ETA=12.7 min
+  [trim_10pct] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.1 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.4 min | ETA=11.4 min
+  [trim_10pct] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.0 min | ETA=10.8 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.7 min | ETA=10.2 min
+  [trim_10pct] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.3 min | ETA=9.6 min
+  [trim_10pct] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.0 min | ETA=9.0 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.6 min | ETA=8.3 min
+  [trim_10pct] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.2 min | ETA=7.7 min
+  [trim_10pct] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=8.9 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.5 min | ETA=6.4 min
+  [trim_10pct] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.1 min | ETA=5.8 min
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.7 min | ETA=5.1 min
+  [trim_10pct] still running (11.0 min)
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.4 min | ETA=4.5 min
+  [trim_10pct] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.0 min | ETA=3.9 min
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.7 min | ETA=3.3 min
+  [trim_10pct] still running (13.0 min)
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.3 min | ETA=2.6 min
+  [trim_10pct] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=13.9 min | ETA=2.0 min
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.6 min | ETA=1.4 min
+  [trim_10pct] still running (15.0 min)
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.2 min | ETA=0.7 min
+  [trim_10pct] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=15.8 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=15.9 min | ETA=0.0 min
+  [trim_10pct] still running (17.0 min)
+AUPRC=0.10215418091733494 AUROC=0.8062040203965241 F1max=0.2038878125130675 FixedF1=0.047887144783371915 bank=58880 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_trim_10pct_s42
+  [trim_10pct] completed in 17.1 min
+[run 11/11: trim_20pct] starting
+Condition=fixed_ratio_trim fold=0 seed=42 clean=2 additional=8
+Loading model: dinov2_vits14
+Device: cuda
+Smaller edge size: 448
+Using cache found in /home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/swiglu_ffn.py:51: UserWarning: xFormers is not available (SwiGLU)
+  warnings.warn("xFormers is not available (SwiGLU)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/attention.py:33: UserWarning: xFormers is not available (Attention)
+  warnings.warn("xFormers is not available (Attention)")
+/home/kalantary/.cache/torch/hub/facebookresearch_dinov2_main/dinov2/layers/block.py:40: UserWarning: xFormers is not available (Block)
+  warnings.warn("xFormers is not available (Block)")
+  Memory bank: clean=12800, candidates=51200, accepted=40960, rejected=10240, accept_frac=0.8000, calib_pct=None, calib_thr=0.31217384338378906, final_size=53760
+Starting validation patch evaluation: 2514 images (SAM2=disabled)
+  Validation progress: 100/2514 (4.0%) | elapsed=0.6 min | ETA=14.4 min
+  [trim_20pct] still running (1.0 min)
+  Validation progress: 200/2514 (8.0%) | elapsed=1.3 min | ETA=14.5 min
+  [trim_20pct] still running (2.0 min)
+  Validation progress: 300/2514 (11.9%) | elapsed=1.9 min | ETA=14.0 min
+  Validation progress: 400/2514 (15.9%) | elapsed=2.5 min | ETA=13.4 min
+  [trim_20pct] still running (3.0 min)
+  Validation progress: 500/2514 (19.9%) | elapsed=3.2 min | ETA=12.8 min
+  [trim_20pct] still running (4.0 min)
+  Validation progress: 600/2514 (23.9%) | elapsed=3.8 min | ETA=12.2 min
+  Validation progress: 700/2514 (27.8%) | elapsed=4.5 min | ETA=11.6 min
+  [trim_20pct] still running (5.0 min)
+  Validation progress: 800/2514 (31.8%) | elapsed=5.1 min | ETA=11.0 min
+  Validation progress: 900/2514 (35.8%) | elapsed=5.8 min | ETA=10.3 min
+  [trim_20pct] still running (6.0 min)
+  Validation progress: 1000/2514 (39.8%) | elapsed=6.4 min | ETA=9.7 min
+  [trim_20pct] still running (7.0 min)
+  Validation progress: 1100/2514 (43.8%) | elapsed=7.1 min | ETA=9.1 min
+  Validation progress: 1200/2514 (47.7%) | elapsed=7.7 min | ETA=8.4 min
+  [trim_20pct] still running (8.0 min)
+  Validation progress: 1300/2514 (51.7%) | elapsed=8.3 min | ETA=7.8 min
+  [trim_20pct] still running (9.0 min)
+  Validation progress: 1400/2514 (55.7%) | elapsed=9.0 min | ETA=7.1 min
+  Validation progress: 1500/2514 (59.7%) | elapsed=9.6 min | ETA=6.5 min
+  [trim_20pct] still running (10.0 min)
+  Validation progress: 1600/2514 (63.6%) | elapsed=10.3 min | ETA=5.9 min
+  [trim_20pct] still running (11.0 min)
+  Validation progress: 1700/2514 (67.6%) | elapsed=10.9 min | ETA=5.2 min
+  Validation progress: 1800/2514 (71.6%) | elapsed=11.6 min | ETA=4.6 min
+  [trim_20pct] still running (12.0 min)
+  Validation progress: 1900/2514 (75.6%) | elapsed=12.2 min | ETA=3.9 min
+  [trim_20pct] still running (13.0 min)
+  Validation progress: 2000/2514 (79.6%) | elapsed=12.9 min | ETA=3.3 min
+  Validation progress: 2100/2514 (83.5%) | elapsed=13.5 min | ETA=2.7 min
+  [trim_20pct] still running (14.0 min)
+  Validation progress: 2200/2514 (87.5%) | elapsed=14.1 min | ETA=2.0 min
+  [trim_20pct] still running (15.0 min)
+  Validation progress: 2300/2514 (91.5%) | elapsed=14.8 min | ETA=1.4 min
+  Validation progress: 2400/2514 (95.5%) | elapsed=15.4 min | ETA=0.7 min
+  [trim_20pct] still running (16.0 min)
+  Validation progress: 2500/2514 (99.4%) | elapsed=16.1 min | ETA=0.1 min
+  Validation progress: 2514/2514 (100.0%) | elapsed=16.2 min | ETA=0.0 min
+  [trim_20pct] still running (17.0 min)
+AUPRC=0.10839963229891081 AUROC=0.8132347768601773 F1max=0.21505457804221195 FixedF1=0.06197597922047169 bank=53760 -> /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_f0_trim_20pct_s42
+  [trim_20pct] completed in 17.2 min
+Wrote Phase 4 report: /home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase4/phase4_compact_purification_controls_report.json
