@@ -49,6 +49,8 @@ CONDITIONS = (
     "clean",
     "contaminated_all",
     "auto_purified",
+    "random_filtered",
+    "fixed_ratio_trim",
     "oracle_purified",
     "class_balanced_all",
     "synthetic_contamination",
@@ -81,7 +83,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--additional-shots", type=int, default=None)
     p.add_argument("--additional-sampling", type=str, default=None)
     p.add_argument("--acceptance-percentile", type=float, default=None)
+    p.add_argument("--fixed-trim-fraction", type=float, default=None)
     p.add_argument("--coreset-size", type=int, default=None)
+    p.add_argument(
+        "--budget-policy",
+        choices=("greedy_coreset", "random"),
+        default=None,
+        help="Deterministic final-bank budget policy when --coreset-size is set",
+    )
     p.add_argument("--contamination-ratio", type=float, default=None)
     p.add_argument("--output-dir", type=str, default=None)
     p.add_argument("--device", type=str, default=None)
@@ -114,8 +123,13 @@ def apply_cli_overrides(config: dict, args: argparse.Namespace) -> dict:
     if args.acceptance_percentile is not None:
         pur = det.setdefault("reference_purification", {})
         pur["normal_acceptance_percentile"] = float(args.acceptance_percentile)
+    if args.fixed_trim_fraction is not None:
+        pur = det.setdefault("reference_purification", {})
+        pur["fixed_trim_fraction"] = float(args.fixed_trim_fraction)
     if args.coreset_size is not None:
         det["coreset_size"] = int(args.coreset_size)
+    if args.budget_policy is not None:
+        det["budget_policy"] = args.budget_policy
     if args.device is not None:
         det["device"] = args.device
         if "segmenter" in cfg:
@@ -126,6 +140,8 @@ def apply_cli_overrides(config: dict, args: argparse.Namespace) -> dict:
         "clean": "clean",
         "contaminated_all": "contaminated_all",
         "auto_purified": "auto_purified",
+        "random_filtered": "random_filtered",
+        "fixed_ratio_trim": "fixed_ratio_trim",
         "oracle_purified": "oracle_purified",
         "class_balanced_all": "class_balanced_all",
         "size_matched_clean": "clean",
@@ -179,7 +195,15 @@ def evaluate_detector(
     if not skip_sam2:
         segmenter = build_segmenter(segmenter_cfg)
 
-    for val_id in val_ids:
+    n_val = len(val_ids)
+    progress_every = int(config.get("runtime", {}).get("progress_every_images", 100))
+    print(
+        f"Starting validation patch evaluation: {n_val} images "
+        f"(SAM2={'disabled' if skip_sam2 else 'enabled'})",
+        flush=True,
+    )
+    evaluation_started = time.perf_counter()
+    for image_index, val_id in enumerate(val_ids, start=1):
         sample = dataset.load_sample(val_id)
         t0 = time.perf_counter()
         det_out = detector.predict(sample)
@@ -210,6 +234,20 @@ def evaluate_detector(
             per_image_mask.append(mask_result)
             pred_masks.append(seg_out.mask)
             gt_masks.append(union_masks(list(sample.masks_by_class.values())))
+
+        if (
+            image_index == n_val
+            or (progress_every > 0 and image_index % progress_every == 0)
+        ):
+            elapsed = time.perf_counter() - evaluation_started
+            rate = image_index / elapsed if elapsed else 0.0
+            remaining = (n_val - image_index) / rate if rate else 0.0
+            print(
+                f"  Validation progress: {image_index}/{n_val} "
+                f"({100 * image_index / n_val:.1f}%) | "
+                f"elapsed={elapsed / 60:.1f} min | ETA={remaining / 60:.1f} min",
+                flush=True,
+            )
 
     scores, labels, class_labels = stack_patch_arrays(per_image)
     patch_metrics = compute_ranking_metrics(
@@ -279,6 +317,14 @@ def fit_for_condition(
         "calibration_percentile": stats.calibration_percentile,
         "calibration_threshold": stats.calibration_threshold,
         "final_memory_bank_size": stats.final_memory_bank_size,
+        "n_memory_patches_clean": stats.n_memory_patches_clean,
+        "n_candidate_patches_before_filter": stats.n_candidate_patches_before_filter,
+        "n_candidate_patches_after_filter": stats.n_candidate_patches_after_filter,
+        "n_memory_patches_before_budget": stats.n_memory_patches_before_budget,
+        "n_memory_patches_final": stats.n_memory_patches_final,
+        "budget_policy": detector.budget_policy,
+        "budget_size_requested": detector.coreset_size,
+        "extras": stats.extras,
     }
     return {"ref_meta": ref_meta, "fit_time_s": fit_time, "stats": stats}
 
@@ -634,6 +680,11 @@ def main() -> None:
             "reference": ref_meta,
             "fit_time_s": fit_info["fit_time_s"],
             "memory_bank_size": detector.last_bank_stats.final_memory_bank_size,
+            "n_memory_patches_clean": detector.last_bank_stats.n_memory_patches_clean,
+            "n_candidate_patches_before_filter": detector.last_bank_stats.n_candidate_patches_before_filter,
+            "n_candidate_patches_after_filter": detector.last_bank_stats.n_candidate_patches_after_filter,
+            "n_memory_patches_before_budget": detector.last_bank_stats.n_memory_patches_before_budget,
+            "n_memory_patches_final": detector.last_bank_stats.n_memory_patches_final,
             "gt_masks_used_in_fitting": condition == "oracle_purified",
             "sam2_skipped": bool(args.skip_sam2),
         }
@@ -644,6 +695,13 @@ def main() -> None:
             "final_memory_bank_size": detector.last_bank_stats.final_memory_bank_size,
             "before": detector.last_bank_stats.n_memory_patches_before_filtering,
             "after": detector.last_bank_stats.n_memory_patches_after_filtering,
+            "n_memory_patches_clean": detector.last_bank_stats.n_memory_patches_clean,
+            "n_candidate_patches_before_filter": detector.last_bank_stats.n_candidate_patches_before_filter,
+            "n_candidate_patches_after_filter": detector.last_bank_stats.n_candidate_patches_after_filter,
+            "n_memory_patches_before_budget": detector.last_bank_stats.n_memory_patches_before_budget,
+            "n_memory_patches_final": detector.last_bank_stats.n_memory_patches_final,
+            "budget_policy": detector.budget_policy,
+            "budget_size_requested": detector.coreset_size,
             "bank_stats": ref_meta.get("bank_stats"),
         },
         out_dir / "memory_bank_statistics.json",

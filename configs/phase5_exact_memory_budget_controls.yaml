@@ -1,0 +1,22 @@
+phase: phase5_exact_memory_budget_controls
+fold: 0
+seed: 42
+split_seed: 42
+sam2: disabled
+selected_from_phase4:
+  reference_mode: fixed_ratio_trim
+  fixed_trim_fraction: 0.20
+target_final_patch_budget: 51200
+budget_policy_for_matched_banks: greedy_coreset
+random_budget_control: random
+clean_shot_baselines: [1, 2, 4, 8]
+candidate_expansions:
+  - {clean_shots: 1, additional_shots: 8, reference_mode: auto_purified}
+  - {clean_shots: 2, additional_shots: 8, reference_mode: auto_purified}
+  - {clean_shots: 4, additional_shots: 8, reference_mode: auto_purified}
+required_count_fields:
+  - n_memory_patches_clean
+  - n_candidate_patches_before_filter
+  - n_candidate_patches_after_filter
+  - n_memory_patches_before_budget
+  - n_memory_patches_final

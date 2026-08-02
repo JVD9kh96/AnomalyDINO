@@ -18,6 +18,8 @@ REFERENCE_MODES = (
     "class_balanced_all",
     "oracle_purified",
     "auto_purified",
+    "random_filtered",
+    "fixed_ratio_trim",
     "gt_anomaly_bank",
     "dino_knn_rollout",
     "normal_anomaly_rollout",

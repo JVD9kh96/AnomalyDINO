@@ -438,6 +438,8 @@ class SeverstalDataset:
             "contaminated_all",
             "oracle_purified",
             "auto_purified",
+            "random_filtered",
+            "fixed_ratio_trim",
         ):
             clean_ids = self._select_defect_free_reference_ids(
                 fold_idx, clean_shots, seed
@@ -456,7 +458,7 @@ class SeverstalDataset:
             raise ValueError(
                 f"Unknown reference_mode: {reference_mode!r}. "
                 "Choose clean, contaminated_all, class_balanced_all, "
-                "oracle_purified, or auto_purified."
+                "oracle_purified, auto_purified, random_filtered, or fixed_ratio_trim."
             )
 
         all_ref_ids = list(dict.fromkeys([*clean_ids, *additional_ids]))

@@ -33,6 +33,8 @@ REFERENCE_MODES = (
     "class_balanced_all",
     "oracle_purified",
     "auto_purified",
+    "random_filtered",
+    "fixed_ratio_trim",
 )
 
 
@@ -48,6 +50,11 @@ class ReferenceFeatureGrid:
 class MemoryBankStats:
     n_memory_patches_before_filtering: int = 0
     n_memory_patches_after_filtering: int = 0
+    n_memory_patches_clean: int = 0
+    n_candidate_patches_before_filter: int = 0
+    n_candidate_patches_after_filter: int = 0
+    n_memory_patches_before_budget: int = 0
+    n_memory_patches_final: int = 0
     n_clean_patches: int = 0
     n_candidate_patches: int = 0
     n_accepted_candidate_patches: int = 0
@@ -105,6 +112,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         gt_overlap_threshold: float = 0.5,
         num_classes: int = 4,
         coreset_size: int | None = None,
+        budget_policy: str = "greedy_coreset",
     ):
         assert knn_metric in ("L2", "L2_normalized")
         if reference_mode is not None and reference_mode not in REFERENCE_MODES:
@@ -133,6 +141,9 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         self.gt_overlap_threshold = gt_overlap_threshold
         self.num_classes = num_classes
         self.coreset_size = coreset_size
+        if budget_policy not in {"greedy_coreset", "random"}:
+            raise ValueError("budget_policy must be 'greedy_coreset' or 'random'")
+        self.budget_policy = budget_policy
 
         self._model = None
         self._knn_index = None
@@ -231,6 +242,11 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         if features.shape[0] == 0:
             return features
         if self.coreset_size is not None and self.coreset_size > 0:
+            if self.budget_policy == "random":
+                n_keep = min(int(self.coreset_size), int(features.shape[0]))
+                rng = np.random.default_rng(self.pca_random_state)
+                selected = np.sort(rng.choice(features.shape[0], n_keep, replace=False))
+                return features[selected]
             return greedy_coreset_absolute(
                 features, int(self.coreset_size), seed=self.pca_random_state
             )
@@ -265,7 +281,9 @@ class AnomalyDINODetector(BaseAnomalyDetector):
             if defect_feats.shape[0] > 0:
                 self._defect_bank_features = defect_feats
 
-        self.last_bank_stats.n_memory_patches_after_filtering = after
+        self.last_bank_stats.n_memory_patches_after_filtering = before
+        self.last_bank_stats.n_memory_patches_before_budget = before
+        self.last_bank_stats.n_memory_patches_final = after
         self.last_bank_stats.final_memory_bank_size = after
         if self.last_bank_stats.n_memory_patches_before_filtering <= 0:
             self.last_bank_stats.n_memory_patches_before_filtering = before
@@ -315,6 +333,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         self.last_bank_stats = MemoryBankStats(
             n_memory_patches_before_filtering=before,
             n_clean_patches=before,
+            n_memory_patches_clean=before,
         )
         self.build_memory_bank(grids)
         self._log_bank_stats()
@@ -364,6 +383,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         calib_threshold: float | None = None
         accepted = 0
         rejected = 0
+        filter_extras: dict[str, Any] = {}
         final_grids: list[ReferenceFeatureGrid] = []
         defect_grids: list[ReferenceFeatureGrid] = []
 
@@ -405,9 +425,9 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                     )
                 )
 
-        elif mode == "auto_purified":
+        elif mode in ("auto_purified", "random_filtered", "fixed_ratio_trim"):
             if not clean_grids:
-                raise ValueError("auto_purified requires at least one clean reference")
+                raise ValueError(f"{mode} requires at least one clean reference")
             calibration = calibrate_normal_distances(
                 clean_grids,
                 knn_metric=self.knn_metric,
@@ -421,6 +441,9 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                 faiss_on_cpu=True,
             )
             final_grids = list(clean_grids)
+            base_keeps: list[np.ndarray] = []
+            distance_scores: list[np.ndarray] = []
+            automatic_keeps: list[np.ndarray] = []
             for grid in additional_grids:
                 base_keep = (
                     np.ones(grid.features.shape[0], dtype=bool)
@@ -435,15 +458,79 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                     knn_metric=self.knn_metric,
                     k_neighbors=self.k_neighbors,
                 )
-                keep = result.keep_mask & base_keep
-                if spatial_cleanup:
-                    keep = apply_spatial_cleanup(
-                        keep,
-                        grid.grid_size,
-                        min_rejected_component_patches=min_rej,
-                    )
-                    keep = keep & base_keep
+                base_keeps.append(base_keep)
+                distance_scores.append(result.scores)
+                automatic_keeps.append(result.keep_mask & base_keep)
 
+            if mode == "auto_purified":
+                final_keeps = automatic_keeps
+                if spatial_cleanup:
+                    final_keeps = [
+                        apply_spatial_cleanup(
+                            keep, grid.grid_size, min_rejected_component_patches=min_rej
+                        )
+                        & base_keep
+                        for grid, keep, base_keep in zip(
+                            additional_grids, automatic_keeps, base_keeps
+                        )
+                    ]
+                filter_extras["purification_strategy"] = "automatic_threshold"
+            elif mode == "random_filtered":
+                if spatial_cleanup:
+                    raise ValueError("random_filtered requires spatial_cleanup=false")
+                n_match = int(sum(keep.sum() for keep in automatic_keeps))
+                n_candidates = int(sum(keep.sum() for keep in base_keeps))
+                selected = np.zeros(n_candidates, dtype=bool)
+                if n_match:
+                    rng = np.random.default_rng(self.pca_random_state)
+                    selected[rng.choice(n_candidates, n_match, replace=False)] = True
+                final_keeps = []
+                offset = 0
+                for grid, base_keep in zip(additional_grids, base_keeps):
+                    active = np.flatnonzero(base_keep)
+                    keep = np.zeros(grid.features.shape[0], dtype=bool)
+                    keep[active] = selected[offset : offset + active.size]
+                    offset += active.size
+                    final_keeps.append(keep)
+                filter_extras.update(
+                    {
+                        "purification_strategy": "random_matched_to_automatic",
+                        "matched_automatic_retained_patches": n_match,
+                        "random_filter_seed": self.pca_random_state,
+                    }
+                )
+            else:
+                if spatial_cleanup:
+                    raise ValueError("fixed_ratio_trim requires spatial_cleanup=false")
+                trim_fraction = float(purif_cfg.get("fixed_trim_fraction", 0.0))
+                if not 0.0 <= trim_fraction < 1.0:
+                    raise ValueError("fixed_trim_fraction must be in [0, 1)")
+                n_candidates = int(sum(keep.sum() for keep in base_keeps))
+                n_keep_target = int(round((1.0 - trim_fraction) * n_candidates))
+                scores = np.concatenate(
+                    [score[base_keep] for score, base_keep in zip(distance_scores, base_keeps)]
+                ) if n_candidates else np.zeros((0,), dtype=np.float32)
+                selected = np.zeros(n_candidates, dtype=bool)
+                order = np.argsort(scores, kind="stable")
+                selected[order[:n_keep_target]] = True
+                final_keeps = []
+                offset = 0
+                for grid, base_keep in zip(additional_grids, base_keeps):
+                    active = np.flatnonzero(base_keep)
+                    keep = np.zeros(grid.features.shape[0], dtype=bool)
+                    keep[active] = selected[offset : offset + active.size]
+                    offset += active.size
+                    final_keeps.append(keep)
+                calib_threshold = float(scores[order[n_keep_target - 1]]) if n_keep_target else None
+                filter_extras.update(
+                    {
+                        "purification_strategy": "fixed_ratio_distance_trim",
+                        "fixed_trim_fraction": trim_fraction,
+                        "fixed_trim_retained_patches": n_keep_target,
+                    }
+                )
+
+            for grid, keep, base_keep in zip(additional_grids, final_keeps, base_keeps):
                 n_base = int(base_keep.sum())
                 n_keep = int(keep.sum())
                 accepted += n_keep
@@ -456,8 +543,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                         patch_keep_mask=keep,
                     )
                 )
-
-                if self.use_dual_bank:
+                if self.use_dual_bank and mode == "auto_purified":
                     suspected = (~keep) & base_keep
                     if suspected.any():
                         defect_grids.append(
@@ -507,11 +593,17 @@ class AnomalyDINODetector(BaseAnomalyDetector):
             n_memory_patches_before_filtering=before,
             n_clean_patches=n_clean,
             n_candidate_patches=n_cand,
+            n_memory_patches_clean=n_clean,
+            n_candidate_patches_before_filter=n_cand,
+            n_candidate_patches_after_filter=accepted,
             n_accepted_candidate_patches=accepted,
             n_rejected_candidate_patches=rejected,
             acceptance_fraction=acceptance_fraction,
-            calibration_percentile=acceptance_pct if calibration is not None else None,
+            calibration_percentile=(
+                acceptance_pct if mode in ("auto_purified", "random_filtered") else None
+            ),
             calibration_threshold=calib_threshold,
+            extras=filter_extras,
         )
         self.build_memory_bank(final_grids, defect_feature_grids=defect_grids or None)
         self._log_bank_stats()

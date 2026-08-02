@@ -1,0 +1,14 @@
+phase: phase4_compact_purification_controls
+fold: 0
+seed: 42
+split_seed: 42
+sam2: disabled
+spatial_cleanup: false
+acceptance_percentiles: [95.0, 97.5, 99.0, 99.5]
+random_filtered_control: match_automatic_retained_patch_count
+fixed_ratio_trim: [0.05, 0.10, 0.20]
+selection_criterion:
+  - AUPRC descending
+  - smallest query-threshold change versus paired clean
+  - fixed-threshold F1 descending
+  - F1-max reported only

@@ -30,6 +30,7 @@ def build_detector(config: dict, seed: int = 42) -> BaseAnomalyDetector:
             gt_overlap_threshold=config.get("gt_overlap_threshold", 0.5),
             num_classes=config.get("num_classes", 4),
             coreset_size=config.get("coreset_size"),
+            budget_policy=config.get("budget_policy", "greedy_coreset"),
         )
     if name == "dino_sobel":
         from src.detectors.dino_sobel import DINOv2SobelDetector

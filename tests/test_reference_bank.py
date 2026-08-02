@@ -350,6 +350,61 @@ def test_one_shot_patch_loo_calibration():
     assert np.all(calib.scores >= 0)
 
 
+def test_phase4_random_control_matches_auto_count_and_fixed_trim_ratio():
+    clean_grid = ReferenceFeatureGrid(
+        "clean", np.array([[0.0, 0.0], [0.1, 0.0], [0.0, 0.1], [0.1, 0.1]], dtype=np.float32), (2, 2), None
+    )
+    candidate_grid = ReferenceFeatureGrid(
+        "candidate",
+        np.array([[0.0, 0.0], [0.05, 0.0], [1.0, 1.0], [5.0, 5.0]], dtype=np.float32),
+        (2, 2),
+        None,
+    )
+
+    class _Sample:
+        def __init__(self, image_id):
+            self.image_id = image_id
+
+    samples = {"clean": clean_grid, "candidate": candidate_grid}
+
+    def fit(mode, config):
+        detector = AnomalyDINODetector(
+            device="cpu", faiss_on_cpu=True, reference_mode=mode,
+            reference_purification=config, pca_random_state=17,
+        )
+        detector._ensure_model = lambda: None
+        detector.extract_reference_features = lambda sample, use_cache=True: samples[sample.image_id]
+        detector.fit_reference_composition([_Sample("clean")], [_Sample("candidate")])
+        return detector.last_bank_stats
+
+    auto = fit("auto_purified", {"normal_acceptance_percentile": 95.0})
+    random = fit("random_filtered", {"normal_acceptance_percentile": 95.0})
+    trimmed = fit("fixed_ratio_trim", {"fixed_trim_fraction": 0.5})
+    assert random.n_accepted_candidate_patches == auto.n_accepted_candidate_patches
+    assert random.extras["matched_automatic_retained_patches"] == auto.n_accepted_candidate_patches
+    assert trimmed.n_accepted_candidate_patches == 2
+    assert trimmed.extras["fixed_trim_fraction"] == 0.5
+
+
+def test_phase5_random_budget_is_exact_and_count_provenance_is_separate():
+    rng = np.random.default_rng(4)
+    grid = ReferenceFeatureGrid("bank", rng.normal(size=(10, 4)).astype(np.float32), (2, 5), None)
+    first = AnomalyDINODetector(
+        device="cpu", faiss_on_cpu=True, coreset_size=4, budget_policy="random", pca_random_state=9
+    )
+    first.last_bank_stats.n_memory_patches_clean = 10
+    first.build_memory_bank([grid])
+    second = AnomalyDINODetector(
+        device="cpu", faiss_on_cpu=True, coreset_size=4, budget_policy="random", pca_random_state=9
+    )
+    second.last_bank_stats.n_memory_patches_clean = 10
+    second.build_memory_bank([grid])
+    assert first.last_bank_stats.n_memory_patches_before_budget == 10
+    assert first.last_bank_stats.n_memory_patches_final == 4
+    assert first.last_bank_stats.final_memory_bank_size == 4
+    np.testing.assert_array_equal(first._normal_bank_features, second._normal_bank_features)
+
+
 if __name__ == "__main__":
     tests = [v for k, v in list(globals().items()) if k.startswith("test_")]
     failed = 0
