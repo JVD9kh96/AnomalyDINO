@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
         help="Phase 4 report whose recommended purification setting is consumed by default",
     )
     parser.add_argument(
+        "--phase2-report",
+        default="results_reference_composition/phase2/phase2_purification_quality_report.json",
+        help="Phase 2 report used to resolve the selected oracle overlap rule",
+    )
+    parser.add_argument(
         "--purification-mode",
         choices=("auto_purified", "fixed_ratio_trim"),
         default=None,
@@ -32,6 +37,25 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--purification-percentile", type=float, default=None)
     parser.add_argument("--fixed-trim-fraction", type=float, default=None)
+    parser.add_argument(
+        "--oracle-overlap-rule",
+        choices=("any_overlap", "at_least_10_percent", "at_least_50_percent"),
+        default=None,
+        help="Oracle overlap rule for oracle_greedy_budget rows (default: Phase 2 selected)",
+    )
+    parser.add_argument(
+        "--append-rows",
+        action="store_true",
+        help=(
+            "Only run/aggregate the additive policy-matched rows and merge them into "
+            "an existing Phase 5 report without rewriting prior rows."
+        ),
+    )
+    parser.add_argument(
+        "--include-optional-4plus8",
+        action="store_true",
+        help="Also include optional naive_greedy_budget_4plus8 control.",
+    )
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--device", default=None)
     parser.add_argument("--run", action="store_true")
@@ -46,23 +70,87 @@ def resolve(value: str) -> Path:
 
 def specs(purification_mode: str) -> list[dict]:
     result = [
-        {"name": f"clean_{shots}", "condition": "clean", "clean_shots": shots, "additional_shots": 0, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET}
+        {"name": f"clean_{shots}", "condition": "clean", "clean_shots": shots, "additional_shots": 0, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET, "filter": "none"}
         for shots in (1, 2, 4, 8)
     ]
     result.extend(
         [
             # Establish how much of a gain is simply the larger unbudgeted bank.
-            {"name": "expanded_full_2plus8", "condition": "contaminated_all", "clean_shots": 2, "additional_shots": 8, "budget_policy": None, "budget": None},
+            {"name": "expanded_full_2plus8", "condition": "contaminated_all", "clean_shots": 2, "additional_shots": 8, "budget_policy": None, "budget": None, "filter": "none"},
             # Exact-size random subsampling control at the 8-clean patch budget.
-            {"name": "expanded_random_budget_2plus8", "condition": "contaminated_all", "clean_shots": 2, "additional_shots": 8, "budget_policy": "random", "budget": FINAL_BUDGET},
+            {"name": "expanded_random_budget_2plus8", "condition": "contaminated_all", "clean_shots": 2, "additional_shots": 8, "budget_policy": "random", "budget": FINAL_BUDGET, "filter": "none"},
             # Same deterministic greedy policy and budget for purified expansion.
-            {"name": "purified_budget_1plus8", "condition": purification_mode, "clean_shots": 1, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET},
-            {"name": "purified_budget_2plus8", "condition": purification_mode, "clean_shots": 2, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET},
-            {"name": "purified_budget_4plus8", "condition": purification_mode, "clean_shots": 4, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET},
+            {"name": "purified_budget_1plus8", "condition": purification_mode, "clean_shots": 1, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET, "filter": "selected_purification"},
+            {"name": "purified_budget_2plus8", "condition": purification_mode, "clean_shots": 2, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET, "filter": "selected_purification"},
+            {"name": "purified_budget_4plus8", "condition": purification_mode, "clean_shots": 4, "additional_shots": 8, "budget_policy": "greedy_coreset", "budget": FINAL_BUDGET, "filter": "selected_purification"},
         ]
     )
     return result
 
+
+def additive_specs(
+    *,
+    include_optional_4plus8: bool = True,
+    oracle_condition: str = "oracle_purified",
+) -> list[dict]:
+    """Policy-matched exact-budget rows added without rerunning existing Phase-5 rows."""
+    rows = [
+        {
+            "name": "naive_greedy_budget_2plus8",
+            "condition": "contaminated_all",
+            "clean_shots": 2,
+            "additional_shots": 8,
+            "budget_policy": "greedy_coreset",
+            "budget": FINAL_BUDGET,
+            "filter": "none",
+        },
+        {
+            "name": "random20_greedy_budget_2plus8",
+            "condition": "random_filtered",
+            "clean_shots": 2,
+            "additional_shots": 8,
+            "budget_policy": "greedy_coreset",
+            "budget": FINAL_BUDGET,
+            "filter": "random_reject_20",
+            "fixed_trim_fraction": 0.20,
+        },
+        {
+            "name": "oracle_greedy_budget_2plus8",
+            "condition": oracle_condition,
+            "clean_shots": 2,
+            "additional_shots": 8,
+            "budget_policy": "greedy_coreset",
+            "budget": FINAL_BUDGET,
+            "filter": "oracle_overlap",
+        },
+    ]
+    if include_optional_4plus8:
+        rows.append(
+            {
+                "name": "naive_greedy_budget_4plus8",
+                "condition": "contaminated_all",
+                "clean_shots": 4,
+                "additional_shots": 8,
+                "budget_policy": "greedy_coreset",
+                "budget": FINAL_BUDGET,
+                "filter": "none",
+            }
+        )
+    return rows
+
+
+def active_specs(
+    purification_mode: str,
+    *,
+    append_rows: bool,
+    include_optional_4plus8: bool,
+) -> list[dict]:
+    if append_rows:
+        return additive_specs(include_optional_4plus8=include_optional_4plus8)
+    return [
+        *specs(purification_mode),
+        *additive_specs(include_optional_4plus8=include_optional_4plus8),
+    ]
 
 def _ensure_cuda(device: str | None) -> None:
     if device is not None and not device.startswith("cuda"):
@@ -125,7 +213,11 @@ def selected_purification(args: argparse.Namespace) -> dict:
 def run(args: argparse.Namespace, output_dir: Path, purification: dict) -> None:
     _ensure_cuda(args.device)
     prepared_manifests: set[tuple[int, int]] = set()
-    study_specs = specs(purification["condition"])
+    study_specs = active_specs(
+        purification["condition"],
+        append_rows=bool(args.append_rows),
+        include_optional_4plus8=bool(args.include_optional_4plus8),
+    )
     for index, spec in enumerate(study_specs, start=1):
         key = (spec["clean_shots"], spec["additional_shots"])
         manifest = manifest_path(output_dir, *key)
@@ -156,6 +248,10 @@ def run(args: argparse.Namespace, output_dir: Path, purification: dict) -> None:
             command.extend(("--acceptance-percentile", str(purification["percentile"])))
         if spec["condition"] == "fixed_ratio_trim":
             command.extend(("--fixed-trim-fraction", str(purification["trim_fraction"])))
+        if spec["condition"] == "random_filtered":
+            # Match distance20 retention via fixed_trim_fraction consumed as random matched size.
+            trim = float(spec.get("fixed_trim_fraction", purification.get("trim_fraction", 0.20)))
+            command.extend(("--fixed-trim-fraction", str(trim)))
         if spec["budget"] is not None:
             command.extend(("--coreset-size", str(spec["budget"]), "--budget-policy", spec["budget_policy"]))
         if args.device is not None:
@@ -164,31 +260,83 @@ def run(args: argparse.Namespace, output_dir: Path, purification: dict) -> None:
         _run(command, spec["name"])
 
 
-def aggregate(output_dir: Path, purification: dict) -> Path:
-    rows = []
-    for spec in specs(purification["condition"]):
+def _row_from_metrics(spec: dict, path: Path) -> dict:
+    metrics = _load(path)
+    if metrics.get("fold") != 0 or metrics.get("seed") != 42 or metrics.get("split_seed") != 42:
+        raise ValueError(f"Invalid Phase 5 provenance: {path}")
+    bank = metrics["reference"].get("bank_stats", {})
+    return {
+        **spec,
+        "path": str(path),
+        "auprc": metrics["patch"].get("auprc"),
+        "auroc": metrics["patch"].get("auroc"),
+        "fixed_f1": metrics["patch"].get("fixed_threshold", {}).get("f1"),
+        "f1_max": metrics["patch"].get("f1_optimal", {}).get("f1"),
+        "n_memory_patches_clean": bank.get("n_memory_patches_clean"),
+        "n_candidate_patches_before_filter": bank.get("n_candidate_patches_before_filter"),
+        "n_candidate_patches_after_filter": bank.get("n_candidate_patches_after_filter"),
+        "n_memory_patches_before_budget": bank.get("n_memory_patches_before_budget"),
+        "n_memory_patches_final": bank.get("n_memory_patches_final"),
+        "budget_exact": (
+            bank.get("n_memory_patches_final") == spec["budget"] if spec["budget"] else None
+        ),
+    }
+
+
+def aggregate(
+    output_dir: Path,
+    purification: dict,
+    *,
+    append_rows: bool = False,
+    include_optional_4plus8: bool = True,
+) -> Path:
+    report_path = output_dir / "phase5_exact_memory_budget_controls_report.json"
+    study_specs = active_specs(
+        purification["condition"],
+        append_rows=append_rows,
+        include_optional_4plus8=include_optional_4plus8,
+    )
+    new_rows = []
+    for spec in study_specs:
         path = output_dir / f"phase5_f0_{spec['name']}_s42" / "metrics.json"
         if not path.is_file():
+            if append_rows:
+                print(f"Skipping missing additive row: {path}", flush=True)
+                continue
             raise ValueError(f"Missing Phase 5 result: {path}")
-        metrics = _load(path)
-        if metrics.get("fold") != 0 or metrics.get("seed") != 42 or metrics.get("split_seed") != 42:
-            raise ValueError(f"Invalid Phase 5 provenance: {path}")
-        bank = metrics["reference"].get("bank_stats", {})
-        row = {
-            **spec,
-            "path": str(path),
-            "auprc": metrics["patch"].get("auprc"),
-            "auroc": metrics["patch"].get("auroc"),
-            "fixed_f1": metrics["patch"].get("fixed_threshold", {}).get("f1"),
-            "f1_max": metrics["patch"].get("f1_optimal", {}).get("f1"),
-            "n_memory_patches_clean": bank.get("n_memory_patches_clean"),
-            "n_candidate_patches_before_filter": bank.get("n_candidate_patches_before_filter"),
-            "n_candidate_patches_after_filter": bank.get("n_candidate_patches_after_filter"),
-            "n_memory_patches_before_budget": bank.get("n_memory_patches_before_budget"),
-            "n_memory_patches_final": bank.get("n_memory_patches_final"),
-            "budget_exact": (bank.get("n_memory_patches_final") == spec["budget"] if spec["budget"] else None),
-        }
-        rows.append(row)
+        new_rows.append(_row_from_metrics(spec, path))
+
+    if append_rows and report_path.is_file():
+        existing = _load(report_path)
+        prior_rows = list(existing.get("rows") or [])
+        by_name = {row["name"]: row for row in prior_rows}
+        for row in new_rows:
+            by_name[row["name"]] = row
+        # Preserve prior order, then append newly introduced names.
+        ordered_names = [row["name"] for row in prior_rows]
+        for row in new_rows:
+            if row["name"] not in ordered_names:
+                ordered_names.append(row["name"])
+        rows = [by_name[name] for name in ordered_names]
+        notes = list(existing.get("notes") or [])
+    else:
+        rows = new_rows
+        notes = [
+            "Clean 1/2/4-shot baselines are naturally below the 8-clean budget and are not upsampled.",
+            "Expanded/purified comparisons at the target budget use exactly 51,200 final patches.",
+            "F1-max is reported but should not be used to interpret budget-controlled gains alone.",
+            "purified_budget_1plus8 may be under-budget (scarcity); do not upsample.",
+            "Additive naive/random20/oracle rows share the 2+8 candidate IDs and greedy coreset.",
+        ]
+
+    additive_note = (
+        "Appended additive policy-matched rows without rewriting prior Phase-5 evidence."
+        if append_rows
+        else "Full Phase-5 matrix including additive policy-matched rows."
+    )
+    if additive_note not in notes:
+        notes.append(additive_note)
+
     report = {
         "phase": "phase5_exact_memory_budget_controls",
         "fold": 0,
@@ -197,16 +345,22 @@ def aggregate(output_dir: Path, purification: dict) -> Path:
         "sam2_skipped": True,
         "selected_purification": purification,
         "target_final_patch_budget": FINAL_BUDGET,
+        "append_rows": bool(append_rows),
         "rows": rows,
-        "notes": [
-            "Clean 1/2/4-shot baselines are naturally below the 8-clean budget and are not upsampled.",
-            "Expanded/purified comparisons at the target budget use exactly 51,200 final patches.",
-            "F1-max is reported but should not be used to interpret budget-controlled gains alone.",
-        ],
+        "notes": notes,
     }
-    report_path = output_dir / "phase5_exact_memory_budget_controls_report.json"
     report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return report_path
+
+
+def resolve_oracle_rule(args: argparse.Namespace) -> str:
+    if args.oracle_overlap_rule:
+        return args.oracle_overlap_rule
+    path = resolve(args.phase2_report)
+    if path.is_file():
+        report = _load(path)
+        return str(report.get("selected_oracle_rule") or report.get("canonical_ground_truth_rule") or "any_overlap")
+    return "any_overlap"
 
 
 def main() -> None:
@@ -218,10 +372,18 @@ def main() -> None:
     output_dir = resolve(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     purification = selected_purification(args)
+    oracle_rule = resolve_oracle_rule(args)
+    purification = {**purification, "oracle_overlap_rule": oracle_rule}
     print(f"Phase 5 selected purification: {purification}", flush=True)
+    print(f"Phase 5 append_rows={args.append_rows}", flush=True)
     if args.run:
         run(args, output_dir, purification)
-    report_path = aggregate(output_dir, purification)
+    report_path = aggregate(
+        output_dir,
+        purification,
+        append_rows=bool(args.append_rows),
+        include_optional_4plus8=bool(args.include_optional_4plus8),
+    )
     print(f"Wrote Phase 5 report: {report_path}")
 
 

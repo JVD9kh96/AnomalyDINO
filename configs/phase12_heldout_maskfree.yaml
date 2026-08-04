@@ -1,0 +1,51 @@
+phase12:
+  purification_mode: fixed_ratio_trim
+  trim_fraction: 0.20
+  budget: 51200
+  budget_policy: greedy_coreset
+  folds: [1, 2, 3, 4]
+  seeds: [42, 43, 44]
+  tracks:
+    primary_mask_free:
+      - clean_2
+      - clean_8
+      - naive_2plus8
+      - random20_2plus8
+      - proposed_distance20_2plus8
+      - oracle_2plus8
+    reference_efficiency:
+      - proposed_1plus8_natural
+      - proposed_2plus8_exact
+      - proposed_4plus8_exact
+      - clean_8
+  sam2_conditions:
+    - clean_8
+    - naive_2plus8
+    - proposed_distance20_2plus8
+
+seed: 42
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+detector:
+  name: anomaly_dino
+  model_name: dinov2_vits14
+  resolution: 448
+  device: cuda:0
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: true
+  reference_purification:
+    normal_acceptance_percentile: 99.0
+    fixed_trim_fraction: 0.20
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+output:
+  dir: results_refbank/phase12

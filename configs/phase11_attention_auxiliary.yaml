@@ -1,0 +1,30 @@
+seed: 42
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+detector:
+  name: dino_knn_rollout
+  model_name: dinov2_vits14
+  resolution: 448
+  device: cuda:0
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: true
+  reference_mode: clean
+  clean_shots: 8
+  attention_rollout:
+    average_heads: true
+    include_residual: true
+fusion:
+  rollout_weight: 0.5
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+output:
+  dir: results_refbank/phase11

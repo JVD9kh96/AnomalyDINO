@@ -118,6 +118,82 @@ class ReferencePurificationMetricTests(unittest.TestCase):
         self.assertEqual(method, "auto_purified")
         self.assertTrue(np.array_equal(loaded["candidate.jpg"], masks[0]))
 
+    def test_direct_overlap_counts_match_aggregate_helper(self):
+        from src.detectors.reference_purification_metrics import (
+            build_multi_bank_purification_report,
+            count_overlap_patches_direct,
+        )
+
+        record = _synthetic_record()
+        rejected = {
+            "naive": {record.image_id: np.zeros_like(record.union_overlap, dtype=bool)},
+            "oracle": {
+                record.image_id: oracle_rejection_mask(
+                    record.union_overlap, "any_overlap"
+                )
+            },
+            "distance_trim_20": {
+                record.image_id: np.array([[False, False, True, True]], dtype=bool)
+            },
+            "random_size_matched": {
+                record.image_id: np.array([[True, False, True, False]], dtype=bool)
+            },
+        }
+        report, _ = build_multi_bank_purification_report(
+            [record],
+            bank_rejected_by_image=rejected,
+        )
+        direct = count_overlap_patches_direct(
+            record.union_overlap, threshold=0.0, operator=">"
+        )
+        self.assertEqual(
+            report["direct_overlap_counts"]["any_overlap"]["n_positive_patches"],
+            direct,
+        )
+        self.assertEqual(
+            report["oracle_removal"]["any_overlap"]["n_removed_patches"],
+            direct,
+        )
+        self.assertIn("naive", report["multi_bank_purification_quality"])
+        self.assertIn("oracle", report["multi_bank_purification_quality"])
+
+    def test_oracle_rules_remove_expected_synthetic_grid_patches(self):
+        overlaps = np.array(
+            [[0.0, 0.0, 0.05, 0.15, 0.55]],
+            dtype=np.float32,
+        )
+        self.assertEqual(int(np.sum(oracle_rejection_mask(overlaps, "any_overlap"))), 3)
+        self.assertEqual(
+            int(np.sum(oracle_rejection_mask(overlaps, "at_least_10_percent"))),
+            2,
+        )
+        self.assertEqual(
+            int(np.sum(oracle_rejection_mask(overlaps, "at_least_50_percent"))),
+            1,
+        )
+
+
+class ReferencePurificationIndexTests(unittest.TestCase):
+    def test_fixed_ratio_and_random_size_matched_indices(self):
+        from src.detectors.reference_purification import (
+            fixed_ratio_distance_trim_indices,
+            random_size_matched_indices,
+            selected_indices_to_keep_mask,
+        )
+
+        scores = np.array([0.5, 0.1, 0.9, 0.2, 0.8], dtype=np.float32)
+        selected = fixed_ratio_distance_trim_indices(scores, trim_fraction=0.20)
+        # Keep 80% of 5 => 4 patches; lowest distances first.
+        self.assertEqual(selected.size, 4)
+        self.assertTrue(np.all(np.isin(selected, [1, 3, 0, 4])))
+        keep = selected_indices_to_keep_mask(selected, scores.size)
+        self.assertEqual(int(keep.sum()), 4)
+
+        random_a = random_size_matched_indices(5, 4, seed=42)
+        random_b = random_size_matched_indices(5, 4, seed=42)
+        self.assertTrue(np.array_equal(random_a, random_b))
+        self.assertEqual(random_a.size, selected.size)
+
 
 if __name__ == "__main__":
     unittest.main()

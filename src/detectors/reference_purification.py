@@ -126,6 +126,78 @@ def oracle_keep_mask_from_gt(
     return (~defect).ravel()
 
 
+def fixed_ratio_distance_trim_indices(
+    distance_scores: np.ndarray,
+    *,
+    trim_fraction: float,
+    base_keep: np.ndarray | None = None,
+) -> np.ndarray:
+    """
+    Deterministic indices of retained candidate patches under fixed-ratio distance trim.
+
+    Returns indices into the full feature rows (intersected with base_keep when given),
+    ordered by ascending distance (most normal first).
+    """
+    scores = np.asarray(distance_scores, dtype=np.float64).ravel()
+    if base_keep is None:
+        active = np.arange(scores.size, dtype=np.int64)
+        active_scores = scores
+    else:
+        keep = np.asarray(base_keep, dtype=bool).ravel()
+        if keep.shape != scores.shape:
+            raise ValueError("base_keep must match distance_scores shape")
+        active = np.flatnonzero(keep).astype(np.int64)
+        active_scores = scores[active]
+    if not 0.0 <= float(trim_fraction) < 1.0:
+        raise ValueError("trim_fraction must be in [0, 1)")
+    n_keep = int(round((1.0 - float(trim_fraction)) * active.size))
+    order = np.argsort(active_scores, kind="stable")
+    return active[order[:n_keep]]
+
+
+def random_size_matched_indices(
+    n_candidates: int,
+    n_keep: int,
+    *,
+    seed: int,
+    base_keep: np.ndarray | None = None,
+) -> np.ndarray:
+    """Deterministic random subset of candidate patch indices, size-matched to a target."""
+    n_keep = int(n_keep)
+    if n_keep < 0:
+        raise ValueError("n_keep must be non-negative")
+    rng = np.random.default_rng(int(seed))
+    if base_keep is None:
+        if n_keep > n_candidates:
+            raise ValueError("n_keep exceeds n_candidates")
+        if n_candidates == 0 or n_keep == 0:
+            return np.zeros((0,), dtype=np.int64)
+        return np.sort(
+            rng.choice(n_candidates, size=n_keep, replace=False).astype(np.int64)
+        )
+    keep = np.asarray(base_keep, dtype=bool).ravel()
+    active = np.flatnonzero(keep).astype(np.int64)
+    if n_keep > active.size:
+        raise ValueError("n_keep exceeds active candidate count")
+    if active.size == 0 or n_keep == 0:
+        return np.zeros((0,), dtype=np.int64)
+    chosen = rng.choice(active.size, size=n_keep, replace=False)
+    return np.sort(active[chosen])
+
+
+def selected_indices_to_keep_mask(
+    selected_indices: np.ndarray,
+    n_patches: int,
+) -> np.ndarray:
+    """Convert absolute patch indices into a boolean keep mask."""
+    keep = np.zeros(int(n_patches), dtype=bool)
+    idx = np.asarray(selected_indices, dtype=np.int64).ravel()
+    if idx.size and (int(idx.min()) < 0 or int(idx.max()) >= n_patches):
+        raise ValueError("selected_indices out of bounds")
+    keep[idx] = True
+    return keep
+
+
 def mine_suspected_defect_mask(
     features: np.ndarray,
     clean_bank_features: np.ndarray,

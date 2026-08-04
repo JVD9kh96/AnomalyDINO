@@ -1,0 +1,29 @@
+allow_gt_anomaly_memory: false
+max_anomaly_images: 32
+seed: 42
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+detector:
+  name: anomaly_dino
+  model_name: dinov2_vits14
+  resolution: 448
+  device: cuda:0
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: true
+  clean_shots: 8
+  additional_shots: 0
+  reference_mode: clean
+  reference_purification:
+    normal_acceptance_percentile: 99.0
+patch_eval:
+  gt_overlap_threshold: 0.5
+output:
+  dir: results_refbank/anomaly_memory

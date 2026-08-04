@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from tqdm import tqdm
@@ -36,6 +36,24 @@ REFERENCE_MODES = (
     "random_filtered",
     "fixed_ratio_trim",
 )
+
+NeighborSource = Literal[
+    "clean",
+    "candidate_normal",
+    "candidate_anomaly",
+    "injected_anomaly",
+]
+
+
+@dataclass
+class ReferenceNeighborTrace:
+    query_image_id: str
+    query_grid_rc: tuple[int, int]
+    neighbor_image_id: str
+    neighbor_grid_rc: tuple[int, int]
+    neighbor_source: NeighborSource
+    neighbor_class: int | None
+    distance: float
 
 
 @dataclass
@@ -153,6 +171,8 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         self._calibration: NormalDistanceCalibration | None = None
         self.last_bank_stats: MemoryBankStats = MemoryBankStats()
         self._feature_cache: dict[str, ReferenceFeatureGrid] = {}
+        self._bank_provenance: list[dict[str, Any]] = []
+        self._last_neighbor_traces: list[ReferenceNeighborTrace] = []
 
     def _ensure_model(self) -> None:
         if self._model is None:
@@ -478,8 +498,31 @@ class AnomalyDINODetector(BaseAnomalyDetector):
             elif mode == "random_filtered":
                 if spatial_cleanup:
                     raise ValueError("random_filtered requires spatial_cleanup=false")
-                n_match = int(sum(keep.sum() for keep in automatic_keeps))
-                n_candidates = int(sum(keep.sum() for keep in base_keeps))
+                trim_fraction = purif_cfg.get("fixed_trim_fraction", None)
+                if trim_fraction is not None:
+                    trim_fraction = float(trim_fraction)
+                    if not 0.0 <= trim_fraction < 1.0:
+                        raise ValueError("fixed_trim_fraction must be in [0, 1)")
+                    n_candidates = int(sum(keep.sum() for keep in base_keeps))
+                    n_match = int(round((1.0 - trim_fraction) * n_candidates))
+                    filter_extras.update(
+                        {
+                            "purification_strategy": "random_fixed_ratio",
+                            "fixed_trim_fraction": trim_fraction,
+                            "matched_automatic_retained_patches": n_match,
+                            "random_filter_seed": self.pca_random_state,
+                        }
+                    )
+                else:
+                    n_match = int(sum(keep.sum() for keep in automatic_keeps))
+                    n_candidates = int(sum(keep.sum() for keep in base_keeps))
+                    filter_extras.update(
+                        {
+                            "purification_strategy": "random_matched_to_automatic",
+                            "matched_automatic_retained_patches": n_match,
+                            "random_filter_seed": self.pca_random_state,
+                        }
+                    )
                 selected = np.zeros(n_candidates, dtype=bool)
                 if n_match:
                     rng = np.random.default_rng(self.pca_random_state)
@@ -492,13 +535,6 @@ class AnomalyDINODetector(BaseAnomalyDetector):
                     keep[active] = selected[offset : offset + active.size]
                     offset += active.size
                     final_keeps.append(keep)
-                filter_extras.update(
-                    {
-                        "purification_strategy": "random_matched_to_automatic",
-                        "matched_automatic_retained_patches": n_match,
-                        "random_filter_seed": self.pca_random_state,
-                    }
-                )
             else:
                 if spatial_cleanup:
                     raise ValueError("fixed_ratio_trim requires spatial_cleanup=false")
@@ -622,72 +658,6 @@ class AnomalyDINODetector(BaseAnomalyDetector):
             f"final_size={s.final_memory_bank_size}"
         )
 
-    def predict(self, sample: SeverstalSample) -> DetectorOutput:
-        import torch
-
-        self._ensure_model()
-        if self._knn_index is None and self._normal_bank_features is None:
-            raise RuntimeError("Detector must be fit before predict.")
-
-        native_shape = sample.image.shape[:2]
-        with torch.inference_mode():
-            tensor, grid_size = self._model.prepare_image(sample.image)
-            features = self._model.extract_features(tensor)
-            features = self._prepare_features(features, grid_size)
-
-            if self.masking:
-                patch_valid = self._model.compute_background_mask(
-                    features,
-                    grid_size,
-                    threshold=10,
-                    masking_type=True,
-                    random_state=self.pca_random_state,
-                )
-            else:
-                patch_valid = np.ones(features.shape[0], dtype=bool)
-
-            features_masked = features[patch_valid]
-
-            if (
-                self.use_dual_bank
-                and self._normal_bank_features is not None
-                and self._defect_bank_features is not None
-                and len(self._defect_bank_features) > 0
-            ):
-                distances = dual_bank_scores(
-                    features_masked,
-                    self._normal_bank_features,
-                    self._defect_bank_features,
-                    knn_metric=self.knn_metric,
-                    k_neighbors=self.k_neighbors,
-                    alpha=self.dual_bank_alpha,
-                )
-            else:
-                distances = knn_distances(
-                    features_masked,
-                    self._knn_index,
-                    self.knn_metric,
-                    self.k_neighbors,
-                )
-
-            output_distances = np.zeros(features.shape[0], dtype=np.float32)
-            output_distances[patch_valid] = distances.squeeze()
-            patch_scores = output_distances.reshape(grid_size)
-
-        processed_shape, _ = compute_processed_shape(
-            native_shape, self.resolution, self._patch_size
-        )
-
-        return DetectorOutput(
-            image_id=sample.image_id,
-            patch_scores=patch_scores,
-            grid_size=grid_size,
-            processed_shape=processed_shape,
-            patch_size=self._patch_size,
-            patch_valid_mask=patch_valid.reshape(grid_size),
-            patch_class_scores=None,
-        )
-
     def inject_contamination(
         self,
         clean_features: np.ndarray,
@@ -700,6 +670,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         Build a bank from clean features plus a controlled fraction of anomalies.
 
         contamination_ratio is the fraction of the *final* bank that is anomalous.
+        Uses growth then optional coreset (legacy Phase-6 growth path).
         """
         clean_features = np.asarray(clean_features, dtype=np.float32)
         anomalous_features = np.asarray(anomalous_features, dtype=np.float32)
@@ -708,6 +679,7 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         ratio = float(contamination_ratio)
         if ratio <= 0 or anomalous_features.shape[0] == 0:
             bank = clean_features
+            n_anom = 0
         else:
             # n_anom / (n_clean + n_anom) = ratio  => n_anom = ratio/(1-ratio)*n_clean
             if ratio >= 1.0:
@@ -728,12 +700,258 @@ class AnomalyDINODetector(BaseAnomalyDetector):
         self._knn_index = build_faiss_index(
             bank, self.knn_metric, faiss_on_cpu=self.faiss_on_cpu
         )
+        self._bank_provenance = [
+            {
+                "bank_index": i,
+                "source": "injected_anomaly" if i >= bank.shape[0] - n_anom else "clean",
+                "class_id": None,
+            }
+            for i in range(bank.shape[0])
+        ]
         self.last_bank_stats = MemoryBankStats(
             n_memory_patches_before_filtering=int(bank.shape[0]),
             n_memory_patches_after_filtering=int(bank.shape[0]),
             final_memory_bank_size=int(bank.shape[0]),
-            extras={"contamination_ratio": ratio},
+            n_memory_patches_final=int(bank.shape[0]),
+            extras={"contamination_ratio": ratio, "insertion_policy": "growth"},
         )
+
+    def inject_contamination_replacement(
+        self,
+        clean_features: np.ndarray,
+        anomalous_features: np.ndarray,
+        contamination_rate: float,
+        *,
+        seed: int = 42,
+        anomalous_classes: np.ndarray | None = None,
+        anomalous_meta: list[dict[str, Any]] | None = None,
+        target_bank_size: int | None = None,
+    ) -> dict[str, Any]:
+        """
+        Replace normal memory patches with anomalous ones at constant bank size.
+
+        ``contamination_rate`` is the fraction of the *final* bank that is anomalous.
+        Never appends; final size equals ``target_bank_size`` or ``len(clean_features)``.
+        """
+        clean_features = np.asarray(clean_features, dtype=np.float32)
+        anomalous_features = np.asarray(anomalous_features, dtype=np.float32)
+        if clean_features.ndim != 2 or clean_features.shape[0] == 0:
+            raise ValueError("clean_features must be a non-empty (N, D) array")
+        rate = float(contamination_rate)
+        if not 0.0 <= rate <= 1.0:
+            raise ValueError("contamination_rate must be in [0, 1]")
+
+        n_target = int(target_bank_size or clean_features.shape[0])
+        if n_target <= 0:
+            raise ValueError("target_bank_size must be positive")
+        rng = np.random.default_rng(seed)
+        if clean_features.shape[0] >= n_target:
+            clean_idx = np.sort(rng.choice(clean_features.shape[0], n_target, replace=False))
+            bank = clean_features[clean_idx].copy()
+        else:
+            # Undersized clean bank: keep all and do not upsample.
+            bank = clean_features.copy()
+            n_target = int(bank.shape[0])
+            clean_idx = np.arange(n_target)
+
+        n_inject = int(round(rate * n_target))
+        n_inject = max(0, min(n_inject, n_target, anomalous_features.shape[0]))
+        provenance: list[dict[str, Any]] = [
+            {
+                "bank_index": int(i),
+                "source": "clean",
+                "class_id": None,
+                "image_id": None,
+                "grid_rc": None,
+            }
+            for i in range(n_target)
+        ]
+        injected_indices: list[int] = []
+        if n_inject > 0:
+            replace_slots = np.sort(
+                rng.choice(n_target, size=n_inject, replace=False)
+            )
+            anom_idx = rng.choice(
+                anomalous_features.shape[0], size=n_inject, replace=False
+            )
+            for slot, source_i in zip(replace_slots, anom_idx):
+                bank[int(slot)] = anomalous_features[int(source_i)]
+                class_id = None
+                if anomalous_classes is not None:
+                    class_id = int(anomalous_classes[int(source_i)])
+                meta = (
+                    anomalous_meta[int(source_i)]
+                    if anomalous_meta is not None
+                    else {}
+                )
+                provenance[int(slot)] = {
+                    "bank_index": int(slot),
+                    "source": "injected_anomaly",
+                    "class_id": class_id,
+                    "image_id": meta.get("image_id"),
+                    "grid_rc": meta.get("grid_rc"),
+                    "source_index": int(source_i),
+                }
+                injected_indices.append(int(slot))
+
+        self._normal_bank_features = bank
+        self._defect_bank_features = None
+        self._knn_index = build_faiss_index(
+            bank, self.knn_metric, faiss_on_cpu=self.faiss_on_cpu
+        )
+        self._bank_provenance = provenance
+        extras = {
+            "contamination_rate": rate,
+            "insertion_policy": "replacement",
+            "n_injected": n_inject,
+            "injected_bank_indices": injected_indices,
+            "target_bank_size": n_target,
+        }
+        self.last_bank_stats = MemoryBankStats(
+            n_memory_patches_before_filtering=n_target,
+            n_memory_patches_after_filtering=n_target,
+            final_memory_bank_size=n_target,
+            n_memory_patches_final=n_target,
+            n_memory_patches_before_budget=n_target,
+            extras=extras,
+        )
+        return extras
+
+    def predict(
+        self,
+        sample: SeverstalSample,
+        *,
+        return_neighbor_trace: bool = False,
+    ) -> DetectorOutput | tuple[DetectorOutput, list[ReferenceNeighborTrace]]:
+        import torch
+
+        self._ensure_model()
+        if self._knn_index is None and self._normal_bank_features is None:
+            raise RuntimeError("Detector must be fit before predict.")
+
+        native_shape = sample.image.shape[:2]
+        traces: list[ReferenceNeighborTrace] = []
+        with torch.inference_mode():
+            tensor, grid_size = self._model.prepare_image(sample.image)
+            features = self._model.extract_features(tensor)
+            features = self._prepare_features(features, grid_size)
+
+            if self.masking:
+                patch_valid = self._model.compute_background_mask(
+                    features,
+                    grid_size,
+                    threshold=10,
+                    masking_type=True,
+                    random_state=self.pca_random_state,
+                )
+            else:
+                patch_valid = np.ones(features.shape[0], dtype=bool)
+
+            features_masked = features[patch_valid]
+            neighbor_indices = None
+
+            if (
+                self.use_dual_bank
+                and self._normal_bank_features is not None
+                and self._defect_bank_features is not None
+                and len(self._defect_bank_features) > 0
+            ):
+                distances = dual_bank_scores(
+                    features_masked,
+                    self._normal_bank_features,
+                    self._defect_bank_features,
+                    knn_metric=self.knn_metric,
+                    k_neighbors=self.k_neighbors,
+                    alpha=self.dual_bank_alpha,
+                )
+            else:
+                if return_neighbor_trace and self._normal_bank_features is not None:
+                    from src.detectors.knn_index import pairwise_knn_distances
+
+                    # Brute-force 1-NN with indices for provenance.
+                    bank = self._normal_bank_features
+                    if self.knn_metric == "L2_normalized":
+                        q = features_masked / (
+                            np.linalg.norm(features_masked, axis=1, keepdims=True) + 1e-8
+                        )
+                        b = bank / (np.linalg.norm(bank, axis=1, keepdims=True) + 1e-8)
+                        sims = q @ b.T
+                        neighbor_indices = np.argmax(sims, axis=1)
+                        distances = (1.0 - sims[np.arange(q.shape[0]), neighbor_indices]).astype(
+                            np.float32
+                        )
+                    else:
+                        # Fallback to pairwise distances.
+                        dmat = pairwise_knn_distances(
+                            features_masked,
+                            bank,
+                            self.knn_metric,
+                            max(self.k_neighbors, 1),
+                            faiss_on_cpu=True,
+                        )
+                        # pairwise returns distances only; recompute argmin via brute.
+                        # Use FAISS search if available.
+                        if hasattr(self._knn_index, "search"):
+                            d, idx = self._knn_index.search(
+                                features_masked, self.k_neighbors
+                            )
+                            distances = d[:, 0].astype(np.float32)
+                            neighbor_indices = idx[:, 0]
+                        else:
+                            distances = dmat.astype(np.float32)
+                            neighbor_indices = np.zeros(features_masked.shape[0], dtype=np.int64)
+                else:
+                    distances = knn_distances(
+                        features_masked,
+                        self._knn_index,
+                        self.knn_metric,
+                        self.k_neighbors,
+                    )
+
+            output_distances = np.zeros(features.shape[0], dtype=np.float32)
+            output_distances[patch_valid] = distances.squeeze()
+            patch_scores = output_distances.reshape(grid_size)
+
+            if return_neighbor_trace and neighbor_indices is not None:
+                valid_rc = np.argwhere(patch_valid.reshape(grid_size))
+                for local_i, (row, col) in enumerate(valid_rc):
+                    bank_i = int(neighbor_indices[local_i])
+                    meta = (
+                        self._bank_provenance[bank_i]
+                        if bank_i < len(self._bank_provenance)
+                        else {}
+                    )
+                    traces.append(
+                        ReferenceNeighborTrace(
+                            query_image_id=sample.image_id,
+                            query_grid_rc=(int(row), int(col)),
+                            neighbor_image_id=str(meta.get("image_id") or f"bank:{bank_i}"),
+                            neighbor_grid_rc=tuple(meta["grid_rc"])
+                            if meta.get("grid_rc") is not None
+                            else (-1, -1),
+                            neighbor_source=meta.get("source", "clean"),  # type: ignore[arg-type]
+                            neighbor_class=meta.get("class_id"),
+                            distance=float(distances.squeeze()[local_i]),
+                        )
+                    )
+
+        processed_shape, _ = compute_processed_shape(
+            native_shape, self.resolution, self._patch_size
+        )
+
+        output = DetectorOutput(
+            image_id=sample.image_id,
+            patch_scores=patch_scores,
+            grid_size=grid_size,
+            processed_shape=processed_shape,
+            patch_size=self._patch_size,
+            patch_valid_mask=patch_valid.reshape(grid_size),
+            patch_class_scores=None,
+        )
+        self._last_neighbor_traces = traces
+        if return_neighbor_trace:
+            return output, traces
+        return output
 
 
 def _count_active(grid: ReferenceFeatureGrid) -> int:

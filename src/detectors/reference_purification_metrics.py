@@ -416,6 +416,120 @@ def build_phase2_purification_report(
     return report, distribution_arrays
 
 
+BANK_FILTER_NAMES = (
+    "naive",
+    "auto_purified",
+    "distance_trim_20",
+    "random_size_matched",
+    "oracle",
+)
+
+
+def rejected_mask_from_keep_mask(keep_mask: np.ndarray) -> np.ndarray:
+    return ~np.asarray(keep_mask, dtype=bool)
+
+
+def count_overlap_patches_direct(
+    union_overlaps: np.ndarray,
+    *,
+    threshold: float = 0.0,
+    operator: str = ">",
+) -> int:
+    """Direct patch-overlap count used as the Phase-2 acceptance fixture oracle."""
+    values = np.asarray(union_overlaps, dtype=np.float64)
+    if operator == ">":
+        return int(np.sum(values > threshold))
+    if operator == ">=":
+        return int(np.sum(values >= threshold))
+    raise ValueError(f"Unsupported operator={operator!r}")
+
+
+def build_multi_bank_purification_report(
+    records: list[CandidatePatchOverlaps],
+    *,
+    bank_rejected_by_image: dict[str, dict[str, np.ndarray]],
+    metadata: dict[str, Any] | None = None,
+    selected_oracle_rule: str = "any_overlap",
+) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
+    """
+    Compare purification quality across named banks after construction.
+
+    ``bank_rejected_by_image`` maps bank_name -> {image_id -> rejected_mask}.
+    Expected bank names include naive / auto_purified / distance_trim_20 /
+    random_size_matched / oracle.
+    """
+    base_report, distribution_arrays = build_phase2_purification_report(
+        records,
+        auto_rejected_by_image=bank_rejected_by_image.get("auto_purified"),
+        metadata=metadata,
+    )
+    image_ids, union_maps, class_maps_by_image = _stack_overlap_records(records)
+    class_maps = np.moveaxis(class_maps_by_image, 1, 0)
+
+    bank_quality: dict[str, Any] = {}
+    for bank_name, rejected_by_image in bank_rejected_by_image.items():
+        expected = set(image_ids)
+        actual = set(rejected_by_image)
+        if actual != expected:
+            raise ValueError(
+                f"Bank {bank_name!r} rejection IDs mismatch: "
+                f"missing={sorted(expected - actual)}, extra={sorted(actual - expected)}"
+            )
+        rejected = np.stack(
+            [np.asarray(rejected_by_image[image_id], dtype=bool) for image_id in image_ids]
+        )
+        if rejected.shape != union_maps.shape:
+            raise ValueError(
+                f"Bank {bank_name!r} rejection shape {rejected.shape} != {union_maps.shape}"
+            )
+        per_truth: dict[str, Any] = {}
+        for truth_rule in ORACLE_OVERLAP_RULES:
+            per_truth[truth_rule] = compute_purification_quality(
+                union_overlaps=union_maps,
+                class_overlaps=class_maps,
+                rejected_mask=rejected,
+                truth_rule=truth_rule,
+            )
+        bank_quality[bank_name] = {
+            "n_rejected_patches": int(np.sum(rejected)),
+            "n_retained_patches": int(rejected.size - np.sum(rejected)),
+            "quality_by_truth_rule": per_truth,
+            "canonical": per_truth[selected_oracle_rule],
+        }
+
+    # Direct overlap counts for acceptance tests / audits.
+    direct_counts = {
+        rule: {
+            "n_positive_patches": count_overlap_patches_direct(
+                union_maps,
+                threshold=float(spec["threshold"]),
+                operator=str(spec["operator"]),
+            ),
+            "by_image": {
+                image_id: count_overlap_patches_direct(
+                    union_maps[index],
+                    threshold=float(spec["threshold"]),
+                    operator=str(spec["operator"]),
+                )
+                for index, image_id in enumerate(image_ids)
+            },
+        }
+        for rule, spec in ORACLE_OVERLAP_RULES.items()
+    }
+
+    base_report["multi_bank_purification_quality"] = bank_quality
+    base_report["selected_oracle_rule"] = selected_oracle_rule
+    base_report["direct_overlap_counts"] = direct_counts
+    base_report["banks_evaluated"] = sorted(bank_quality)
+    # Refresh report id after extensions.
+    body = {key: value for key, value in base_report.items() if key != "phase2_report_id"}
+    canonical = json.dumps(body, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+    base_report["phase2_report_id"] = hashlib.sha256(
+        canonical.encode("utf-8")
+    ).hexdigest()
+    return base_report, distribution_arrays
+
+
 def save_phase2_purification_artifacts(
     *,
     report: dict[str, Any],

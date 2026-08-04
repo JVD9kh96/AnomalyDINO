@@ -15,10 +15,54 @@ CANDIDATE_SCORE_METHOD = (
 QUERY_SCORE_METHOD = (
     "leave_one_clean_reference_out_scores_against_final_bank"
 )
+# Compact aliases required by the Phase-1 audit schema.
+CANDIDATE_SCORE_METHOD_COMPACT = "clean_cross_fit"
+QUERY_SCORE_METHOD_COMPACT = "final_bank_clean_cross_fit"
 F1_MAX_METHOD = "validation_gt_exact_threshold_sweep_diagnostic_only"
 DEFAULT_QUANTILES = (0.0, 1.0, 5.0, 25.0, 50.0, 75.0, 95.0, 99.0, 99.5, 100.0)
+DEFAULT_CALIBRATION_REPORT_FILENAME = "calibration_report.json"
+LEGACY_CALIBRATION_REPORT_FILENAME = "phase1_calibration_report.json"
+
+_CANDIDATE_METHODS = frozenset(
+    {CANDIDATE_SCORE_METHOD, CANDIDATE_SCORE_METHOD_COMPACT}
+)
+_QUERY_METHODS = frozenset({QUERY_SCORE_METHOD, QUERY_SCORE_METHOD_COMPACT})
 
 CrossFitScorer = Callable[[str, list[str], str], np.ndarray]
+
+
+def final_bank_hash(final_bank_id: str, *extra_parts: str) -> str:
+    """Stable hash of the final bank identity used to bind tau_query."""
+    payload = "\n".join([str(final_bank_id), *[str(part) for part in extra_parts]])
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _normalize_candidate_method(method: str) -> str:
+    if method not in _CANDIDATE_METHODS:
+        raise ValueError("Candidate scores are not marked as clean-bank cross-fitted")
+    return CANDIDATE_SCORE_METHOD_COMPACT
+
+
+def _normalize_query_method(method: str) -> str:
+    if method not in _QUERY_METHODS:
+        raise ValueError("Query scores are not marked as final-bank cross-fitted")
+    return QUERY_SCORE_METHOD_COMPACT
+
+
+def assert_tau_query_matches_bank(
+    report: dict[str, Any],
+    *,
+    expected_final_bank_hash: str,
+) -> None:
+    """Reject a stale calibration report whose tau_query belongs to another bank."""
+    recorded = report.get("final_bank_hash")
+    if recorded is None:
+        raise ValueError("calibration report is missing final_bank_hash")
+    if recorded != expected_final_bank_hash:
+        raise ValueError(
+            "tau_query does not match the current final bank hash; "
+            "recompute or explicitly revalidate calibration"
+        )
 
 
 def _finite_scores(values: np.ndarray, name: str) -> np.ndarray:
@@ -237,16 +281,22 @@ def build_phase1_calibration_report(
     query_self_exclusion: bool = True,
     quantiles: tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
     metadata: dict[str, Any] | None = None,
+    exclusion_mode: str = "leave_one_image_out",
+    bank_composition_parts: tuple[str, ...] | list[str] | None = None,
 ) -> dict[str, Any]:
     """Create the single Phase 1 audit report for one completed final bank."""
     if not final_bank_id or not clean_bank_id:
         raise ValueError("clean_bank_id and final_bank_id are required")
-    if candidate_score_method != CANDIDATE_SCORE_METHOD:
-        raise ValueError("Candidate scores are not marked as clean-bank cross-fitted")
-    if query_score_method != QUERY_SCORE_METHOD:
-        raise ValueError("Query scores are not marked as final-bank cross-fitted")
+    candidate_method = _normalize_candidate_method(candidate_score_method)
+    query_method = _normalize_query_method(query_score_method)
     if not candidate_self_exclusion or not query_self_exclusion:
         raise ValueError("Both calibration score sets must exclude the held-out image")
+    if exclusion_mode not in {
+        "leave_one_image_out",
+        "leave_one_patch_out",
+        "spatial_block_exclusion",
+    }:
+        raise ValueError(f"Unknown exclusion_mode={exclusion_mode!r}")
 
     p_accept = _validate_percentile(
         candidate_acceptance_percentile, "candidate_acceptance_percentile"
@@ -271,32 +321,56 @@ def build_phase1_calibration_report(
     fixed = _operating_point(val_scores, val_labels, tau_query)
     f1_max = exact_f1_max_operating_point(val_scores, val_labels)
 
+    bank_hash = final_bank_hash(
+        final_bank_id,
+        *(bank_composition_parts or ()),
+    )
+    pos_scores = val_scores[val_labels]
+    neg_scores = val_scores[~val_labels]
+    compact_quantiles = {
+        "clean_calibration": score_quantiles(clean_query_scores, quantiles),
+        "validation_all": score_quantiles(val_scores, quantiles),
+        "validation_positive": (
+            score_quantiles(pos_scores, quantiles) if pos_scores.size else {}
+        ),
+        "validation_negative": (
+            score_quantiles(neg_scores, quantiles) if neg_scores.size else {}
+        ),
+    }
+
     report: dict[str, Any] = {
         "schema_version": CALIBRATION_SCHEMA_VERSION,
         "phase": "phase1",
+        "final_bank_hash": bank_hash,
+        "exclusion_mode": exclusion_mode,
         "candidate_acceptance": {
             "percentile": p_accept,
             "threshold": tau_accept,
-            "method": CANDIDATE_SCORE_METHOD,
+            "method": candidate_method,
+            "method_legacy": CANDIDATE_SCORE_METHOD,
             "clean_bank_id": clean_bank_id,
             "n_scores": int(candidate_scores.size),
         },
         "query_operating_point": {
             "percentile": p_query,
             "threshold": tau_query,
-            "method": QUERY_SCORE_METHOD,
+            "method": query_method,
+            "method_legacy": QUERY_SCORE_METHOD,
             "final_bank_id": final_bank_id,
+            "final_bank_hash": bank_hash,
             "bank_stage": "final",
             "n_scores": int(clean_query_scores.size),
         },
         "f1_max_threshold": f1_max["threshold"],
         "f1_max_operating_point": f1_max,
         "threshold_methods": {
-            "tau_accept": CANDIDATE_SCORE_METHOD,
-            "tau_query": QUERY_SCORE_METHOD,
+            "tau_accept": candidate_method,
+            "tau_query": query_method,
             "f1_max_threshold": F1_MAX_METHOD,
         },
         "score_quantiles": {
+            **compact_quantiles,
+            # Backward-compatible detailed keys.
             "held_out_clean_candidate_distances": score_quantiles(
                 candidate_scores, quantiles
             ),
@@ -305,6 +379,16 @@ def build_phase1_calibration_report(
             ),
             "validation_query_scores": score_quantiles(val_scores, quantiles),
         },
+        "counts": {
+            "gt_positive_patches": fixed["n_gt_positive_patches"],
+            "predicted_positive_patches": fixed["n_pred_positive_patches"],
+        },
+        "fixed_metrics": {
+            "precision": fixed["precision"],
+            "recall": fixed["recall"],
+            "f1": fixed["f1"],
+        },
+        # Backward-compatible top-level mirrors.
         "n_gt_positive_patches": fixed["n_gt_positive_patches"],
         "n_pred_positive_patches": fixed["n_pred_positive_patches"],
         "precision": fixed["precision"],
@@ -323,6 +407,8 @@ def build_phase1_calibration_report(
             "query_threshold_bank_stage": "final",
             "candidate_self_exclusion": True,
             "query_self_exclusion": True,
+            "tau_query_bound_to_final_bank_hash": True,
+            "acceptance_calibration_reads_validation": False,
         },
         "metadata": dict(metadata or {}),
     }
@@ -341,7 +427,9 @@ def build_phase1_calibration_report(
 def save_phase1_calibration_report(
     report: dict[str, Any],
     run_dir: str | Path,
-    filename: str = "phase1_calibration_report.json",
+    filename: str = DEFAULT_CALIBRATION_REPORT_FILENAME,
+    *,
+    also_write_legacy_alias: bool = True,
 ) -> Path:
     run_dir = Path(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -349,6 +437,11 @@ def save_phase1_calibration_report(
     with open(output_path, "w", encoding="utf-8") as file:
         json.dump(report, file, indent=2, sort_keys=True)
         file.write("\n")
+    if also_write_legacy_alias and filename != LEGACY_CALIBRATION_REPORT_FILENAME:
+        legacy_path = run_dir / LEGACY_CALIBRATION_REPORT_FILENAME
+        with open(legacy_path, "w", encoding="utf-8") as file:
+            json.dump(report, file, indent=2, sort_keys=True)
+            file.write("\n")
     return output_path
 
 
@@ -367,7 +460,9 @@ def create_and_save_phase1_calibration_report(
     validation_valid_mask: np.ndarray | None = None,
     quantiles: tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
     metadata: dict[str, Any] | None = None,
-    filename: str = "phase1_calibration_report.json",
+    filename: str = DEFAULT_CALIBRATION_REPORT_FILENAME,
+    exclusion_mode: str = "leave_one_image_out",
+    bank_composition_parts: tuple[str, ...] | list[str] | None = None,
 ) -> tuple[dict[str, Any], Path]:
     """Run cross-fitting and persist exactly one report for a mode run."""
     cross_fitted = collect_cross_fitted_clean_score_sets(
@@ -395,6 +490,8 @@ def create_and_save_phase1_calibration_report(
         query_self_exclusion=cross_fitted["query_self_exclusion"],
         quantiles=quantiles,
         metadata=metadata,
+        exclusion_mode=exclusion_mode,
+        bank_composition_parts=bank_composition_parts,
     )
     output_path = save_phase1_calibration_report(
         report,
@@ -507,6 +604,8 @@ def build_report_from_score_bundle(
     query_percentile: float = 99.5,
     quantiles: tuple[float, ...] | list[float] = DEFAULT_QUANTILES,
     metadata: dict[str, Any] | None = None,
+    exclusion_mode: str = "leave_one_image_out",
+    bank_composition_parts: tuple[str, ...] | list[str] | None = None,
 ) -> dict[str, Any]:
     return build_phase1_calibration_report(
         held_out_clean_candidate_distances=bundle[
@@ -528,4 +627,28 @@ def build_report_from_score_bundle(
         query_self_exclusion=bundle["query_self_exclusion"],
         quantiles=quantiles,
         metadata=metadata,
+        exclusion_mode=exclusion_mode,
+        bank_composition_parts=bank_composition_parts
+        or bundle.get("bank_composition_parts"),
     )
+
+
+def discover_phase1_score_bundles(root: str | Path) -> list[Path]:
+    """Find cached Phase-1 score NPZs under a results tree for analysis-only backfill."""
+    root = Path(root)
+    if not root.exists():
+        return []
+    patterns = (
+        "**/phase1_scores.npz",
+        "**/calibration_scores.npz",
+        "**/*phase1*scores*.npz",
+    )
+    found: list[Path] = []
+    seen: set[Path] = set()
+    for pattern in patterns:
+        for path in root.glob(pattern):
+            resolved = path.resolve()
+            if resolved not in seen:
+                seen.add(resolved)
+                found.append(path)
+    return sorted(found)

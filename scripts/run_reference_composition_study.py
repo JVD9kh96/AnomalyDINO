@@ -32,12 +32,18 @@ from src.evaluation.reference_manifest import (
     load_paired_reference_manifest,
     reference_inputs_for_mode,
 )
+from src.evaluation.calibration_report import (
+    DEFAULT_CALIBRATION_REPORT_FILENAME,
+    create_and_save_phase1_calibration_report,
+    save_phase1_score_bundle,
+)
 from src.evaluation.reference_bank_metrics import (
     collect_image_eval_item,
     compute_ranking_metrics,
     stack_patch_arrays,
 )
 from src.evaluation.reproducibility import save_folds_json, save_json, seed_all
+from src.detectors.knn_index import build_faiss_index, knn_distances
 from src.segmenters import build_segmenter
 from src.segmenters.base import SegmenterPrompts
 from src.severstal.dataset import SeverstalDataset
@@ -273,7 +279,169 @@ def evaluate_detector(
         "mean_predict_time_s": float(np.mean(predict_times)) if predict_times else None,
         "total_predict_time_s": float(np.sum(predict_times)) if predict_times else None,
         "pred_score_threshold": pred_thr,
+        "validation_scores": scores,
+        "validation_gt_labels": labels,
     }
+
+
+def _active_grid_features(grid) -> np.ndarray:
+    feats = np.asarray(grid.features, dtype=np.float32)
+    if getattr(grid, "patch_keep_mask", None) is not None:
+        mask = np.asarray(grid.patch_keep_mask, dtype=bool).ravel()
+        return feats[mask]
+    return feats
+
+
+def make_cross_fit_scorer(
+    detector: AnomalyDINODetector,
+    sample_by_id: dict,
+    *,
+    final_keep_by_id: dict[str, np.ndarray] | None = None,
+):
+    """Build a Phase-1 CrossFitScorer from cached reference feature grids."""
+
+    def score_held_out(held_out_id: str, bank_ids: list[str], bank_stage: str) -> np.ndarray:
+        del bank_stage
+        bank_parts: list[np.ndarray] = []
+        for image_id in bank_ids:
+            grid = detector.extract_reference_features(
+                sample_by_id[image_id], use_cache=True
+            )
+            feats = np.asarray(grid.features, dtype=np.float32)
+            if final_keep_by_id is not None and image_id in final_keep_by_id:
+                keep = np.asarray(final_keep_by_id[image_id], dtype=bool).ravel()
+                feats = feats[keep]
+            elif grid.patch_keep_mask is not None:
+                feats = feats[np.asarray(grid.patch_keep_mask, dtype=bool).ravel()]
+            if feats.size:
+                bank_parts.append(feats)
+        if not bank_parts:
+            raise ValueError(f"Empty bank while scoring held-out {held_out_id}")
+        bank = np.concatenate(bank_parts, axis=0)
+        query_grid = detector.extract_reference_features(
+            sample_by_id[held_out_id], use_cache=True
+        )
+        query = _active_grid_features(query_grid)
+        index = build_faiss_index(bank, detector.knn_metric, faiss_on_cpu=True)
+        return knn_distances(
+            query, index, detector.knn_metric, detector.k_neighbors
+        ).astype(np.float64).ravel()
+
+    return score_held_out
+
+
+def emit_calibration_report_for_run(
+    *,
+    detector: AnomalyDINODetector,
+    dataset: SeverstalDataset,
+    ref_meta: dict,
+    config: dict,
+    out_dir: Path,
+    validation_scores: np.ndarray,
+    validation_gt_labels: np.ndarray,
+    fold: int,
+    seed: int,
+    condition: str,
+) -> Path | None:
+    """Emit calibration_report.json after the final bank and budget are fixed."""
+    clean_ids = list(ref_meta.get("clean_reference_ids") or [])
+    if len(clean_ids) < 2:
+        # Single-clean leave-one-patch-out is handled by reference_calibration;
+        # Phase-1 audit report requires image-level cross-fit when possible.
+        print(
+            "  Skipping calibration_report.json: need >=2 clean references "
+            "for image-level cross-fit",
+            flush=True,
+        )
+        return None
+
+    add_ids = list(ref_meta.get("additional_reference_ids") or [])
+    final_ids = list(dict.fromkeys([*clean_ids, *add_ids]))
+    sample_by_id = {
+        image_id: dataset.load_sample(image_id) for image_id in final_ids
+    }
+    # Preserve final-bank keep masks from the fitted composition when present.
+    final_keep_by_id: dict[str, np.ndarray] = {}
+    for image_id in final_ids:
+        grid = detector.extract_reference_features(
+            sample_by_id[image_id], use_cache=True
+        )
+        if grid.patch_keep_mask is not None:
+            final_keep_by_id[image_id] = np.asarray(
+                grid.patch_keep_mask, dtype=bool
+            ).ravel()
+
+    pur = config.get("detector", {}).get("reference_purification", {})
+    accept_pct = float(pur.get("normal_acceptance_percentile", 99.0))
+    query_pct = float(pur.get("query_percentile", 99.5))
+    clean_bank_id = "sha256:" + __import__("hashlib").sha256(
+        "\n".join(sorted(clean_ids)).encode()
+    ).hexdigest()[:16]
+    final_bank_id = "sha256:" + __import__("hashlib").sha256(
+        "\n".join(
+            [
+                *sorted(final_ids),
+                str(detector.last_bank_stats.final_memory_bank_size),
+                str(detector.budget_policy),
+                str(detector.coreset_size),
+                str(ref_meta.get("bank_stats", {}).get("extras")),
+            ]
+        ).encode()
+    ).hexdigest()[:16]
+    composition_parts = [
+        str(detector.last_bank_stats.final_memory_bank_size),
+        str(detector.budget_policy),
+        str(detector.coreset_size),
+    ]
+    scorer = make_cross_fit_scorer(
+        detector, sample_by_id, final_keep_by_id=final_keep_by_id or None
+    )
+    metadata = {
+        "fold": fold,
+        "seed": seed,
+        "condition": condition,
+        "paired_manifest_id": ref_meta.get("paired_manifest_id"),
+        "clean_reference_ids": clean_ids,
+        "final_reference_ids": final_ids,
+        "final_memory_bank_size": detector.last_bank_stats.final_memory_bank_size,
+        "budget_policy": detector.budget_policy,
+        "exclusion_mode": "leave_one_image_out",
+        "bank_composition_parts": composition_parts,
+    }
+    # Persist score bundle for analysis-only Phase-1 backfill.
+    from src.evaluation.calibration_report import collect_cross_fitted_clean_score_sets
+
+    cross_fitted = collect_cross_fitted_clean_score_sets(
+        clean_reference_ids=clean_ids,
+        final_reference_ids=final_ids,
+        score_held_out=scorer,
+    )
+    save_phase1_score_bundle(
+        out_dir / "phase1_scores.npz",
+        cross_fitted_scores=cross_fitted,
+        validation_scores=validation_scores,
+        validation_gt_labels=validation_gt_labels,
+        final_bank_id=final_bank_id,
+        clean_bank_id=clean_bank_id,
+    )
+    _, path = create_and_save_phase1_calibration_report(
+        clean_reference_ids=clean_ids,
+        final_reference_ids=final_ids,
+        score_held_out=scorer,
+        validation_scores=validation_scores,
+        validation_gt_labels=validation_gt_labels,
+        final_bank_id=final_bank_id,
+        clean_bank_id=clean_bank_id,
+        run_dir=out_dir,
+        candidate_acceptance_percentile=accept_pct,
+        query_percentile=query_pct,
+        metadata=metadata,
+        filename=DEFAULT_CALIBRATION_REPORT_FILENAME,
+        exclusion_mode="leave_one_image_out",
+        bank_composition_parts=composition_parts,
+    )
+    print(f"  Wrote {path}", flush=True)
+    return path
 
 
 def fit_for_condition(
@@ -689,7 +857,12 @@ def main() -> None:
             "sam2_skipped": bool(args.skip_sam2),
         }
     )
-    save_json(metrics, out_dir / "metrics.json")
+    metrics_to_save = {
+        key: value
+        for key, value in metrics.items()
+        if key not in {"validation_scores", "validation_gt_labels"}
+    }
+    save_json(metrics_to_save, out_dir / "metrics.json")
     save_json(
         {
             "final_memory_bank_size": detector.last_bank_stats.final_memory_bank_size,
@@ -706,6 +879,21 @@ def main() -> None:
         },
         out_dir / "memory_bank_statistics.json",
     )
+    try:
+        emit_calibration_report_for_run(
+            detector=detector,
+            dataset=dataset,
+            ref_meta=ref_meta,
+            config=config,
+            out_dir=out_dir,
+            validation_scores=np.asarray(metrics["validation_scores"]),
+            validation_gt_labels=np.asarray(metrics["validation_gt_labels"]),
+            fold=fold_idx,
+            seed=seed,
+            condition=condition,
+        )
+    except Exception as exc:  # noqa: BLE001 — keep study run durable
+        print(f"  Warning: calibration_report emission failed: {exc}", flush=True)
     print(
         f"AUPRC={metrics['patch'].get('auprc')} "
         f"AUROC={metrics['patch'].get('auroc')} "

@@ -1,0 +1,43 @@
+phase6:
+  clean_shots: 8
+  budget: 51200
+  contamination_rates: [0.0, 0.005, 0.01, 0.02, 0.05, 0.10, 0.20]
+  source_compositions:
+    - uniform
+    - class_balanced
+    - class_1
+    - class_2
+    - class_3
+    - class_4
+  insertion_policy: replacement
+
+seed: 42
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+detector:
+  name: anomaly_dino
+  model_name: dinov2_vits14
+  resolution: 448
+  device: cuda:0
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: true
+  reference_mode: clean
+  clean_shots: 8
+  additional_shots: 0
+  coreset_size: 51200
+  budget_policy: greedy_coreset
+  reference_purification:
+    normal_acceptance_percentile: 99.0
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+output:
+  dir: results_refbank/phase6

@@ -12,6 +12,32 @@ backbone or broad detector ensemble before this study completes.
 
 ---
 
+## Operational phase status (0–12)
+
+Status-aware tracker for the reference-composition campaign. Completed fold-0
+artifacts are immutable inputs; do not regenerate Phase 0/3/4/5 evidence.
+
+| Phase | Status | Code / evidence notes |
+|------|--------|------------------------|
+| 0 | COMPLETE | Paired manifests (`scripts/phase0_freeze_paired_inputs.py`) |
+| 1 | CODE COMPLETE | `calibration_report.json` schema + study-runner emission + backfill CLI; GPU backfill from cached scores still needed on host |
+| 2 | CODE COMPLETE | Multi-bank purification metrics + selected-index helpers; run analysis on fold-0 seed-42 pool on GPU host |
+| 3 | COMPLETE (remote) | Multiseed fold-0 replication report (immutable) |
+| 4 | COMPLETE (remote) | Compact purification controls; selected setting `fixed_ratio_trim` trim=0.20 |
+| 5 | CODE EXTENDED | Existing exact-budget rows immutable; additive naive/random20/oracle rows via `--append-rows` |
+| 6 | CODE COMPLETE | Replacement contamination + neighbor traces (`scripts/run_controlled_contamination_study.py`) |
+| 7–10 | CODE COMPLETE | `anomaly_memory.py`, `dual_bank.py`, `scripts/run_anomaly_memory_study.py` (optional branch; stop/go on GPU) |
+| 11 | CODE COMPLETE | Attention plan/runner reusing `dino_knn_rollout` (`scripts/run_attention_auxiliary_study.py`) |
+| 12 | CODE COMPLETE | Frozen held-out harness (`scripts/run_heldout_maskfree_matrix.py` + bootstrap aggregation) |
+
+**Frozen fold-0 primary setting:** `fixed_ratio_distance_trim` / `fixed_ratio_trim` with `trim_fraction=0.20`, exact budget `51200`, greedy coreset.
+
+**Publication-critical path:** Phase 12 primary mask-free matrix on folds 1–4. Optional GT anomaly-memory and attention must not block it.
+
+**GPU note:** This repository ships runners, schemas, and CPU unit tests. Feature extraction / fold experiments require a remote GPU host.
+
+---
+
 ## Experimental settings (reference modes)
 
 | Mode | Config key | Setting type | GT masks in fitting? |
@@ -302,7 +328,16 @@ Useful success targets:
 
 ---
 
-## Execution order (implementation complete; run on GPU)
+## Execution order (code complete; run on GPU)
+
+Operational campaign (preferred):
+
+1. P0: Phase 1 calibration audit + Phase 2 purification analysis + Phase 5 `--append-rows`
+2. P1: Phase 6 mechanism study + Phase 12 primary mask-free held-out matrix
+3. P2: Phases 7–10 anomaly-memory branch (include in paper only if stop/go passes)
+4. P3: Phase 11 attention + SAM2 after patch thresholds are frozen
+
+Legacy checklist (implementation complete earlier; still useful for configs):
 
 1. Audit reference handling — done (this doc)
 2. Baseline configs under `configs/reference_bank/`
@@ -314,10 +349,10 @@ Useful success targets:
 8. Oracle upper bound
 9. Fold-0 threshold / shot ablations
 10. Freeze settings
-11. Folds 1–4 × multiple seeds
+11. Folds 1–4 × multiple seeds — use `scripts/run_heldout_maskfree_matrix.py`
 12. Memory-size-matched controls
-13. SAM2 downstream
-14. Dual-bank only if time / evidence remains
+13. SAM2 downstream — gated behind Phase-12 `--run-sam2`
+14. Dual-bank / anomaly-memory only if stop/go passes
 
 Do **not** implement axis-conditioned subspaces before this study shows a strong,
 consistent result.
