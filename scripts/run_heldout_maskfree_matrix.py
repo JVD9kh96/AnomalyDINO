@@ -19,15 +19,23 @@ from src.evaluation.heldout_aggregation import (  # noqa: E402
     aggregate_heldout_matrix,
     paired_deltas,
 )
+from src.evaluation.frozen_settings import (  # noqa: E402
+    FROZEN_BUDGET_POLICY,
+    FROZEN_FINAL_PATCH_BUDGET,
+    FROZEN_PURIFICATION_MODE,
+    FROZEN_TRIM_FRACTION,
+    assert_matches_frozen_primary,
+    frozen_primary_dict,
+)
 
-FINAL_BUDGET = 51_200
-FROZEN_TRIM = 0.20
+FINAL_BUDGET = FROZEN_FINAL_PATCH_BUDGET
+FROZEN_TRIM = FROZEN_TRIM_FRACTION
 
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--config", default="configs/phase12_heldout_maskfree.yaml")
-    p.add_argument("--output-dir", default="results_refbank/phase12")
+    p.add_argument("--output-dir", default="results/phase12")
     p.add_argument("--folds", type=int, nargs="+", default=[1, 2, 3, 4])
     p.add_argument("--seeds", type=int, nargs="+", default=[42, 43, 44])
     p.add_argument("--python", default=sys.executable)
@@ -45,16 +53,16 @@ def frozen_primary_conditions() -> list[dict]:
         {"name": "clean_8", "condition": "clean", "clean_shots": 8, "additional_shots": 0, "budget": FINAL_BUDGET, "filter": "none"},
         {"name": "naive_2plus8", "condition": "contaminated_all", "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "none"},
         {"name": "random20_2plus8", "condition": "random_filtered", "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "random20", "trim": FROZEN_TRIM},
-        {"name": "proposed_distance20_2plus8", "condition": "fixed_ratio_trim", "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
+        {"name": "proposed_distance20_2plus8", "condition": FROZEN_PURIFICATION_MODE, "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
         {"name": "oracle_2plus8", "condition": "oracle_purified", "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "oracle"},
     ]
 
 
 def frozen_efficiency_conditions() -> list[dict]:
     return [
-        {"name": "proposed_1plus8_natural", "condition": "fixed_ratio_trim", "clean_shots": 1, "additional_shots": 8, "budget": None, "filter": "distance20", "trim": FROZEN_TRIM},
-        {"name": "proposed_2plus8_exact", "condition": "fixed_ratio_trim", "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
-        {"name": "proposed_4plus8_exact", "condition": "fixed_ratio_trim", "clean_shots": 4, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
+        {"name": "proposed_1plus8_natural", "condition": FROZEN_PURIFICATION_MODE, "clean_shots": 1, "additional_shots": 8, "budget": None, "filter": "distance20", "trim": FROZEN_TRIM},
+        {"name": "proposed_2plus8_exact", "condition": FROZEN_PURIFICATION_MODE, "clean_shots": 2, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
+        {"name": "proposed_4plus8_exact", "condition": FROZEN_PURIFICATION_MODE, "clean_shots": 4, "additional_shots": 8, "budget": FINAL_BUDGET, "filter": "distance20", "trim": FROZEN_TRIM},
         {"name": "clean_8", "condition": "clean", "clean_shots": 8, "additional_shots": 0, "budget": FINAL_BUDGET, "filter": "none"},
     ]
 
@@ -66,14 +74,14 @@ def validate_frozen_config(config: dict) -> None:
     if bad:
         raise ValueError(f"Frozen Phase-12 config rejects retune keys: {sorted(bad)}")
     phase12 = config.get("phase12", {})
-    trim = phase12.get("trim_fraction", FROZEN_TRIM)
-    if abs(float(trim) - FROZEN_TRIM) > 1e-12:
-        raise ValueError(
-            f"Phase-12 trim_fraction is frozen at {FROZEN_TRIM}, got {trim}"
-        )
-    if phase12.get("purification_mode", "fixed_ratio_trim") != "fixed_ratio_trim":
-        raise ValueError("Phase-12 purification_mode is frozen to fixed_ratio_trim")
-
+    assert_matches_frozen_primary(
+        purification_mode=str(
+            phase12.get("purification_mode", FROZEN_PURIFICATION_MODE)
+        ),
+        trim_fraction=float(phase12.get("trim_fraction", FROZEN_TRIM)),
+        budget=int(phase12.get("budget", FINAL_BUDGET)),
+        budget_policy=str(phase12.get("budget_policy", FROZEN_BUDGET_POLICY)),
+    )
 
 def _run(command: list[str], label: str) -> None:
     print(f"  [{label}] {' '.join(command)}", flush=True)
@@ -115,9 +123,16 @@ def main() -> None:
                 print(f"resume skip {run_dir}")
                 continue
             run_dir.mkdir(parents=True, exist_ok=True)
+            # Proposed arms use the frozen primary YAML; controls keep auto_purified.yaml
+            # as a neutral base overridden by --condition / CLI flags.
+            base_config = (
+                "configs/reference_bank/proposed_distance20.yaml"
+                if spec["filter"] == "distance20"
+                else "configs/reference_bank/auto_purified.yaml"
+            )
             command = [
                 args.python, "-u", "scripts/run_reference_composition_study.py",
-                "--config", "configs/reference_bank/auto_purified.yaml",
+                "--config", base_config,
                 "--fold", str(fold), "--seed", str(seed),
                 "--condition", spec["condition"],
                 "--clean-shots", str(spec["clean_shots"]),
@@ -130,7 +145,12 @@ def main() -> None:
                 command.extend(("--fixed-trim-fraction", str(spec["trim"])))
             if spec.get("budget") is not None:
                 command.extend(
-                    ("--coreset-size", str(spec["budget"]), "--budget-policy", "greedy_coreset")
+                    (
+                        "--coreset-size",
+                        str(spec["budget"]),
+                        "--budget-policy",
+                        FROZEN_BUDGET_POLICY,
+                    )
                 )
             if args.device:
                 command.extend(("--device", args.device))
@@ -163,12 +183,7 @@ def main() -> None:
     naive = [r for r in rows if r["condition"] == "naive_2plus8"]
     report = {
         "phase": "phase12_heldout_maskfree",
-        "frozen": {
-            "purification_mode": "fixed_ratio_trim",
-            "trim_fraction": FROZEN_TRIM,
-            "budget": FINAL_BUDGET,
-            "budget_policy": "greedy_coreset",
-        },
+        "frozen": frozen_primary_dict(),
         "folds": args.folds,
         "seeds": args.seeds,
         "run_sam2": bool(args.run_sam2),
@@ -180,6 +195,7 @@ def main() -> None:
             "oracle": [r for r in rows if r["track"] == "oracle"],
         },
         "notes": [
+            "Proposed arms use frozen fixed_ratio_trim@0.20 + budget 51200 (Phase 4/5).",
             "Do not retune trim/percentile on held-out folds.",
             "Bootstrap CIs use fold/seed pairs, not patch-IID samples.",
             "SAM2 only for clean-8 / naive-2+8 / proposed-2+8 when --run-sam2 is set.",

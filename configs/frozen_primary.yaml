@@ -1,0 +1,24 @@
+# Alias config: frozen primary method selected on fold 0.
+# Prefer importing constants from src.evaluation.frozen_settings in runners.
+
+frozen_primary:
+  purification_mode: fixed_ratio_trim
+  trim_fraction: 0.20
+  budget: 51200
+  budget_policy: greedy_coreset
+  clean_shots: 2
+  additional_shots: 8
+  phase4_report: results/phase4/phase4_compact_purification_controls_report.json
+  phase5_report: results/phase5/phase5_exact_memory_budget_controls_report.json
+
+# Where this freeze MUST be used
+applies_to:
+  - phase5 proposed purified_* rows
+  - phase12 proposed_distance20_* and efficiency proposed_* rows
+  - any paper "proposed" / deployable mask-free baseline
+
+# Where this freeze does NOT replace the experimental factor
+does_not_apply_to:
+  - phase6 (clean bank + replacement contamination; only budget 51200 is shared)
+  - clean-only / naive / oracle / random20 control arms
+  - optional GT anomaly-memory and attention extensions (their own grids)

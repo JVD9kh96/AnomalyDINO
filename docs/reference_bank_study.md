@@ -22,9 +22,9 @@ artifacts are immutable inputs; do not regenerate Phase 0/3/4/5 evidence.
 | 0 | COMPLETE | Paired manifests (`scripts/phase0_freeze_paired_inputs.py`) |
 | 1 | CODE COMPLETE | `calibration_report.json` schema + study-runner emission + backfill CLI; GPU backfill from cached scores still needed on host |
 | 2 | CODE COMPLETE | Multi-bank purification metrics + selected-index helpers; run analysis on fold-0 seed-42 pool on GPU host |
-| 3 | COMPLETE (remote) | Multiseed fold-0 replication report (immutable) |
-| 4 | COMPLETE (remote) | Compact purification controls; selected setting `fixed_ratio_trim` trim=0.20 |
-| 5 | CODE EXTENDED | Existing exact-budget rows immutable; additive naive/random20/oracle rows via `--append-rows` |
+| 3 | COMPLETE | [`results/phase3/`](../results/phase3/) — see [`report.md`](report.md) |
+| 4 | COMPLETE | [`results/phase4/`](../results/phase4/); frozen `fixed_ratio_trim` trim=0.20 — see [`report.md`](report.md) |
+| 5 | COMPLETE (base rows) | [`results/phase5/`](../results/phase5/); additive naive/random20/oracle via `--append-rows` still pending |
 | 6 | CODE COMPLETE | Replacement contamination + neighbor traces (`scripts/run_controlled_contamination_study.py`) |
 | 7–10 | CODE COMPLETE | `anomaly_memory.py`, `dual_bank.py`, `scripts/run_anomaly_memory_study.py` (optional branch; stop/go on GPU) |
 | 11 | CODE COMPLETE | Attention plan/runner reusing `dino_knn_rollout` (`scripts/run_attention_auxiliary_study.py`) |
@@ -32,9 +32,168 @@ artifacts are immutable inputs; do not regenerate Phase 0/3/4/5 evidence.
 
 **Frozen fold-0 primary setting:** `fixed_ratio_distance_trim` / `fixed_ratio_trim` with `trim_fraction=0.20`, exact budget `51200`, greedy coreset.
 
+Canonical configs: [`configs/frozen_primary.yaml`](../configs/frozen_primary.yaml), [`configs/reference_bank/proposed_distance20.yaml`](../configs/reference_bank/proposed_distance20.yaml), [`src/evaluation/frozen_settings.py`](../src/evaluation/frozen_settings.py).
+
+**Where it applies:** Phase-5 proposed rows, Phase-12 proposed arms, any paper “proposed” baseline.  
+**Where it does not replace the factor:** clean/naive/oracle/random20 controls; Phase-6 clean-bank contamination (budget only); optional GT anomaly-memory / attention.
 **Publication-critical path:** Phase 12 primary mask-free matrix on folds 1–4. Optional GT anomaly-memory and attention must not block it.
 
 **GPU note:** This repository ships runners, schemas, and CPU unit tests. Feature extraction / fold experiments require a remote GPU host.
+
+Completed fold-0 evidence lives under [`results/`](../results/) (phases 3–5). See [`docs/report.md`](report.md) for tabulated results. Remaining phases write under `results/` (preferred) or `results_refbank/`.
+
+---
+
+## Step-by-step GPU campaign commands (phases 0–12)
+
+Run from the repo root on a machine with CUDA, dataset at `data/severstal`, and the Python env activated. Prefer `--skip-sam2` until patch thresholds are frozen. Do **not** regenerate immutable Phase 3/4/5 reports under `results/`.
+
+### Prerequisites
+
+```bash
+cd /path/to/Steel
+# optional: export CUDA_VISIBLE_DEVICES=0
+python -c "import torch; assert torch.cuda.is_available()"
+```
+
+### P0 — make existing results interpretable
+
+**Phase 0** (only if a needed paired manifest is missing; reuse `results/phase3/*_paired_manifest.json` and `results/phase5/*_manifest.json` when present):
+
+```bash
+python scripts/phase0_freeze_paired_inputs.py \
+  --config configs/phase0_paired_reference_manifest.yaml \
+  --fold 0 --seed 42 --clean-shots 2 --additional-shots 8 \
+  --output results/phase0/phase0_fold0_seed42_paired_manifest.json
+```
+
+**Phase 1** — calibration audit (analysis-only backfill when score NPZs exist; otherwise emitted by new study runs):
+
+```bash
+# Backfill from any cached phase1_scores.npz under results/
+python scripts/phase1_build_calibration_report.py \
+  --config configs/phase1_fixed_threshold_calibration.yaml \
+  --backfill-root results
+
+# Or build one report from an explicit score bundle:
+python scripts/phase1_build_calibration_report.py \
+  --config configs/phase1_fixed_threshold_calibration.yaml \
+  --scores results/phase5/phase5_f0_purified_budget_2plus8_s42/phase1_scores.npz \
+  --output-dir results/phase1
+```
+
+**Phase 2** — overlap / purification quality (analysis-only; uses Phase 0/3 manifest):
+
+```bash
+python scripts/phase2_verify_oracle_purification.py \
+  --config configs/phase2_oracle_purification_quality.yaml \
+  --manifest results/phase3/phase3_fold0_seed42_paired_manifest.json \
+  --banks naive oracle distance_trim_20 random_size_matched \
+  --trim-fraction 0.20 --selected-oracle-rule any_overlap \
+  --output-dir results/phase2
+```
+
+**Phase 5 additive rows only** (do not rerun existing nine rows; merge into report):
+
+```bash
+python scripts/phase5_memory_budget_controls.py \
+  --output-dir results/phase5 \
+  --phase4-report results/phase4/phase4_compact_purification_controls_report.json \
+  --purification-mode fixed_ratio_trim --fixed-trim-fraction 0.20 \
+  --append-rows --include-optional-4plus8 --run
+```
+
+### P1 — mechanism study + publication-critical held-out matrix
+
+**Phase 6** — controlled contamination (replacement, constant 51,200 bank):
+
+```bash
+# Dry-run condition plan (CPU-safe)
+python scripts/run_controlled_contamination_study.py \
+  --config configs/phase6_controlled_contamination.yaml \
+  --output-dir results/phase6 --dry-run
+
+python scripts/run_controlled_contamination_study.py \
+  --config configs/phase6_controlled_contamination.yaml \
+  --fold 0 --seed 42 --output-dir results/phase6 --device cuda:0 --resume
+```
+
+**Phase 12** — frozen held-out primary mask-free matrix (folds 1–4, ≥3 seeds):
+
+```bash
+# Aggregate only (if runs already exist)
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 --resume
+
+# Full GPU matrix (proposed arms load configs/reference_bank/proposed_distance20.yaml)
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 \
+  --folds 1 2 3 4 --seeds 42 43 44 \
+  --track all --run --resume --device cuda:0
+```
+
+After patch thresholds are frozen, SAM2 for selected conditions only:
+
+```bash
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 \
+  --folds 1 2 3 4 --seeds 42 43 44 \
+  --run --resume --run-sam2 --device cuda:0
+```
+
+Single proposed run (manual):
+
+```bash
+python scripts/run_reference_composition_study.py \
+  --config configs/reference_bank/proposed_distance20.yaml \
+  --fold 1 --seed 42 --condition fixed_ratio_trim \
+  --clean-shots 2 --additional-shots 8 \
+  --fixed-trim-fraction 0.20 --coreset-size 51200 --budget-policy greedy_coreset \
+  --output-dir results/phase12/manual_proposed_f1_s42 --skip-sam2
+```
+
+Frozen settings (do not retune on held-out folds): `fixed_ratio_trim`, `trim_fraction=0.20`, budget `51200`, `greedy_coreset`.
+
+### P2 — optional anomaly-memory branch (must not block Phase 12)
+
+```bash
+# Fail-closed without the flag; enable explicitly:
+python scripts/run_anomaly_memory_study.py \
+  --config configs/phase8_anomaly_memory_study.yaml \
+  --allow-gt-anomaly-memory --stage all --fold 0 --seed 42 \
+  --output-dir results/anomaly_memory --dry-run
+
+python scripts/run_anomaly_memory_study.py \
+  --config configs/phase8_anomaly_memory_study.yaml \
+  --allow-gt-anomaly-memory --stage all --fold 0 --seed 42 \
+  --output-dir results/anomaly_memory
+```
+
+Include in the paper only if Phase-10 stop/go passes (seen-class gains without material unseen-class regression).
+
+### P3 — attention auxiliary (after thresholds frozen)
+
+```bash
+python scripts/run_attention_auxiliary_study.py \
+  --config configs/phase11_attention_auxiliary.yaml \
+  --output-dir results/phase11 --fold 0 --seed 42
+
+# GPU beta sweep (writes sidecars; enable three-signal only if both simpler additions help):
+python scripts/run_attention_auxiliary_study.py \
+  --config configs/phase11_attention_auxiliary.yaml \
+  --output-dir results/phase11 --fold 0 --seed 42 --run
+```
+
+### Immutable completed phases (do not regenerate)
+
+| Phase | Artifact under `results/` |
+|------|---------------------------|
+| 3 | `phase3/phase3_multiseed_fold0_replication_report.json` |
+| 4 | `phase4/phase4_compact_purification_controls_report.json` |
+| 5 | `phase5/phase5_exact_memory_budget_controls_report.json` |
 
 ---
 

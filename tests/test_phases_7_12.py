@@ -46,6 +46,36 @@ def validate_frozen_config(config: dict) -> None:
         raise ValueError("Phase-12 purification_mode is frozen to fixed_ratio_trim")
 
 
+from src.evaluation.frozen_settings import (
+    FROZEN_FINAL_PATCH_BUDGET,
+    FROZEN_PURIFICATION_MODE,
+    FROZEN_TRIM_FRACTION,
+    assert_matches_frozen_primary,
+    apply_frozen_purification_to_detector_cfg,
+)
+
+
+class FrozenSettingsTests(unittest.TestCase):
+    def test_assert_matches_frozen_primary(self):
+        assert_matches_frozen_primary(
+            purification_mode=FROZEN_PURIFICATION_MODE,
+            trim_fraction=FROZEN_TRIM_FRACTION,
+            budget=FROZEN_FINAL_PATCH_BUDGET,
+            budget_policy="greedy_coreset",
+        )
+        with self.assertRaises(ValueError):
+            assert_matches_frozen_primary(
+                purification_mode=FROZEN_PURIFICATION_MODE,
+                trim_fraction=0.10,
+            )
+
+    def test_apply_frozen_purification_to_detector_cfg(self):
+        cfg = apply_frozen_purification_to_detector_cfg({"reference_mode": "clean"})
+        self.assertEqual(cfg["reference_mode"], "fixed_ratio_trim")
+        self.assertEqual(cfg["coreset_size"], 51200)
+        self.assertAlmostEqual(cfg["reference_purification"]["fixed_trim_fraction"], 0.20)
+
+
 class AnomalyMemoryTests(unittest.TestCase):
     def test_fail_closed_without_flag(self):
         with self.assertRaisesRegex(RuntimeError, "allow_gt_anomaly_memory"):

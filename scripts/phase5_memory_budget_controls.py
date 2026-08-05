@@ -16,12 +16,12 @@ FINAL_BUDGET = 51_200  # 8 clean references × 6,400 DINO patches at 448 px.
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-dir", default="results_refbank/phase5")
+    parser.add_argument("--output-dir", default="results/phase5")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--split-seed", type=int, default=42)
     parser.add_argument(
         "--phase4-report",
-        default="results_refbank/phase4/phase4_compact_purification_controls_report.json",
+        default="results/phase4/phase4_compact_purification_controls_report.json",
         help="Phase 4 report whose recommended purification setting is consumed by default",
     )
     parser.add_argument(
@@ -239,7 +239,12 @@ def run(args: argparse.Namespace, output_dir: Path, purification: dict) -> None:
             continue
         command = [
             args.python, "-u", "scripts/run_reference_composition_study.py", "--config",
-            "configs/reference_bank/auto_purified.yaml", "--fold", "0", "--seed", str(args.seed),
+            (
+                "configs/reference_bank/proposed_distance20.yaml"
+                if spec["condition"] == "fixed_ratio_trim"
+                else "configs/reference_bank/auto_purified.yaml"
+            ),
+            "--fold", "0", "--seed", str(args.seed),
             "--split-seed", str(args.split_seed), "--condition", spec["condition"],
             "--clean-shots", str(spec["clean_shots"]), "--additional-shots", str(spec["additional_shots"]),
             "--output-dir", str(run_dir), "--paired-manifest", str(manifest), "--skip-sam2",

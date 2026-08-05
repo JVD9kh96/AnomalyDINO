@@ -1,6 +1,11 @@
 phase6:
+  # Mechanism study: clean bank + replacement contamination.
+  # Shares Phase-5 budget (51200) but does NOT apply distance-trim purification
+  # (that freeze applies to the proposed deployable method, not this factor).
   clean_shots: 8
   budget: 51200
+  uses_frozen_purification: false
+  uses_frozen_budget: true
   contamination_rates: [0.0, 0.005, 0.01, 0.02, 0.05, 0.10, 0.20]
   source_compositions:
     - uniform
@@ -40,4 +45,4 @@ patch_eval:
   gt_overlap_threshold: 0.5
   pred_score_threshold: 0.35
 output:
-  dir: results_refbank/phase6
+  dir: results/phase6

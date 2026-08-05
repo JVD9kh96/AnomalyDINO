@@ -1,0 +1,69 @@
+# Frozen fold-0 primary / proposed method (Phase 4 + Phase 5).
+# Do not retune trim_fraction or budget on held-out folds.
+#
+# Source: results/phase4/phase4_compact_purification_controls_report.json
+#         recommended_setting = fixed_ratio_trim @ 0.20
+#         + Phase 5 exact budget 51200 greedy coreset
+
+seed: 42
+
+frozen:
+  purification_mode: fixed_ratio_trim
+  trim_fraction: 0.20
+  budget: 51200
+  budget_policy: greedy_coreset
+  selected_on_fold: 0
+  selected_on_seed: 42
+  phase4_report: results/phase4/phase4_compact_purification_controls_report.json
+  phase5_report: results/phase5/phase5_exact_memory_budget_controls_report.json
+
+data:
+  root: data/severstal
+  image_shape: [256, 1600]
+  num_classes: 4
+
+cv:
+  n_folds: 5
+  split_seed: 42
+  stratify: true
+  shuffle: true
+
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+
+detector:
+  name: anomaly_dino
+  model_name: dinov2_vits14
+  resolution: 448
+  reference_mode: fixed_ratio_trim
+  clean_shots: 2
+  additional_shots: 8
+  additional_sampling: class_balanced
+  allow_oracle_reference_filtering: false
+  knn_metric: L2_normalized
+  k_neighbors: 1
+  faiss_on_cpu: true
+  masking: false
+  mask_ref_images: false
+  rotation: false
+  device: cuda:0
+  use_dual_bank: false
+  coreset_size: 51200
+  budget_policy: greedy_coreset
+  reference_purification:
+    normal_acceptance_percentile: 99.0
+    fixed_trim_fraction: 0.20
+    spatial_cleanup: false
+    min_rejected_component_patches: 2
+
+segmenter:
+  name: sam2
+  model: sam2.1_b.pt
+  prompt_mode: bbox
+  min_prompt_area: 1
+  device: cuda:0
+
+output:
+  dir: results/proposed_distance20
+  save_visualizations: false

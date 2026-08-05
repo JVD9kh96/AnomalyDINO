@@ -1,8 +1,11 @@
 phase12:
+  # Locked to Phase-4 recommended_setting + Phase-5 budget. Do not retune.
   purification_mode: fixed_ratio_trim
   trim_fraction: 0.20
   budget: 51200
   budget_policy: greedy_coreset
+  proposed_config: configs/reference_bank/proposed_distance20.yaml
+  frozen_primary: configs/frozen_primary.yaml
   folds: [1, 2, 3, 4]
   seeds: [42, 43, 44]
   tracks:
@@ -41,11 +44,17 @@ detector:
   knn_metric: L2_normalized
   k_neighbors: 1
   faiss_on_cpu: true
+  reference_mode: fixed_ratio_trim
+  clean_shots: 2
+  additional_shots: 8
+  coreset_size: 51200
+  budget_policy: greedy_coreset
   reference_purification:
     normal_acceptance_percentile: 99.0
     fixed_trim_fraction: 0.20
+    spatial_cleanup: false
 patch_eval:
   gt_overlap_threshold: 0.5
   pred_score_threshold: 0.35
 output:
-  dir: results_refbank/phase12
+  dir: results/phase12
