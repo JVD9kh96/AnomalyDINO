@@ -1,0 +1,15 @@
+{
+  "final_memory_bank_size": 61892,
+  "before": 64000,
+  "after": 61892,
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 49092,
+    "n_rejected_candidate_patches": 2108,
+    "acceptance_fraction": 0.958828125,
+    "calibration_percentile": 99.0,
+    "calibration_threshold": 0.4094563591480256,
+    "final_memory_bank_size": 61892
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "reference_mode": "contaminated_all",
+  "clean_reference_ids": [
+    "049fb17a1.jpg",
+    "04bf23eba.jpg"
+  ],
+  "additional_reference_ids": [
+    "1d34ad26c.jpg",
+    "1d83b44be.jpg",
+    "751db247d.jpg",
+    "7579146ed.jpg",
+    "0696cfa05.jpg",
+    "06ad83bac.jpg",
+    "290e00273.jpg",
+    "2930b4f52.jpg"
+  ],
+  "reference_image_has_defect": {
+    "049fb17a1.jpg": false,
+    "04bf23eba.jpg": false,
+    "1d34ad26c.jpg": true,
+    "1d83b44be.jpg": true,
+    "751db247d.jpg": true,
+    "7579146ed.jpg": true,
+    "0696cfa05.jpg": true,
+    "06ad83bac.jpg": true,
+    "290e00273.jpg": true,
+    "2930b4f52.jpg": true
+  },
+  "reference_classes": {
+    "049fb17a1.jpg": [],
+    "04bf23eba.jpg": [],
+    "1d34ad26c.jpg": [
+      1
+    ],
+    "1d83b44be.jpg": [
+      1
+    ],
+    "751db247d.jpg": [
+      2
+    ],
+    "7579146ed.jpg": [
+      2
+    ],
+    "0696cfa05.jpg": [
+      3
+    ],
+    "06ad83bac.jpg": [
+      3
+    ],
+    "290e00273.jpg": [
+      4
+    ],
+    "2930b4f52.jpg": [
+      3,
+      4
+    ]
+  },
+  "n_memory_patches_before_filtering": 64000,
+  "n_memory_patches_after_filtering": 64000,
+  "paired_manifest_id": "ff643873549cee9ab182df83a532150cf59cb5b1fd88cacba1755e72160956ef",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed42_paired_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 51200,
+    "n_rejected_candidate_patches": 0,
+    "acceptance_fraction": 1.0,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 64000
+  }
+}

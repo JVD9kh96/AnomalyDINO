@@ -1,0 +1,154 @@
+{
+  "patch": {
+    "auroc": 0.7967777168151002,
+    "auprc": 0.0949790371105435,
+    "f1_optimal": {
+      "threshold": 0.23166351152371756,
+      "precision": 0.12464700571058789,
+      "recall": 0.42897703532832077,
+      "f1": 0.19316611638446657
+    },
+    "fixed_threshold": {
+      "threshold": 0.35,
+      "precision": 0.08563746289302311,
+      "recall": 0.07495535133013197,
+      "f1": 0.07994113745647488,
+      "tp": 38570,
+      "fp": 411817,
+      "fn": 476003,
+      "tn": 15163210
+    },
+    "f1_max_metrics": {
+      "threshold": 0.23166351152371756,
+      "precision": 0.12464700571058789,
+      "recall": 0.42897703532832077,
+      "f1": 0.19316611638446657,
+      "tp": 220740,
+      "fp": 1550181,
+      "fn": 293833,
+      "tn": 14024846
+    },
+    "per_class": {
+      "1": {
+        "auroc": 0.6655865050779567,
+        "auprc": 0.0012936577980502799,
+        "n_positive": 13341
+      },
+      "2": {
+        "auroc": 0.6858100988913538,
+        "auprc": 0.0003108645852281498,
+        "n_positive": 2577
+      },
+      "3": {
+        "auroc": 0.7777500322141997,
+        "auprc": 0.06731456074020249,
+        "n_positive": 416567
+      },
+      "4": {
+        "auroc": 0.897255063495813,
+        "auprc": 0.032527963664734594,
+        "n_positive": 82071
+      }
+    }
+  },
+  "mask": null,
+  "n_val": 2514,
+  "mean_predict_time_s": 0.2107765241618681,
+  "total_predict_time_s": 529.8921817429364,
+  "pred_score_threshold": 0.35,
+  "condition": "contaminated_all",
+  "fold": 0,
+  "seed": 42,
+  "fold_seed": 42,
+  "split_seed": 42,
+  "n_train": 10054,
+  "reference": {
+    "reference_mode": "contaminated_all",
+    "clean_reference_ids": [
+      "049fb17a1.jpg",
+      "04bf23eba.jpg"
+    ],
+    "additional_reference_ids": [
+      "1d34ad26c.jpg",
+      "1d83b44be.jpg",
+      "751db247d.jpg",
+      "7579146ed.jpg",
+      "0696cfa05.jpg",
+      "06ad83bac.jpg",
+      "290e00273.jpg",
+      "2930b4f52.jpg"
+    ],
+    "reference_image_has_defect": {
+      "049fb17a1.jpg": false,
+      "04bf23eba.jpg": false,
+      "1d34ad26c.jpg": true,
+      "1d83b44be.jpg": true,
+      "751db247d.jpg": true,
+      "7579146ed.jpg": true,
+      "0696cfa05.jpg": true,
+      "06ad83bac.jpg": true,
+      "290e00273.jpg": true,
+      "2930b4f52.jpg": true
+    },
+    "reference_classes": {
+      "049fb17a1.jpg": [],
+      "04bf23eba.jpg": [],
+      "1d34ad26c.jpg": [
+        1
+      ],
+      "1d83b44be.jpg": [
+        1
+      ],
+      "751db247d.jpg": [
+        2
+      ],
+      "7579146ed.jpg": [
+        2
+      ],
+      "0696cfa05.jpg": [
+        3
+      ],
+      "06ad83bac.jpg": [
+        3
+      ],
+      "290e00273.jpg": [
+        4
+      ],
+      "2930b4f52.jpg": [
+        3,
+        4
+      ]
+    },
+    "n_memory_patches_before_filtering": 64000,
+    "n_memory_patches_after_filtering": 64000,
+    "paired_manifest_id": "ff643873549cee9ab182df83a532150cf59cb5b1fd88cacba1755e72160956ef",
+    "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean2_additional8_manifest.json",
+    "bank_stats": {
+      "n_clean_patches": 12800,
+      "n_candidate_patches": 51200,
+      "n_accepted_candidate_patches": 51200,
+      "n_rejected_candidate_patches": 0,
+      "acceptance_fraction": 1.0,
+      "calibration_percentile": null,
+      "calibration_threshold": null,
+      "final_memory_bank_size": 51200,
+      "n_memory_patches_clean": 12800,
+      "n_candidate_patches_before_filter": 51200,
+      "n_candidate_patches_after_filter": 51200,
+      "n_memory_patches_before_budget": 64000,
+      "n_memory_patches_final": 51200,
+      "budget_policy": "random",
+      "budget_size_requested": 51200,
+      "extras": {}
+    }
+  },
+  "fit_time_s": 4.70256120339036,
+  "memory_bank_size": 51200,
+  "n_memory_patches_clean": 12800,
+  "n_candidate_patches_before_filter": 51200,
+  "n_candidate_patches_after_filter": 51200,
+  "n_memory_patches_before_budget": 64000,
+  "n_memory_patches_final": 51200,
+  "gt_masks_used_in_fitting": false,
+  "sam2_skipped": true
+}

@@ -1,0 +1,141 @@
+{
+  "patch": {
+    "auroc": 0.7989804445512774,
+    "auprc": 0.10353992553184505,
+    "f1_optimal": {
+      "threshold": 0.2505255688594866,
+      "precision": 0.1344420871455277,
+      "recall": 0.40195851706171914,
+      "f1": 0.20149172672750926
+    },
+    "fixed_threshold": {
+      "threshold": 0.35,
+      "precision": 0.12736368675493437,
+      "recall": 0.10582755022125141,
+      "f1": 0.11560114463304662,
+      "tp": 54456,
+      "fp": 373107,
+      "fn": 460117,
+      "tn": 15201920
+    },
+    "f1_max_metrics": {
+      "threshold": 0.2505255688594866,
+      "precision": 0.1344420871455277,
+      "recall": 0.40195851706171914,
+      "f1": 0.20149172672750926,
+      "tp": 206837,
+      "fp": 1331647,
+      "fn": 307736,
+      "tn": 14243380
+    },
+    "per_class": {
+      "1": {
+        "auroc": 0.5734300035764154,
+        "auprc": 0.0009525989788427139,
+        "n_positive": 13341
+      },
+      "2": {
+        "auroc": 0.6240852394317137,
+        "auprc": 0.00023329500002407746,
+        "n_positive": 2577
+      },
+      "3": {
+        "auroc": 0.7857420789220667,
+        "auprc": 0.07679705993716614,
+        "n_positive": 416567
+      },
+      "4": {
+        "auroc": 0.8879514674968558,
+        "auprc": 0.029530853035556175,
+        "n_positive": 82071
+      }
+    }
+  },
+  "mask": null,
+  "n_val": 2514,
+  "mean_predict_time_s": 0.21616410742926523,
+  "total_predict_time_s": 543.4365660771728,
+  "pred_score_threshold": 0.35,
+  "condition": "contaminated_all",
+  "fold": 0,
+  "seed": 45,
+  "fold_seed": 45,
+  "split_seed": 42,
+  "n_train": 10054,
+  "reference": {
+    "reference_mode": "contaminated_all",
+    "clean_reference_ids": [
+      "0519989b3.jpg",
+      "051f58cb4.jpg"
+    ],
+    "additional_reference_ids": [
+      "1efdd626e.jpg",
+      "1f06bd0a5.jpg",
+      "7a31a3b5e.jpg",
+      "7ca2551c2.jpg",
+      "06d3a99cb.jpg",
+      "06e55cb16.jpg",
+      "2cfa58247.jpg",
+      "2d37a1ebe.jpg"
+    ],
+    "reference_image_has_defect": {
+      "0519989b3.jpg": false,
+      "051f58cb4.jpg": false,
+      "1efdd626e.jpg": true,
+      "1f06bd0a5.jpg": true,
+      "7a31a3b5e.jpg": true,
+      "7ca2551c2.jpg": true,
+      "06d3a99cb.jpg": true,
+      "06e55cb16.jpg": true,
+      "2cfa58247.jpg": true,
+      "2d37a1ebe.jpg": true
+    },
+    "reference_classes": {
+      "0519989b3.jpg": [],
+      "051f58cb4.jpg": [],
+      "1efdd626e.jpg": [
+        1
+      ],
+      "1f06bd0a5.jpg": [
+        1
+      ],
+      "7a31a3b5e.jpg": [
+        2
+      ],
+      "7ca2551c2.jpg": [
+        2
+      ],
+      "06d3a99cb.jpg": [
+        3
+      ],
+      "06e55cb16.jpg": [
+        3
+      ],
+      "2cfa58247.jpg": [
+        3,
+        4
+      ],
+      "2d37a1ebe.jpg": [
+        4
+      ]
+    },
+    "n_memory_patches_before_filtering": 64000,
+    "n_memory_patches_after_filtering": 64000,
+    "paired_manifest_id": "0a008db67ea0e9b16fcc23a43ccde5d4dafa708320998e78059334a09e1a84da",
+    "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json",
+    "bank_stats": {
+      "n_clean_patches": 12800,
+      "n_candidate_patches": 51200,
+      "n_accepted_candidate_patches": 51200,
+      "n_rejected_candidate_patches": 0,
+      "acceptance_fraction": 1.0,
+      "calibration_percentile": null,
+      "calibration_threshold": null,
+      "final_memory_bank_size": 64000
+    }
+  },
+  "fit_time_s": 4.715212596580386,
+  "memory_bank_size": 64000,
+  "gt_masks_used_in_fitting": false,
+  "sam2_skipped": true
+}

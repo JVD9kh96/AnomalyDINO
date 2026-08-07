@@ -1,0 +1,38 @@
+{
+  "reference_mode": "clean",
+  "clean_reference_ids": [
+    "049fb17a1.jpg",
+    "04bf23eba.jpg"
+  ],
+  "additional_reference_ids": [],
+  "reference_image_has_defect": {
+    "049fb17a1.jpg": false,
+    "04bf23eba.jpg": false
+  },
+  "reference_classes": {
+    "049fb17a1.jpg": [],
+    "04bf23eba.jpg": []
+  },
+  "n_memory_patches_before_filtering": 12800,
+  "n_memory_patches_after_filtering": 12800,
+  "paired_manifest_id": "c74b959af80a57a61a490cf7d77b0ac0256f12d6d4b9f55b96a0355d7b216b94",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean2_additional0_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 0,
+    "n_accepted_candidate_patches": 0,
+    "n_rejected_candidate_patches": 0,
+    "acceptance_fraction": 1.0,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 12800,
+    "n_memory_patches_clean": 12800,
+    "n_candidate_patches_before_filter": 0,
+    "n_candidate_patches_after_filter": 0,
+    "n_memory_patches_before_budget": 12800,
+    "n_memory_patches_final": 12800,
+    "budget_policy": "greedy_coreset",
+    "budget_size_requested": 51200,
+    "extras": {}
+  }
+}

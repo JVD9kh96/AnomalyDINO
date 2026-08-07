@@ -1,0 +1,30 @@
+{
+  "reference_mode": "clean",
+  "clean_reference_ids": [
+    "053bf4b5f.jpg",
+    "05431e2d2.jpg"
+  ],
+  "additional_reference_ids": [],
+  "reference_image_has_defect": {
+    "053bf4b5f.jpg": false,
+    "05431e2d2.jpg": false
+  },
+  "reference_classes": {
+    "053bf4b5f.jpg": [],
+    "05431e2d2.jpg": []
+  },
+  "n_memory_patches_before_filtering": 12800,
+  "n_memory_patches_after_filtering": 12800,
+  "paired_manifest_id": "5b85ede3c2c9a33fd5953c6e4524f089f42027e731badbe05ccbcb68ce7ce8be",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 0,
+    "n_accepted_candidate_patches": 0,
+    "n_rejected_candidate_patches": 0,
+    "acceptance_fraction": 1.0,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 12800
+  }
+}

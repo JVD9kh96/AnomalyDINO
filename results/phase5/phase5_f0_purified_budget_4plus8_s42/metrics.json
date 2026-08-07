@@ -1,0 +1,164 @@
+{
+  "patch": {
+    "auroc": 0.8149747902447944,
+    "auprc": 0.11380791038723083,
+    "f1_optimal": {
+      "threshold": 0.2593020491207702,
+      "precision": 0.1511824515583602,
+      "recall": 0.3892256297940234,
+      "f1": 0.21777648022712212
+    },
+    "fixed_threshold": {
+      "threshold": 0.36659066140651697,
+      "precision": 0.14681725075833044,
+      "recall": 0.12745324764416321,
+      "f1": 0.13645168203162872,
+      "tp": 65584,
+      "fp": 381121,
+      "fn": 448989,
+      "tn": 15193906
+    },
+    "f1_max_metrics": {
+      "threshold": 0.2593020491207702,
+      "precision": 0.1511824515583602,
+      "recall": 0.3892256297940234,
+      "f1": 0.21777648022712212,
+      "tp": 200285,
+      "fp": 1124505,
+      "fn": 314288,
+      "tn": 14450522
+    },
+    "per_class": {
+      "1": {
+        "auroc": 0.6861510696501234,
+        "auprc": 0.00142373062179595,
+        "n_positive": 13341
+      },
+      "2": {
+        "auroc": 0.7096783034223004,
+        "auprc": 0.00033839104146070613,
+        "n_positive": 2577
+      },
+      "3": {
+        "auroc": 0.7974934089644187,
+        "auprc": 0.0807980010135242,
+        "n_positive": 416567
+      },
+      "4": {
+        "auroc": 0.9060254385077194,
+        "auprc": 0.03822217976537339,
+        "n_positive": 82071
+      }
+    }
+  },
+  "mask": null,
+  "n_val": 2514,
+  "mean_predict_time_s": 0.2008733685419568,
+  "total_predict_time_s": 504.9956485144794,
+  "pred_score_threshold": 0.36659066140651697,
+  "condition": "fixed_ratio_trim",
+  "fold": 0,
+  "seed": 42,
+  "fold_seed": 42,
+  "split_seed": 42,
+  "n_train": 10054,
+  "reference": {
+    "reference_mode": "fixed_ratio_trim",
+    "clean_reference_ids": [
+      "096701230.jpg",
+      "096e9d26a.jpg",
+      "0973e56f0.jpg",
+      "098935502.jpg"
+    ],
+    "additional_reference_ids": [
+      "1d34ad26c.jpg",
+      "1d83b44be.jpg",
+      "751db247d.jpg",
+      "7579146ed.jpg",
+      "0696cfa05.jpg",
+      "06ad83bac.jpg",
+      "290e00273.jpg",
+      "2930b4f52.jpg"
+    ],
+    "reference_image_has_defect": {
+      "096701230.jpg": false,
+      "096e9d26a.jpg": false,
+      "0973e56f0.jpg": false,
+      "098935502.jpg": false,
+      "1d34ad26c.jpg": true,
+      "1d83b44be.jpg": true,
+      "751db247d.jpg": true,
+      "7579146ed.jpg": true,
+      "0696cfa05.jpg": true,
+      "06ad83bac.jpg": true,
+      "290e00273.jpg": true,
+      "2930b4f52.jpg": true
+    },
+    "reference_classes": {
+      "096701230.jpg": [],
+      "096e9d26a.jpg": [],
+      "0973e56f0.jpg": [],
+      "098935502.jpg": [],
+      "1d34ad26c.jpg": [
+        1
+      ],
+      "1d83b44be.jpg": [
+        1
+      ],
+      "751db247d.jpg": [
+        2
+      ],
+      "7579146ed.jpg": [
+        2
+      ],
+      "0696cfa05.jpg": [
+        3
+      ],
+      "06ad83bac.jpg": [
+        3
+      ],
+      "290e00273.jpg": [
+        4
+      ],
+      "2930b4f52.jpg": [
+        3,
+        4
+      ]
+    },
+    "n_memory_patches_before_filtering": 76800,
+    "n_memory_patches_after_filtering": 66560,
+    "paired_manifest_id": "66eed7ad336119b253ae036362817d19d1dedcca5a04176ce547810594a559e5",
+    "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean4_additional8_manifest.json",
+    "bank_stats": {
+      "n_clean_patches": 25600,
+      "n_candidate_patches": 51200,
+      "n_accepted_candidate_patches": 40960,
+      "n_rejected_candidate_patches": 10240,
+      "acceptance_fraction": 0.8,
+      "calibration_percentile": null,
+      "calibration_threshold": 0.24851644039154053,
+      "final_memory_bank_size": 51200,
+      "n_memory_patches_clean": 25600,
+      "n_candidate_patches_before_filter": 51200,
+      "n_candidate_patches_after_filter": 40960,
+      "n_memory_patches_before_budget": 66560,
+      "n_memory_patches_final": 51200,
+      "budget_policy": "greedy_coreset",
+      "budget_size_requested": 51200,
+      "extras": {
+        "purification_strategy": "fixed_ratio_distance_trim",
+        "fixed_trim_fraction": 0.2,
+        "fixed_trim_retained_patches": 40960
+      }
+    }
+  },
+  "fit_time_s": 5371.628257147968,
+  "memory_bank_size": 51200,
+  "n_memory_patches_clean": 25600,
+  "n_candidate_patches_before_filter": 51200,
+  "n_candidate_patches_after_filter": 40960,
+  "n_memory_patches_before_budget": 66560,
+  "n_memory_patches_final": 51200,
+  "gt_masks_used_in_fitting": false,
+  "sam2_skipped": true
+}

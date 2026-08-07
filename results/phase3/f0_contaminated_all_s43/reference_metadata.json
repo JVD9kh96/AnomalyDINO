@@ -1,0 +1,71 @@
+{
+  "reference_mode": "contaminated_all",
+  "clean_reference_ids": [
+    "04d527562.jpg",
+    "04e15fdc1.jpg"
+  ],
+  "additional_reference_ids": [
+    "1deada184.jpg",
+    "1e75373b2.jpg",
+    "776ed4605.jpg",
+    "78b5bc846.jpg",
+    "06ae96c30.jpg",
+    "06aed81ba.jpg",
+    "29694dc5d.jpg",
+    "29ae2bdc9.jpg"
+  ],
+  "reference_image_has_defect": {
+    "04d527562.jpg": false,
+    "04e15fdc1.jpg": false,
+    "1deada184.jpg": true,
+    "1e75373b2.jpg": true,
+    "776ed4605.jpg": true,
+    "78b5bc846.jpg": true,
+    "06ae96c30.jpg": true,
+    "06aed81ba.jpg": true,
+    "29694dc5d.jpg": true,
+    "29ae2bdc9.jpg": true
+  },
+  "reference_classes": {
+    "04d527562.jpg": [],
+    "04e15fdc1.jpg": [],
+    "1deada184.jpg": [
+      1
+    ],
+    "1e75373b2.jpg": [
+      1
+    ],
+    "776ed4605.jpg": [
+      2
+    ],
+    "78b5bc846.jpg": [
+      2
+    ],
+    "06ae96c30.jpg": [
+      3
+    ],
+    "06aed81ba.jpg": [
+      3
+    ],
+    "29694dc5d.jpg": [
+      4
+    ],
+    "29ae2bdc9.jpg": [
+      4
+    ]
+  },
+  "n_memory_patches_before_filtering": 64000,
+  "n_memory_patches_after_filtering": 64000,
+  "paired_manifest_id": "b82569ffefe2f3306320e1be1c736916996a95d3487b3199b6b16267b0f8b9b2",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 51200,
+    "n_rejected_candidate_patches": 0,
+    "acceptance_fraction": 1.0,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 64000
+  }
+}

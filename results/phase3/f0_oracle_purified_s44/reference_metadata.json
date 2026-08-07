@@ -1,0 +1,73 @@
+{
+  "reference_mode": "oracle_purified",
+  "clean_reference_ids": [
+    "050edacec.jpg",
+    "05172e316.jpg"
+  ],
+  "additional_reference_ids": [
+    "1e95fc3d7.jpg",
+    "1eb697fe5.jpg",
+    "78c25510b.jpg",
+    "7970f0008.jpg",
+    "06b384e78.jpg",
+    "06b49e34f.jpg",
+    "2c8c3cb8a.jpg",
+    "2ccef61c3.jpg"
+  ],
+  "reference_image_has_defect": {
+    "050edacec.jpg": false,
+    "05172e316.jpg": false,
+    "1e95fc3d7.jpg": true,
+    "1eb697fe5.jpg": true,
+    "78c25510b.jpg": true,
+    "7970f0008.jpg": true,
+    "06b384e78.jpg": true,
+    "06b49e34f.jpg": true,
+    "2c8c3cb8a.jpg": true,
+    "2ccef61c3.jpg": true
+  },
+  "reference_classes": {
+    "050edacec.jpg": [],
+    "05172e316.jpg": [],
+    "1e95fc3d7.jpg": [
+      1,
+      3
+    ],
+    "1eb697fe5.jpg": [
+      1
+    ],
+    "78c25510b.jpg": [
+      2
+    ],
+    "7970f0008.jpg": [
+      1,
+      2
+    ],
+    "06b384e78.jpg": [
+      3
+    ],
+    "06b49e34f.jpg": [
+      3
+    ],
+    "2c8c3cb8a.jpg": [
+      4
+    ],
+    "2ccef61c3.jpg": [
+      4
+    ]
+  },
+  "n_memory_patches_before_filtering": 64000,
+  "n_memory_patches_after_filtering": 61644,
+  "paired_manifest_id": "e8a3b3533ead47ffb854db606d2275e1c336163f71d5603aaf6947a7cf842e6f",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed44_paired_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 48844,
+    "n_rejected_candidate_patches": 2356,
+    "acceptance_fraction": 0.953984375,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 61644
+  }
+}

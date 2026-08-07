@@ -1,0 +1,118 @@
+{
+  "patch": {
+    "auroc": 0.8134105768514832,
+    "auprc": 0.1048803671590098,
+    "f1_optimal": {
+      "threshold": 0.3100360249861693,
+      "precision": 0.13140158621659226,
+      "recall": 0.42139987912307875,
+      "f1": 0.20033453606794935
+    },
+    "fixed_threshold": {
+      "threshold": 0.36659066140651697,
+      "precision": 0.14194393072068104,
+      "recall": 0.2349190493865788,
+      "f1": 0.17696263645533078,
+      "tp": 120883,
+      "fp": 730742,
+      "fn": 393690,
+      "tn": 14844285
+    },
+    "f1_max_metrics": {
+      "threshold": 0.3100360249861693,
+      "precision": 0.13140158621659226,
+      "recall": 0.42139987912307875,
+      "f1": 0.20033453606794935,
+      "tp": 216841,
+      "fp": 1433375,
+      "fn": 297732,
+      "tn": 14141652
+    },
+    "per_class": {
+      "1": {
+        "auroc": 0.689181017741131,
+        "auprc": 0.001334040588337966,
+        "n_positive": 13341
+      },
+      "2": {
+        "auroc": 0.7528829615535658,
+        "auprc": 0.00030220677775444474,
+        "n_positive": 2577
+      },
+      "3": {
+        "auroc": 0.7966322977387522,
+        "auprc": 0.07583667465831966,
+        "n_positive": 416567
+      },
+      "4": {
+        "auroc": 0.8988813342966664,
+        "auprc": 0.032999053782603,
+        "n_positive": 82071
+      }
+    }
+  },
+  "mask": null,
+  "n_val": 2514,
+  "mean_predict_time_s": 0.1953085622592409,
+  "total_predict_time_s": 491.00572551973164,
+  "pred_score_threshold": 0.36659066140651697,
+  "condition": "clean",
+  "fold": 0,
+  "seed": 42,
+  "fold_seed": 42,
+  "split_seed": 42,
+  "n_train": 10054,
+  "reference": {
+    "reference_mode": "clean",
+    "clean_reference_ids": [
+      "096701230.jpg",
+      "096e9d26a.jpg",
+      "0973e56f0.jpg",
+      "098935502.jpg"
+    ],
+    "additional_reference_ids": [],
+    "reference_image_has_defect": {
+      "096701230.jpg": false,
+      "096e9d26a.jpg": false,
+      "0973e56f0.jpg": false,
+      "098935502.jpg": false
+    },
+    "reference_classes": {
+      "096701230.jpg": [],
+      "096e9d26a.jpg": [],
+      "0973e56f0.jpg": [],
+      "098935502.jpg": []
+    },
+    "n_memory_patches_before_filtering": 25600,
+    "n_memory_patches_after_filtering": 25600,
+    "paired_manifest_id": "98cf181684c097a515e7420878dfe410aaf2ca7e482b222b13722ea1a03745a2",
+    "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean4_additional0_manifest.json",
+    "bank_stats": {
+      "n_clean_patches": 25600,
+      "n_candidate_patches": 0,
+      "n_accepted_candidate_patches": 0,
+      "n_rejected_candidate_patches": 0,
+      "acceptance_fraction": 1.0,
+      "calibration_percentile": null,
+      "calibration_threshold": null,
+      "final_memory_bank_size": 25600,
+      "n_memory_patches_clean": 25600,
+      "n_candidate_patches_before_filter": 0,
+      "n_candidate_patches_after_filter": 0,
+      "n_memory_patches_before_budget": 25600,
+      "n_memory_patches_final": 25600,
+      "budget_policy": "greedy_coreset",
+      "budget_size_requested": 51200,
+      "extras": {}
+    }
+  },
+  "fit_time_s": 2.7860418371856213,
+  "memory_bank_size": 25600,
+  "n_memory_patches_clean": 25600,
+  "n_candidate_patches_before_filter": 0,
+  "n_candidate_patches_after_filter": 0,
+  "n_memory_patches_before_budget": 25600,
+  "n_memory_patches_final": 25600,
+  "gt_masks_used_in_fitting": false,
+  "sam2_skipped": true
+}

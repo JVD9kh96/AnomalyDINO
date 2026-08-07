@@ -1,0 +1,34 @@
+{
+  "final_memory_bank_size": 51200,
+  "before": 64000,
+  "after": 53760,
+  "n_memory_patches_clean": 12800,
+  "n_candidate_patches_before_filter": 51200,
+  "n_candidate_patches_after_filter": 40960,
+  "n_memory_patches_before_budget": 53760,
+  "n_memory_patches_final": 51200,
+  "budget_policy": "greedy_coreset",
+  "budget_size_requested": 51200,
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 40960,
+    "n_rejected_candidate_patches": 10240,
+    "acceptance_fraction": 0.8,
+    "calibration_percentile": null,
+    "calibration_threshold": 0.31217384338378906,
+    "final_memory_bank_size": 51200,
+    "n_memory_patches_clean": 12800,
+    "n_candidate_patches_before_filter": 51200,
+    "n_candidate_patches_after_filter": 40960,
+    "n_memory_patches_before_budget": 53760,
+    "n_memory_patches_final": 51200,
+    "budget_policy": "greedy_coreset",
+    "budget_size_requested": 51200,
+    "extras": {
+      "purification_strategy": "fixed_ratio_distance_trim",
+      "fixed_trim_fraction": 0.2,
+      "fixed_trim_retained_patches": 40960
+    }
+  }
+}

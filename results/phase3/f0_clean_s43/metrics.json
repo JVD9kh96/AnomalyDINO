@@ -1,0 +1,99 @@
+{
+  "patch": {
+    "auroc": 0.8046476535720284,
+    "auprc": 0.12804677318706753,
+    "f1_optimal": {
+      "threshold": 0.3935974089405205,
+      "precision": 0.1675197640000471,
+      "recall": 0.359540823167947,
+      "f1": 0.22855131008412705
+    },
+    "fixed_threshold": {
+      "threshold": 0.4153149616718295,
+      "precision": 0.17785600452992614,
+      "recall": 0.31252902892300993,
+      "f1": 0.22670008500248803,
+      "tp": 160819,
+      "fp": 743390,
+      "fn": 353754,
+      "tn": 14831637
+    },
+    "f1_max_metrics": {
+      "threshold": 0.3935974089405205,
+      "precision": 0.1675197640000471,
+      "recall": 0.359540823167947,
+      "f1": 0.22855131008412705,
+      "tp": 185010,
+      "fp": 919397,
+      "fn": 329563,
+      "tn": 14655630
+    },
+    "per_class": {
+      "1": {
+        "auroc": 0.6757614847902588,
+        "auprc": 0.001443672403019282,
+        "n_positive": 13341
+      },
+      "2": {
+        "auroc": 0.8076574810279504,
+        "auprc": 0.0003828860231751955,
+        "n_positive": 2577
+      },
+      "3": {
+        "auroc": 0.7822919102550272,
+        "auprc": 0.0854329672362034,
+        "n_positive": 416567
+      },
+      "4": {
+        "auroc": 0.9171789337714997,
+        "auprc": 0.056288834808366196,
+        "n_positive": 82071
+      }
+    }
+  },
+  "mask": null,
+  "n_val": 2514,
+  "mean_predict_time_s": 0.19058688517656938,
+  "total_predict_time_s": 479.13542933389544,
+  "pred_score_threshold": 0.4153149616718295,
+  "condition": "clean",
+  "fold": 0,
+  "seed": 43,
+  "fold_seed": 43,
+  "split_seed": 42,
+  "n_train": 10054,
+  "reference": {
+    "reference_mode": "clean",
+    "clean_reference_ids": [
+      "04d527562.jpg",
+      "04e15fdc1.jpg"
+    ],
+    "additional_reference_ids": [],
+    "reference_image_has_defect": {
+      "04d527562.jpg": false,
+      "04e15fdc1.jpg": false
+    },
+    "reference_classes": {
+      "04d527562.jpg": [],
+      "04e15fdc1.jpg": []
+    },
+    "n_memory_patches_before_filtering": 12800,
+    "n_memory_patches_after_filtering": 12800,
+    "paired_manifest_id": "b82569ffefe2f3306320e1be1c736916996a95d3487b3199b6b16267b0f8b9b2",
+    "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed43_paired_manifest.json",
+    "bank_stats": {
+      "n_clean_patches": 12800,
+      "n_candidate_patches": 0,
+      "n_accepted_candidate_patches": 0,
+      "n_rejected_candidate_patches": 0,
+      "acceptance_fraction": 1.0,
+      "calibration_percentile": null,
+      "calibration_threshold": null,
+      "final_memory_bank_size": 12800
+    }
+  },
+  "fit_time_s": 2.5756251253187656,
+  "memory_bank_size": 12800,
+  "gt_masks_used_in_fitting": false,
+  "sam2_skipped": true
+}

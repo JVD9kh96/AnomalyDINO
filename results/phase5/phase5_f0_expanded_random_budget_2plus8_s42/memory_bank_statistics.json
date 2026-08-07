@@ -1,0 +1,30 @@
+{
+  "final_memory_bank_size": 51200,
+  "before": 64000,
+  "after": 64000,
+  "n_memory_patches_clean": 12800,
+  "n_candidate_patches_before_filter": 51200,
+  "n_candidate_patches_after_filter": 51200,
+  "n_memory_patches_before_budget": 64000,
+  "n_memory_patches_final": 51200,
+  "budget_policy": "random",
+  "budget_size_requested": 51200,
+  "bank_stats": {
+    "n_clean_patches": 12800,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 51200,
+    "n_rejected_candidate_patches": 0,
+    "acceptance_fraction": 1.0,
+    "calibration_percentile": null,
+    "calibration_threshold": null,
+    "final_memory_bank_size": 51200,
+    "n_memory_patches_clean": 12800,
+    "n_candidate_patches_before_filter": 51200,
+    "n_candidate_patches_after_filter": 51200,
+    "n_memory_patches_before_budget": 64000,
+    "n_memory_patches_final": 51200,
+    "budget_policy": "random",
+    "budget_size_requested": 51200,
+    "extras": {}
+  }
+}

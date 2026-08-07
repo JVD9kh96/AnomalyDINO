@@ -1,0 +1,1140 @@
+{
+  "condition_summary": {
+    "auto_purified": {
+      "auprc": {
+        "mean": 0.10251783732967823,
+        "median": 0.10354178705233734,
+        "n": 5,
+        "std": 0.012125148063240705,
+        "values_by_seed": {
+          "42": 0.09801814168587047,
+          "43": 0.11464144204412675,
+          "44": 0.11202153618544343,
+          "45": 0.10354178705233734,
+          "46": 0.08436627968061318
+        }
+      },
+      "auroc": {
+        "mean": 0.7970829141753487,
+        "median": 0.8013512708265079,
+        "n": 5,
+        "std": 0.020399742776041323,
+        "values_by_seed": {
+          "42": 0.8013512708265079,
+          "43": 0.8160570396343032,
+          "44": 0.8064976432301741,
+          "45": 0.7989817312325378,
+          "46": 0.7625268859532206
+        }
+      },
+      "f1_max": {
+        "mean": 0.19988938704853082,
+        "median": 0.20149172672750926,
+        "n": 5,
+        "std": 0.0186069868575986,
+        "values_by_seed": {
+          "42": 0.19761876434881345,
+          "43": 0.2174394688832682,
+          "44": 0.21297351588518265,
+          "45": 0.20149172672750926,
+          "46": 0.1699234593978806
+        }
+      },
+      "fixed_f1": {
+        "mean": 0.026572807624842616,
+        "median": 0.008659699315099443,
+        "n": 5,
+        "std": 0.03710449841388162,
+        "values_by_seed": {
+          "42": 0.03477127535678113,
+          "43": 0.08804739111515487,
+          "44": 0.008659699315099443,
+          "45": 0.0010173567799161803,
+          "46": 0.00036831555726143814
+        }
+      },
+      "fixed_precision": {
+        "mean": 0.05738860160845542,
+        "median": 0.05322468862795999,
+        "n": 5,
+        "std": 0.04262786003106543,
+        "values_by_seed": {
+          "42": 0.05322468862795999,
+          "43": 0.12098316658456626,
+          "44": 0.025533170281407322,
+          "45": 0.013501439491710513,
+          "46": 0.07370054305663305
+        }
+      },
+      "fixed_recall": {
+        "mean": 0.020190721238774672,
+        "median": 0.005214031828331451,
+        "n": 5,
+        "std": 0.02934881917385554,
+        "values_by_seed": {
+          "42": 0.025819465848383027,
+          "43": 0.06920689581458801,
+          "44": 0.005214031828331451,
+          "45": 0.0005285936106247316,
+          "46": 0.00018461909194613787
+        }
+      },
+      "memory_bank_size": {
+        "mean": 63204.0,
+        "median": 63990.0,
+        "n": 5,
+        "std": 1088.0358449977648,
+        "values_by_seed": {
+          "42": 61892.0,
+          "43": 62140.0,
+          "44": 63990.0,
+          "45": 63998.0,
+          "46": 64000.0
+        }
+      }
+    },
+    "clean": {
+      "auprc": {
+        "mean": 0.1017921119729615,
+        "median": 0.10152548135619827,
+        "n": 5,
+        "std": 0.017259284578662073,
+        "values_by_seed": {
+          "42": 0.10152548135619827,
+          "43": 0.12804677318706753,
+          "44": 0.08769976109689047,
+          "45": 0.10663327897315052,
+          "46": 0.08505526525150074
+        }
+      },
+      "auroc": {
+        "mean": 0.7838435604608529,
+        "median": 0.7893162749653307,
+        "n": 5,
+        "std": 0.03020066302871775,
+        "values_by_seed": {
+          "42": 0.8183485299015728,
+          "43": 0.8046476535720284,
+          "44": 0.7448574939792929,
+          "45": 0.7893162749653307,
+          "46": 0.7620478498860397
+        }
+      },
+      "f1_max": {
+        "mean": 0.18948644138586587,
+        "median": 0.1907505459901468,
+        "n": 5,
+        "std": 0.026603273068962666,
+        "values_by_seed": {
+          "42": 0.1907505459901468,
+          "43": 0.22855131008412705,
+          "44": 0.17323601878108874,
+          "45": 0.19680317399805275,
+          "46": 0.1580911580759141
+        }
+      },
+      "fixed_f1": {
+        "mean": 0.09802716582222133,
+        "median": 0.05103758913155554,
+        "n": 5,
+        "std": 0.09931024250760385,
+        "values_by_seed": {
+          "42": 0.18095309422514144,
+          "43": 0.22670008500248803,
+          "44": 0.05103758913155554,
+          "45": 0.0271361403738321,
+          "46": 0.004308920378089505
+        }
+      },
+      "fixed_precision": {
+        "mean": 0.11112747777908824,
+        "median": 0.11891182328444685,
+        "n": 5,
+        "std": 0.05169180277455735,
+        "values_by_seed": {
+          "42": 0.1270022461402555,
+          "43": 0.17785600452992614,
+          "44": 0.09624789934071616,
+          "45": 0.11891182328444685,
+          "46": 0.03561941560009659
+        }
+      },
+      "fixed_recall": {
+        "mean": 0.135891311825533,
+        "median": 0.034725879515637235,
+        "n": 5,
+        "std": 0.162601154421141,
+        "values_by_seed": {
+          "42": 0.3145928760350815,
+          "43": 0.31252902892300993,
+          "44": 0.034725879515637235,
+          "45": 0.01531561119607908,
+          "46": 0.0022931634578572915
+        }
+      },
+      "memory_bank_size": {
+        "mean": 12800.0,
+        "median": 12800.0,
+        "n": 5,
+        "std": 0.0,
+        "values_by_seed": {
+          "42": 12800.0,
+          "43": 12800.0,
+          "44": 12800.0,
+          "45": 12800.0,
+          "46": 12800.0
+        }
+      }
+    },
+    "contaminated_all": {
+      "auprc": {
+        "mean": 0.10068418156954839,
+        "median": 0.10353992553184505,
+        "n": 5,
+        "std": 0.011122560161395068,
+        "values_by_seed": {
+          "42": 0.09505026959358408,
+          "43": 0.10845102653591852,
+          "44": 0.11201340650578116,
+          "45": 0.10353992553184505,
+          "46": 0.08436627968061318
+        }
+      },
+      "auroc": {
+        "mean": 0.7955970292073763,
+        "median": 0.7989804445512774,
+        "n": 5,
+        "std": 0.01956790025357726,
+        "values_by_seed": {
+          "42": 0.7968901394934514,
+          "43": 0.8130921794200842,
+          "44": 0.8064954966188478,
+          "45": 0.7989804445512774,
+          "46": 0.7625268859532206
+        }
+      },
+      "f1_max": {
+        "mean": 0.19772669714710944,
+        "median": 0.20149172672750926,
+        "n": 5,
+        "std": 0.01742000075491412,
+        "values_by_seed": {
+          "42": 0.19330336049339145,
+          "43": 0.21094886801953078,
+          "44": 0.2129660710972352,
+          "45": 0.20149172672750926,
+          "46": 0.1699234593978806
+        }
+      },
+      "fixed_f1": {
+        "mean": 0.11028309443807471,
+        "median": 0.11560114463304662,
+        "n": 5,
+        "std": 0.0253643753155359,
+        "values_by_seed": {
+          "42": 0.07848236265221298,
+          "43": 0.13417525885331788,
+          "44": 0.13348322726125075,
+          "45": 0.11560114463304662,
+          "46": 0.08967347879054534
+        }
+      },
+      "fixed_precision": {
+        "mean": 0.11814212259131932,
+        "median": 0.12736368675493437,
+        "n": 5,
+        "std": 0.0272216589474046,
+        "values_by_seed": {
+          "42": 0.08474981181232619,
+          "43": 0.13069988907029112,
+          "44": 0.15168724137334003,
+          "45": 0.12736368675493437,
+          "46": 0.09620998394570486
+        }
+      },
+      "fixed_recall": {
+        "mean": 0.1039790272711549,
+        "median": 0.10582755022125141,
+        "n": 5,
+        "std": 0.026155218355373665,
+        "values_by_seed": {
+          "42": 0.07307806666886914,
+          "43": 0.13784050076471172,
+          "44": 0.11918036896611366,
+          "45": 0.10582755022125141,
+          "46": 0.08396864973482868
+        }
+      },
+      "memory_bank_size": {
+        "mean": 64000.0,
+        "median": 64000.0,
+        "n": 5,
+        "std": 0.0,
+        "values_by_seed": {
+          "42": 64000.0,
+          "43": 64000.0,
+          "44": 64000.0,
+          "45": 64000.0,
+          "46": 64000.0
+        }
+      }
+    },
+    "oracle_purified": {
+      "auprc": {
+        "mean": 0.10954484306156123,
+        "median": 0.11147333557044402,
+        "n": 5,
+        "std": 0.010732670668863334,
+        "values_by_seed": {
+          "42": 0.10716397958532262,
+          "43": 0.1186148436090072,
+          "44": 0.11811967303484538,
+          "45": 0.11147333557044402,
+          "46": 0.09235238350818695
+        }
+      },
+      "auroc": {
+        "mean": 0.803534325715604,
+        "median": 0.8110451055145877,
+        "n": 5,
+        "std": 0.02026514824080572,
+        "values_by_seed": {
+          "42": 0.8110451055145877,
+          "43": 0.820862299698502,
+          "44": 0.811933206536856,
+          "45": 0.8051243395309873,
+          "46": 0.7687066772970873
+        }
+      },
+      "f1_max": {
+        "mean": 0.21088110300505702,
+        "median": 0.21278125462951936,
+        "n": 5,
+        "std": 0.017199646175840556,
+        "values_by_seed": {
+          "42": 0.21234518452690143,
+          "43": 0.22366971159207447,
+          "44": 0.22382314480547671,
+          "45": 0.21278125462951936,
+          "46": 0.18178621947131304
+        }
+      },
+      "fixed_f1": {
+        "mean": 0.14238400119663036,
+        "median": 0.14651897567032618,
+        "n": 5,
+        "std": 0.020578702376923778,
+        "values_by_seed": {
+          "42": 0.11963293158612412,
+          "43": 0.17122899100911518,
+          "44": 0.14899291095747538,
+          "45": 0.14651897567032618,
+          "46": 0.125546196760111
+        }
+      },
+      "fixed_precision": {
+        "mean": 0.1457601153758608,
+        "median": 0.15494053332582192,
+        "n": 5,
+        "std": 0.019269868735801523,
+        "values_by_seed": {
+          "42": 0.1219647623701203,
+          "43": 0.15762434822406382,
+          "44": 0.16571326591314695,
+          "45": 0.15494053332582192,
+          "46": 0.12855766704615115
+        }
+      },
+      "fixed_recall": {
+        "mean": 0.1403536524458143,
+        "median": 0.1353374545496946,
+        "n": 5,
+        "std": 0.027752616779086563,
+        "values_by_seed": {
+          "42": 0.11738859209480482,
+          "43": 0.18740392519623067,
+          "44": 0.1353374545496946,
+          "45": 0.13896570554615187,
+          "46": 0.12267258484218954
+        }
+      },
+      "memory_bank_size": {
+        "mean": 60595.2,
+        "median": 60630.0,
+        "n": 5,
+        "std": 971.216608177599,
+        "values_by_seed": {
+          "42": 59621.0,
+          "43": 59614.0,
+          "44": 61644.0,
+          "45": 60630.0,
+          "46": 61467.0
+        }
+      }
+    }
+  },
+  "conditions": [
+    "clean",
+    "contaminated_all",
+    "auto_purified",
+    "oracle_purified"
+  ],
+  "execution": [
+    {
+      "condition": "clean",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s42",
+      "seed": 42,
+      "status": "reused"
+    },
+    {
+      "condition": "contaminated_all",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s42",
+      "seed": 42,
+      "status": "reused"
+    },
+    {
+      "condition": "auto_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s42",
+      "seed": 42,
+      "status": "reused"
+    },
+    {
+      "condition": "oracle_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s42",
+      "seed": 42,
+      "status": "reused"
+    },
+    {
+      "condition": "clean",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s43",
+      "seed": 43,
+      "status": "reused"
+    },
+    {
+      "condition": "contaminated_all",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s43",
+      "seed": 43,
+      "status": "reused"
+    },
+    {
+      "condition": "auto_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s43",
+      "seed": 43,
+      "status": "reused"
+    },
+    {
+      "condition": "oracle_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s43",
+      "seed": 43,
+      "status": "reused"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/clean.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "44",
+        "--split-seed",
+        "42",
+        "--condition",
+        "clean",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s44",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed44_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "clean",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s44",
+      "seed": 44,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/contaminated_all.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "44",
+        "--split-seed",
+        "42",
+        "--condition",
+        "contaminated_all",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s44",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed44_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "contaminated_all",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s44",
+      "seed": 44,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/auto_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "44",
+        "--split-seed",
+        "42",
+        "--condition",
+        "auto_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s44",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed44_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "auto_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s44",
+      "seed": 44,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/oracle_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "44",
+        "--split-seed",
+        "42",
+        "--condition",
+        "oracle_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s44",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed44_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "oracle_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s44",
+      "seed": 44,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/clean.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "45",
+        "--split-seed",
+        "42",
+        "--condition",
+        "clean",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s45",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "clean",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s45",
+      "seed": 45,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/contaminated_all.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "45",
+        "--split-seed",
+        "42",
+        "--condition",
+        "contaminated_all",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s45",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "contaminated_all",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s45",
+      "seed": 45,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/auto_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "45",
+        "--split-seed",
+        "42",
+        "--condition",
+        "auto_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s45",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "auto_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s45",
+      "seed": 45,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/oracle_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "45",
+        "--split-seed",
+        "42",
+        "--condition",
+        "oracle_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s45",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed45_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "oracle_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s45",
+      "seed": 45,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/clean.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "46",
+        "--split-seed",
+        "42",
+        "--condition",
+        "clean",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s46",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "clean",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_clean_s46",
+      "seed": 46,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/contaminated_all.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "46",
+        "--split-seed",
+        "42",
+        "--condition",
+        "contaminated_all",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s46",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "contaminated_all",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_contaminated_all_s46",
+      "seed": 46,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/auto_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "46",
+        "--split-seed",
+        "42",
+        "--condition",
+        "auto_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s46",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "auto_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_auto_purified_s46",
+      "seed": 46,
+      "status": "completed"
+    },
+    {
+      "command": [
+        "/home/kalantary/AnomalyDino/venv/bin/python",
+        "-u",
+        "scripts/run_reference_composition_study.py",
+        "--config",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/configs/reference_bank/oracle_purified.yaml",
+        "--fold",
+        "0",
+        "--seed",
+        "46",
+        "--split-seed",
+        "42",
+        "--condition",
+        "oracle_purified",
+        "--clean-shots",
+        "2",
+        "--additional-shots",
+        "8",
+        "--output-dir",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s46",
+        "--paired-manifest",
+        "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/phase3_fold0_seed46_paired_manifest.json",
+        "--skip-sam2"
+      ],
+      "condition": "oracle_purified",
+      "run_dir": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase3/f0_oracle_purified_s46",
+      "seed": 46,
+      "status": "completed"
+    }
+  ],
+  "fold": 0,
+  "n_runs": 20,
+  "notes": [
+    "Standard deviation is the sample standard deviation (n - 1).",
+    "Fixed-threshold metrics retain the calibration used by each source run; inspect its Phase 1 calibration report before interpreting their absolute values."
+  ],
+  "paired_delta_sign_tracking": {
+    "auto_minus_naive": {
+      "auprc": {
+        "mean": 0.0018336557601298376,
+        "median": 8.12967966226652e-06,
+        "n": 5,
+        "negative": 0,
+        "positive": 4,
+        "signs_by_seed": {
+          "42": "positive",
+          "43": "positive",
+          "44": "positive",
+          "45": "positive",
+          "46": "zero"
+        },
+        "std": 0.0027530942248722933,
+        "zero": 1
+      },
+      "auroc": {
+        "mean": 0.0014858849679724618,
+        "median": 2.1466113263590714e-06,
+        "n": 5,
+        "negative": 0,
+        "positive": 4,
+        "signs_by_seed": {
+          "42": "positive",
+          "43": "positive",
+          "44": "positive",
+          "45": "positive",
+          "46": "zero"
+        },
+        "std": 0.002100763220468546,
+        "zero": 1
+      },
+      "f1_max": {
+        "mean": 0.0021626899014213774,
+        "median": 7.444787947452625e-06,
+        "n": 5,
+        "negative": 0,
+        "positive": 3,
+        "signs_by_seed": {
+          "42": "positive",
+          "43": "positive",
+          "44": "positive",
+          "45": "zero",
+          "46": "zero"
+        },
+        "std": 0.00305632652804219,
+        "zero": 2
+      },
+      "fixed_f1": {
+        "mean": -0.0837102868132321,
+        "median": -0.0893051632332839,
+        "n": 5,
+        "negative": 5,
+        "positive": 0,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "negative",
+          "45": "negative",
+          "46": "negative"
+        },
+        "std": 0.03770659256240454,
+        "zero": 0
+      },
+      "fixed_precision": {
+        "mean": -0.060753520982863886,
+        "median": -0.0315251231843662,
+        "n": 5,
+        "negative": 5,
+        "positive": 0,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "negative",
+          "45": "negative",
+          "46": "negative"
+        },
+        "std": 0.05481658613644278,
+        "zero": 0
+      },
+      "fixed_recall": {
+        "mean": -0.08378830603238024,
+        "median": -0.08378403064288253,
+        "n": 5,
+        "negative": 5,
+        "positive": 0,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "negative",
+          "45": "negative",
+          "46": "negative"
+        },
+        "std": 0.02709938189210877,
+        "zero": 0
+      },
+      "memory_bank_size": {
+        "mean": -796.0,
+        "median": -10.0,
+        "n": 5,
+        "negative": 4,
+        "positive": 0,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "negative",
+          "45": "negative",
+          "46": "zero"
+        },
+        "std": 1088.0358449977648,
+        "zero": 1
+      }
+    },
+    "naive_minus_clean": {
+      "auprc": {
+        "mean": -0.0011079304034131072,
+        "median": -0.0030933534413054714,
+        "n": 5,
+        "negative": 4,
+        "positive": 1,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "positive",
+          "45": "negative",
+          "46": "negative"
+        },
+        "std": 0.015976396613376857,
+        "zero": 0
+      },
+      "auroc": {
+        "mean": 0.011753468746523365,
+        "median": 0.008444525848055773,
+        "n": 5,
+        "negative": 1,
+        "positive": 4,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "positive",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.030552910731064968,
+        "zero": 0
+      },
+      "f1_max": {
+        "mean": 0.00824025576124357,
+        "median": 0.004688552729456508,
+        "n": 5,
+        "negative": 1,
+        "positive": 4,
+        "signs_by_seed": {
+          "42": "positive",
+          "43": "negative",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.020720259963296454,
+        "zero": 0
+      },
+      "fixed_f1": {
+        "mean": 0.01225592861585339,
+        "median": 0.08244563812969521,
+        "n": 5,
+        "negative": 2,
+        "positive": 3,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.10027525044844057,
+        "zero": 0
+      },
+      "fixed_precision": {
+        "mean": 0.007014644812231065,
+        "median": 0.008451863470487514,
+        "n": 5,
+        "negative": 2,
+        "positive": 3,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.051427407178097774,
+        "zero": 0
+      },
+      "fixed_recall": {
+        "mean": -0.03191228455437809,
+        "median": 0.08167548627697138,
+        "n": 5,
+        "negative": 2,
+        "positive": 3,
+        "signs_by_seed": {
+          "42": "negative",
+          "43": "negative",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.16259564296048137,
+        "zero": 0
+      },
+      "memory_bank_size": {
+        "mean": 51200.0,
+        "median": 51200.0,
+        "n": 5,
+        "negative": 0,
+        "positive": 5,
+        "signs_by_seed": {
+          "42": "positive",
+          "43": "positive",
+          "44": "positive",
+          "45": "positive",
+          "46": "positive"
+        },
+        "std": 0.0,
+        "zero": 0
+      }
+    }
+  },
+  "paired_id_validation": [
+    {
+      "additional_reference_ids": [
+        "1d34ad26c.jpg",
+        "1d83b44be.jpg",
+        "751db247d.jpg",
+        "7579146ed.jpg",
+        "0696cfa05.jpg",
+        "06ad83bac.jpg",
+        "290e00273.jpg",
+        "2930b4f52.jpg"
+      ],
+      "clean_reference_ids": [
+        "049fb17a1.jpg",
+        "04bf23eba.jpg"
+      ],
+      "paired_additional_ids": true,
+      "paired_clean_ids": true,
+      "paired_manifest_id": "ff643873549cee9ab182df83a532150cf59cb5b1fd88cacba1755e72160956ef",
+      "seed": 42
+    },
+    {
+      "additional_reference_ids": [
+        "1deada184.jpg",
+        "1e75373b2.jpg",
+        "776ed4605.jpg",
+        "78b5bc846.jpg",
+        "06ae96c30.jpg",
+        "06aed81ba.jpg",
+        "29694dc5d.jpg",
+        "29ae2bdc9.jpg"
+      ],
+      "clean_reference_ids": [
+        "04d527562.jpg",
+        "04e15fdc1.jpg"
+      ],
+      "paired_additional_ids": true,
+      "paired_clean_ids": true,
+      "paired_manifest_id": "b82569ffefe2f3306320e1be1c736916996a95d3487b3199b6b16267b0f8b9b2",
+      "seed": 43
+    },
+    {
+      "additional_reference_ids": [
+        "1e95fc3d7.jpg",
+        "1eb697fe5.jpg",
+        "78c25510b.jpg",
+        "7970f0008.jpg",
+        "06b384e78.jpg",
+        "06b49e34f.jpg",
+        "2c8c3cb8a.jpg",
+        "2ccef61c3.jpg"
+      ],
+      "clean_reference_ids": [
+        "050edacec.jpg",
+        "05172e316.jpg"
+      ],
+      "paired_additional_ids": true,
+      "paired_clean_ids": true,
+      "paired_manifest_id": "e8a3b3533ead47ffb854db606d2275e1c336163f71d5603aaf6947a7cf842e6f",
+      "seed": 44
+    },
+    {
+      "additional_reference_ids": [
+        "1efdd626e.jpg",
+        "1f06bd0a5.jpg",
+        "7a31a3b5e.jpg",
+        "7ca2551c2.jpg",
+        "06d3a99cb.jpg",
+        "06e55cb16.jpg",
+        "2cfa58247.jpg",
+        "2d37a1ebe.jpg"
+      ],
+      "clean_reference_ids": [
+        "0519989b3.jpg",
+        "051f58cb4.jpg"
+      ],
+      "paired_additional_ids": true,
+      "paired_clean_ids": true,
+      "paired_manifest_id": "0a008db67ea0e9b16fcc23a43ccde5d4dafa708320998e78059334a09e1a84da",
+      "seed": 45
+    },
+    {
+      "additional_reference_ids": [
+        "1f117b19e.jpg",
+        "1f4161475.jpg",
+        "7dcd46899.jpg",
+        "7eb958c89.jpg",
+        "06e6582af.jpg",
+        "06e7b157a.jpg",
+        "2d61e4f9f.jpg",
+        "2d8215a6b.jpg"
+      ],
+      "clean_reference_ids": [
+        "053bf4b5f.jpg",
+        "05431e2d2.jpg"
+      ],
+      "paired_additional_ids": true,
+      "paired_clean_ids": true,
+      "paired_manifest_id": "5b85ede3c2c9a33fd5953c6e4524f089f42027e731badbe05ccbcb68ce7ce8be",
+      "seed": 46
+    }
+  ],
+  "phase": "phase3_multiseed_fold0_replication",
+  "sam2_skipped": true,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "split_seed": 42
+}

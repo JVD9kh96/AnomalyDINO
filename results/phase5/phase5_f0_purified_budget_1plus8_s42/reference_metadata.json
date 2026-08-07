@@ -1,0 +1,81 @@
+{
+  "reference_mode": "fixed_ratio_trim",
+  "clean_reference_ids": [
+    "027b280f4.jpg"
+  ],
+  "additional_reference_ids": [
+    "1d34ad26c.jpg",
+    "1d83b44be.jpg",
+    "751db247d.jpg",
+    "7579146ed.jpg",
+    "0696cfa05.jpg",
+    "06ad83bac.jpg",
+    "290e00273.jpg",
+    "2930b4f52.jpg"
+  ],
+  "reference_image_has_defect": {
+    "027b280f4.jpg": false,
+    "1d34ad26c.jpg": true,
+    "1d83b44be.jpg": true,
+    "751db247d.jpg": true,
+    "7579146ed.jpg": true,
+    "0696cfa05.jpg": true,
+    "06ad83bac.jpg": true,
+    "290e00273.jpg": true,
+    "2930b4f52.jpg": true
+  },
+  "reference_classes": {
+    "027b280f4.jpg": [],
+    "1d34ad26c.jpg": [
+      1
+    ],
+    "1d83b44be.jpg": [
+      1
+    ],
+    "751db247d.jpg": [
+      2
+    ],
+    "7579146ed.jpg": [
+      2
+    ],
+    "0696cfa05.jpg": [
+      3
+    ],
+    "06ad83bac.jpg": [
+      3
+    ],
+    "290e00273.jpg": [
+      4
+    ],
+    "2930b4f52.jpg": [
+      3,
+      4
+    ]
+  },
+  "n_memory_patches_before_filtering": 57600,
+  "n_memory_patches_after_filtering": 47360,
+  "paired_manifest_id": "52008a75f41459a2ee0d67930c2a9385bc417300fd834797c249f76b8109c7c8",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean1_additional8_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 6400,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 40960,
+    "n_rejected_candidate_patches": 10240,
+    "acceptance_fraction": 0.8,
+    "calibration_percentile": null,
+    "calibration_threshold": 0.30557310581207275,
+    "final_memory_bank_size": 47360,
+    "n_memory_patches_clean": 6400,
+    "n_candidate_patches_before_filter": 51200,
+    "n_candidate_patches_after_filter": 40960,
+    "n_memory_patches_before_budget": 47360,
+    "n_memory_patches_final": 47360,
+    "budget_policy": "greedy_coreset",
+    "budget_size_requested": 51200,
+    "extras": {
+      "purification_strategy": "fixed_ratio_distance_trim",
+      "fixed_trim_fraction": 0.2,
+      "fixed_trim_retained_patches": 40960
+    }
+  }
+}

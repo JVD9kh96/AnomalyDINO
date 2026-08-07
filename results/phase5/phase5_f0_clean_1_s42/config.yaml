@@ -1,0 +1,50 @@
+cv:
+  n_folds: 5
+  shuffle: true
+  split_seed: 42
+  stratify: true
+data:
+  image_shape:
+  - 256
+  - 1600
+  num_classes: 4
+  root: data/severstal
+detector:
+  additional_sampling: class_balanced
+  additional_shots: 0
+  allow_oracle_reference_filtering: false
+  budget_policy: greedy_coreset
+  clean_shots: 1
+  coreset_size: 51200
+  defect_mining_percentile: 99.5
+  device: cuda:0
+  dual_bank_alpha: 1.0
+  faiss_on_cpu: false
+  k_neighbors: 1
+  knn_metric: L2_normalized
+  mask_ref_images: false
+  masking: false
+  model_name: dinov2_vits14
+  name: anomaly_dino
+  reference_mode: clean
+  reference_purification:
+    min_rejected_component_patches: 2
+    normal_acceptance_percentile: 99.0
+    spatial_cleanup: false
+  resolution: 448
+  rotation: false
+  use_dual_bank: false
+output:
+  dir: results_refbank/auto_purified
+  max_viz_images_per_fold: 10
+  save_visualizations: false
+patch_eval:
+  gt_overlap_threshold: 0.5
+  pred_score_threshold: 0.35
+seed: 42
+segmenter:
+  device: cuda:0
+  min_prompt_area: 1
+  model: sam2.1_b.pt
+  name: sam2
+  prompt_mode: bbox

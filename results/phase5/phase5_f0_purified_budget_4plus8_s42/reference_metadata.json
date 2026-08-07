@@ -1,0 +1,90 @@
+{
+  "reference_mode": "fixed_ratio_trim",
+  "clean_reference_ids": [
+    "096701230.jpg",
+    "096e9d26a.jpg",
+    "0973e56f0.jpg",
+    "098935502.jpg"
+  ],
+  "additional_reference_ids": [
+    "1d34ad26c.jpg",
+    "1d83b44be.jpg",
+    "751db247d.jpg",
+    "7579146ed.jpg",
+    "0696cfa05.jpg",
+    "06ad83bac.jpg",
+    "290e00273.jpg",
+    "2930b4f52.jpg"
+  ],
+  "reference_image_has_defect": {
+    "096701230.jpg": false,
+    "096e9d26a.jpg": false,
+    "0973e56f0.jpg": false,
+    "098935502.jpg": false,
+    "1d34ad26c.jpg": true,
+    "1d83b44be.jpg": true,
+    "751db247d.jpg": true,
+    "7579146ed.jpg": true,
+    "0696cfa05.jpg": true,
+    "06ad83bac.jpg": true,
+    "290e00273.jpg": true,
+    "2930b4f52.jpg": true
+  },
+  "reference_classes": {
+    "096701230.jpg": [],
+    "096e9d26a.jpg": [],
+    "0973e56f0.jpg": [],
+    "098935502.jpg": [],
+    "1d34ad26c.jpg": [
+      1
+    ],
+    "1d83b44be.jpg": [
+      1
+    ],
+    "751db247d.jpg": [
+      2
+    ],
+    "7579146ed.jpg": [
+      2
+    ],
+    "0696cfa05.jpg": [
+      3
+    ],
+    "06ad83bac.jpg": [
+      3
+    ],
+    "290e00273.jpg": [
+      4
+    ],
+    "2930b4f52.jpg": [
+      3,
+      4
+    ]
+  },
+  "n_memory_patches_before_filtering": 76800,
+  "n_memory_patches_after_filtering": 66560,
+  "paired_manifest_id": "66eed7ad336119b253ae036362817d19d1dedcca5a04176ce547810594a559e5",
+  "paired_manifest_path": "/home/kalantary/AnomalyDino/AnomalyDINO/results_refbank/phase5/phase5_f0_s42_clean4_additional8_manifest.json",
+  "bank_stats": {
+    "n_clean_patches": 25600,
+    "n_candidate_patches": 51200,
+    "n_accepted_candidate_patches": 40960,
+    "n_rejected_candidate_patches": 10240,
+    "acceptance_fraction": 0.8,
+    "calibration_percentile": null,
+    "calibration_threshold": 0.24851644039154053,
+    "final_memory_bank_size": 51200,
+    "n_memory_patches_clean": 25600,
+    "n_candidate_patches_before_filter": 51200,
+    "n_candidate_patches_after_filter": 40960,
+    "n_memory_patches_before_budget": 66560,
+    "n_memory_patches_final": 51200,
+    "budget_policy": "greedy_coreset",
+    "budget_size_requested": 51200,
+    "extras": {
+      "purification_strategy": "fixed_ratio_distance_trim",
+      "fixed_trim_fraction": 0.2,
+      "fixed_trim_retained_patches": 40960
+    }
+  }
+}
