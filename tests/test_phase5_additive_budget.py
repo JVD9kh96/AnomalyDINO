@@ -125,6 +125,25 @@ class Phase5AdditiveBudgetTests(unittest.TestCase):
         )
         self.assertGreater(len(full), len(append_only))
 
+    def test_only_names_filters_active_specs(self):
+        rows = active_specs(
+            "fixed_ratio_trim",
+            append_rows=True,
+            include_optional_4plus8=True,
+            only_names=["oracle_greedy_budget_2plus8", "naive_greedy_budget_4plus8"],
+        )
+        self.assertEqual(
+            [row["name"] for row in rows],
+            ["oracle_greedy_budget_2plus8", "naive_greedy_budget_4plus8"],
+        )
+        with self.assertRaises(ValueError):
+            active_specs(
+                "fixed_ratio_trim",
+                append_rows=True,
+                include_optional_4plus8=False,
+                only_names=["not_a_real_row"],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

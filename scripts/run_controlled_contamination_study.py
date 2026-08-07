@@ -49,6 +49,18 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--device", default=None)
     p.add_argument("--dry-run", action="store_true", help="Emit condition plan only")
     p.add_argument("--resume", action="store_true")
+    p.add_argument(
+        "--only-names",
+        nargs="+",
+        default=None,
+        help="Run only these contamination condition names (space-separated).",
+    )
+    p.add_argument(
+        "--max-jobs",
+        type=int,
+        default=None,
+        help="Cap incomplete conditions launched this session (after resume skips).",
+    )
     return p.parse_args()
 
 
@@ -245,6 +257,13 @@ def main() -> None:
         config.setdefault("detector", {})["device"] = args.device
 
     conditions = enumerate_conditions()
+    if args.only_names:
+        wanted = list(dict.fromkeys(args.only_names))
+        by_name = {row["name"]: row for row in conditions}
+        missing = [name for name in wanted if name not in by_name]
+        if missing:
+            raise ValueError(f"Unknown --only-names {missing}. Known: {sorted(by_name)}")
+        conditions = [by_name[name] for name in wanted]
     out_root = Path(args.output_dir)
     out_root.mkdir(parents=True, exist_ok=True)
     save_json({"conditions": conditions, "n_conditions": len(conditions)}, out_root / "condition_plan.json")
@@ -292,12 +311,19 @@ def main() -> None:
 
     aggregate_rows = []
     shared_zero_metrics = None
+    launched = 0
     for condition in conditions:
         run_dir = out_root / condition["name"]
         metrics_path = run_dir / "metrics.json"
         if args.resume and metrics_path.is_file():
             aggregate_rows.append(json.loads(metrics_path.read_text(encoding="utf-8")))
             continue
+        if args.max_jobs is not None and launched >= args.max_jobs:
+            print(
+                f"Reached --max-jobs={args.max_jobs}; remaining Phase 6 conditions deferred.",
+                flush=True,
+            )
+            break
         run_dir.mkdir(parents=True, exist_ok=True)
 
         composition = condition["composition"]
@@ -356,6 +382,7 @@ def main() -> None:
         save_json(row, metrics_path)
         save_json({"traces": result["traces"][:5000]}, run_dir / "neighbor_traces.json")
         aggregate_rows.append(row)
+        launched += 1
         if composition == "shared_zero":
             shared_zero_metrics = row
         print(

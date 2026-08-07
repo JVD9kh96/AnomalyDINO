@@ -93,14 +93,74 @@ python scripts/phase2_verify_oracle_purification.py \
   --output-dir results/phase2
 ```
 
-**Phase 5 additive rows only** (do not rerun existing nine rows; merge into report):
+**Phase 5 additive rows only** (do not rerun existing nine rows; merge into report).
+Each additive row is ~2–3 h on Kaggle GPU — run **one name per session**:
 
 ```bash
+# Remaining additive row after naive / random20 / oracle completed:
 python scripts/phase5_memory_budget_controls.py \
   --output-dir results/phase5 \
   --phase4-report results/phase4/phase4_compact_purification_controls_report.json \
   --purification-mode fixed_ratio_trim --fixed-trim-fraction 0.20 \
-  --append-rows --include-optional-4plus8 --run
+  --append-rows --include-optional-4plus8 \
+  --only-names naive_greedy_budget_4plus8 --run
+
+# Or shard all additive rows across sessions:
+#   --only-names naive_greedy_budget_2plus8
+#   --only-names random20_greedy_budget_2plus8
+#   --only-names oracle_greedy_budget_2plus8
+#   --only-names naive_greedy_budget_4plus8
+
+# After all additive metrics exist, merge into the report (no --run):
+python scripts/phase5_memory_budget_controls.py \
+  --output-dir results/phase5 \
+  --phase4-report results/phase4/phase4_compact_purification_controls_report.json \
+  --purification-mode fixed_ratio_trim --fixed-trim-fraction 0.20 \
+  --append-rows --include-optional-4plus8
+```
+
+### Kaggle 12h sharding (multi-seed / multi-row)
+
+Heavy matrices exceed the 12h limit if launched whole. Prefer one seed, one
+row, or `--max-jobs 1` per session; keep `--resume` / reuse of completed
+`metrics.json` on.
+
+**Phase 3** — one reference seed per session, then aggregate:
+
+```bash
+python scripts/phase3_multiseed_fold0_replication.py \
+  --output-dir results/phase3 --run --seeds 42 --skip-aggregate --device cuda:0
+# later: --seeds 43, then 44, 45, 46
+
+python scripts/phase3_multiseed_fold0_replication.py \
+  --output-dir results/phase3 --aggregate-seeds 42,43,44,45,46
+```
+
+**Phase 12** — one fold×seed×condition (or a small batch):
+
+```bash
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 \
+  --folds 1 --seeds 42 --only-names proposed_distance20_2plus8 \
+  --track primary --run --resume --device cuda:0
+
+# Or advance through the queue one incomplete job at a time:
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 \
+  --folds 1 2 3 4 --seeds 42 43 44 \
+  --track all --run --resume --max-jobs 1 --device cuda:0
+```
+
+**Phase 6** — one contamination condition / batch:
+
+```bash
+python scripts/run_controlled_contamination_study.py \
+  --config configs/phase6_controlled_contamination.yaml \
+  --fold 0 --seed 42 --output-dir results/phase6 \
+  --only-names rate0.05_uniform --resume --device cuda:0
+# or: --resume --max-jobs 1
 ```
 
 ### P1 — mechanism study + publication-critical held-out matrix

@@ -56,6 +56,20 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Also include optional naive_greedy_budget_4plus8 control.",
     )
+    parser.add_argument(
+        "--only-names",
+        nargs="+",
+        default=None,
+        help=(
+            "Run/aggregate only these row names (space-separated). Use on Kaggle to "
+            "finish one heavy row per session within the 12h limit, then re-aggregate."
+        ),
+    )
+    parser.add_argument(
+        "--skip-aggregate",
+        action="store_true",
+        help="Run selected rows without rewriting the Phase 5 report (merge later).",
+    )
     parser.add_argument("--python", default=sys.executable)
     parser.add_argument("--device", default=None)
     parser.add_argument("--run", action="store_true")
@@ -144,13 +158,28 @@ def active_specs(
     *,
     append_rows: bool,
     include_optional_4plus8: bool,
+    only_names: list[str] | None = None,
 ) -> list[dict]:
     if append_rows:
-        return additive_specs(include_optional_4plus8=include_optional_4plus8)
-    return [
-        *specs(purification_mode),
-        *additive_specs(include_optional_4plus8=include_optional_4plus8),
-    ]
+        rows = additive_specs(include_optional_4plus8=include_optional_4plus8)
+    else:
+        rows = [
+            *specs(purification_mode),
+            *additive_specs(include_optional_4plus8=include_optional_4plus8),
+        ]
+    return filter_specs_by_name(rows, only_names)
+
+
+def filter_specs_by_name(rows: list[dict], only_names: list[str] | None) -> list[dict]:
+    if not only_names:
+        return rows
+    wanted = list(dict.fromkeys(only_names))
+    by_name = {row["name"]: row for row in rows}
+    missing = [name for name in wanted if name not in by_name]
+    if missing:
+        known = ", ".join(sorted(by_name))
+        raise ValueError(f"Unknown --only-names {missing}. Known rows: {known}")
+    return [by_name[name] for name in wanted]
 
 def _ensure_cuda(device: str | None) -> None:
     if device is not None and not device.startswith("cuda"):
@@ -217,7 +246,9 @@ def run(args: argparse.Namespace, output_dir: Path, purification: dict) -> None:
         purification["condition"],
         append_rows=bool(args.append_rows),
         include_optional_4plus8=bool(args.include_optional_4plus8),
+        only_names=args.only_names,
     )
+    print(f"Phase 5 scheduled rows ({len(study_specs)}): {[s['name'] for s in study_specs]}", flush=True)
     for index, spec in enumerate(study_specs, start=1):
         key = (spec["clean_shots"], spec["additional_shots"])
         manifest = manifest_path(output_dir, *key)
@@ -294,19 +325,21 @@ def aggregate(
     *,
     append_rows: bool = False,
     include_optional_4plus8: bool = True,
+    allow_missing: bool = False,
 ) -> Path:
     report_path = output_dir / "phase5_exact_memory_budget_controls_report.json"
     study_specs = active_specs(
         purification["condition"],
         append_rows=append_rows,
         include_optional_4plus8=include_optional_4plus8,
+        only_names=None,
     )
     new_rows = []
     for spec in study_specs:
         path = output_dir / f"phase5_f0_{spec['name']}_s42" / "metrics.json"
         if not path.is_file():
-            if append_rows:
-                print(f"Skipping missing additive row: {path}", flush=True)
+            if append_rows or allow_missing:
+                print(f"Skipping missing row: {path}", flush=True)
                 continue
             raise ValueError(f"Missing Phase 5 result: {path}")
         new_rows.append(_row_from_metrics(spec, path))
@@ -383,11 +416,23 @@ def main() -> None:
     print(f"Phase 5 append_rows={args.append_rows}", flush=True)
     if args.run:
         run(args, output_dir, purification)
+    if args.skip_aggregate:
+        print("Skipping Phase 5 aggregate (--skip-aggregate)", flush=True)
+        return
+    if args.only_names and not args.append_rows:
+        print(
+            "Skipping Phase 5 aggregate for --only-names without --append-rows; "
+            "re-aggregate after all rows finish (omit --only-names), or pass --append-rows "
+            "to merge into an existing report.",
+            flush=True,
+        )
+        return
     report_path = aggregate(
         output_dir,
         purification,
         append_rows=bool(args.append_rows),
         include_optional_4plus8=bool(args.include_optional_4plus8),
+        allow_missing=bool(args.append_rows),
     )
     print(f"Wrote Phase 5 report: {report_path}")
 

@@ -44,6 +44,21 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--resume", action="store_true")
     p.add_argument("--run-sam2", action="store_true")
     p.add_argument("--track", choices=("primary", "efficiency", "all"), default="all")
+    p.add_argument(
+        "--only-names",
+        nargs="+",
+        default=None,
+        help=(
+            "Run/aggregate only these condition names (space-separated). "
+            "Combine with --folds / --seeds to finish one fold×seed×condition per Kaggle session."
+        ),
+    )
+    p.add_argument(
+        "--max-jobs",
+        type=int,
+        default=None,
+        help="Cap how many incomplete jobs to launch this session (after resume skips).",
+    )
     return p.parse_args()
 
 
@@ -107,6 +122,13 @@ def main() -> None:
         for row in frozen_efficiency_conditions():
             if row["name"] not in {c["name"] for c in conditions}:
                 conditions.append(row)
+    if args.only_names:
+        wanted = list(dict.fromkeys(args.only_names))
+        by_name = {row["name"]: row for row in conditions}
+        missing = [name for name in wanted if name not in by_name]
+        if missing:
+            raise ValueError(f"Unknown --only-names {missing}. Known: {sorted(by_name)}")
+        conditions = [by_name[name] for name in wanted]
 
     sam2_targets = {"clean_8", "naive_2plus8", "proposed_distance20_2plus8"}
     jobs = []
@@ -118,10 +140,17 @@ def main() -> None:
                 jobs.append((fold, seed, spec, run_dir))
 
     if args.run:
+        launched = 0
         for fold, seed, spec, run_dir in jobs:
             if args.resume and (run_dir / "metrics.json").is_file():
                 print(f"resume skip {run_dir}")
                 continue
+            if args.max_jobs is not None and launched >= args.max_jobs:
+                print(
+                    f"Reached --max-jobs={args.max_jobs}; remaining jobs deferred to a later session.",
+                    flush=True,
+                )
+                break
             run_dir.mkdir(parents=True, exist_ok=True)
             # Proposed arms use the frozen primary YAML; controls keep auto_purified.yaml
             # as a neutral base overridden by --condition / CLI flags.
@@ -154,7 +183,8 @@ def main() -> None:
                 )
             if args.device:
                 command.extend(("--device", args.device))
-            _run(command, spec["name"])
+            _run(command, f"f{fold}_s{seed}_{spec['name']}")
+            launched += 1
 
     # Aggregate whatever metrics exist (GPU host can re-run after experiments).
     rows = []

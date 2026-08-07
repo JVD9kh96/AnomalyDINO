@@ -23,6 +23,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run", action="store_true")
     parser.add_argument("--rerun", action="store_true")
     parser.add_argument(
+        "--only-names",
+        nargs="+",
+        default=None,
+        help="Run only these Phase 4 control names (space-separated); skip full aggregate until all finish.",
+    )
+    parser.add_argument(
+        "--skip-aggregate",
+        action="store_true",
+        help="Run selected controls without rewriting the Phase 4 report.",
+    )
+    parser.add_argument(
         "--phase3-clean-metrics",
         default="results_refbank/phase3/f0_clean_s42/metrics.json",
         help="Paired Phase 3 clean baseline used only for fixed-threshold comparison",
@@ -35,7 +46,7 @@ def resolve(value: str) -> Path:
     return path if path.is_absolute() else ROOT / path
 
 
-def specs() -> list[dict]:
+def specs(only_names: list[str] | None = None) -> list[dict]:
     controls = []
     for percentile in (95.0, 97.5, 99.0, 99.5):
         tag = str(percentile).replace(".5", "_5").replace(".0", "")
@@ -53,7 +64,14 @@ def specs() -> list[dict]:
                 "trim_fraction": trim_fraction,
             }
         )
-    return controls
+    if not only_names:
+        return controls
+    wanted = list(dict.fromkeys(only_names))
+    by_name = {row["name"]: row for row in controls}
+    missing = [name for name in wanted if name not in by_name]
+    if missing:
+        raise ValueError(f"Unknown --only-names {missing}. Known: {sorted(by_name)}")
+    return [by_name[name] for name in wanted]
 
 
 def _ensure_cuda(device: str | None) -> None:
@@ -179,8 +197,10 @@ def run(args: argparse.Namespace, output_dir: Path) -> None:
         ]
         print("[Phase 4] freezing paired input manifest", flush=True)
         _run(command, "manifest")
-    total = len(specs())
-    for index, spec in enumerate(specs(), start=1):
+    study_specs = specs(args.only_names)
+    total = len(study_specs)
+    print(f"Phase 4 scheduled controls ({total}): {[s['name'] for s in study_specs]}", flush=True)
+    for index, spec in enumerate(study_specs, start=1):
         run_dir = output_dir / f"phase4_f0_{spec['name']}_s{args.seed}"
         if not args.rerun and (run_dir / "metrics.json").is_file():
             print(f"[run {index}/{total}: {spec['name']}] reusing completed output", flush=True)
@@ -213,6 +233,14 @@ def main() -> None:
     baseline = resolve(args.phase3_clean_metrics)
     if args.run:
         run(args, output_dir)
+    if args.skip_aggregate or args.only_names:
+        reason = "--skip-aggregate" if args.skip_aggregate else "--only-names"
+        print(
+            f"Skipping Phase 4 aggregate ({reason}); "
+            "re-run without those flags once all controls exist.",
+            flush=True,
+        )
+        return
     report = aggregate(output_dir, baseline)
     print(f"Wrote Phase 4 report: {report}")
 
