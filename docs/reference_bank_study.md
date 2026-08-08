@@ -93,30 +93,53 @@ python scripts/phase2_verify_oracle_purification.py \
   --output-dir results/phase2
 ```
 
-**Phase 5 additive rows only** (do not rerun existing nine rows; merge into report).
-Each additive row is ~2–3 h on Kaggle GPU — run **one name per session**:
+**Phase 5 additive rows** (do not rerun existing nine rows; merge into report):
 
 ```bash
-# Remaining additive row after naive / random20 / oracle completed:
+# Full additive matrix in one job (server / long session — omit --only-names):
 python scripts/phase5_memory_budget_controls.py \
   --output-dir results/phase5 \
   --phase4-report results/phase4/phase4_compact_purification_controls_report.json \
   --purification-mode fixed_ratio_trim --fixed-trim-fraction 0.20 \
-  --append-rows --include-optional-4plus8 \
-  --only-names naive_greedy_budget_4plus8 --run
+  --append-rows --include-optional-4plus8 --run
 
-# Or shard all additive rows across sessions:
-#   --only-names naive_greedy_budget_2plus8
-#   --only-names random20_greedy_budget_2plus8
-#   --only-names oracle_greedy_budget_2plus8
-#   --only-names naive_greedy_budget_4plus8
+# Kaggle: one heavy row per session, then re-aggregate without --run:
+#   --only-names naive_greedy_budget_4plus8 --run
+```
 
-# After all additive metrics exist, merge into the report (no --run):
+### Full server run (no 12h limit)
+
+Omit `--only-names`, `--max-jobs`, `--skip-aggregate`, and single-seed filters.
+Defaults already schedule the full matrix; `--resume` (where available) skips
+completed `metrics.json` dirs if you restart.
+
+```bash
+# Phase 3 — all 5 seeds × 4 conditions, then report
+python scripts/phase3_multiseed_fold0_replication.py \
+  --output-dir results/phase3 --run --seeds 42,43,44,45,46 --device cuda:0
+
+# Phase 4 — all compact purification controls
+python scripts/phase4_compact_purification_controls.py \
+  --output-dir results/phase4 --run --device cuda:0
+
+# Phase 5 — full additive append (or drop --append-rows for the entire Phase 5 matrix)
 python scripts/phase5_memory_budget_controls.py \
   --output-dir results/phase5 \
   --phase4-report results/phase4/phase4_compact_purification_controls_report.json \
   --purification-mode fixed_ratio_trim --fixed-trim-fraction 0.20 \
-  --append-rows --include-optional-4plus8
+  --append-rows --include-optional-4plus8 --run
+
+# Phase 6 — all contamination rates × compositions
+python scripts/run_controlled_contamination_study.py \
+  --config configs/phase6_controlled_contamination.yaml \
+  --fold 0 --seed 42 --output-dir results/phase6 --device cuda:0 --resume
+
+# Phase 12 — folds 1–4 × seeds 42–44 × all tracks
+python scripts/run_heldout_maskfree_matrix.py \
+  --config configs/phase12_heldout_maskfree.yaml \
+  --output-dir results/phase12 \
+  --folds 1 2 3 4 --seeds 42 43 44 \
+  --track all --run --resume --device cuda:0
 ```
 
 ### Kaggle 12h sharding (multi-seed / multi-row)
